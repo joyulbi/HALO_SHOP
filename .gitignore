@@ -1,0 +1,65 @@
+######################################
+# 🌍 Global: OS, logs, temp
+######################################
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+
+######################################
+# ☕ Spring Boot / Maven
+######################################
+haloshop/target/
+haloshop/*.iml
+haloshop/.mvn/
+haloshop/mvnw
+haloshop/mvnw.cmd
+haloshop/logs/
+haloshop/.classpath
+haloshop/.project
+haloshop/.settings/
+haloshop/.springBeans
+haloshop/.apt_generated
+haloshop/.factorypath
+
+######################################
+# ⚛️ React (Create React App 기준)
+######################################
+haloshop_react/node_modules/
+haloshop_react/build/
+haloshop_react/.next/
+haloshop_react/.env
+haloshop_react/.env.*
+haloshop_react/.eslintcache
+haloshop_react/package-lock.json
+haloshop_react/yarn.lock
+haloshop_react/coverage/
+
+######################################
+# 🧪 Test & Coverage
+######################################
+test-output/
+coverage/
+
+######################################
+# 🧾 IDE 설정 (공통: 충돌 방지용)
+######################################
+.idea/
+.vscode/
+*.iml
+
+######################################
+# 🛠 Eclipse workspace 설정 폴더
+######################################
+.metadata/
+Servers/
+
+######################################
+# 📂 업로드, 실행 중 생성되는 파일
+######################################
+upload/
+uploads/
+*.db
+*.sqlite
