@@ -6,9 +6,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface MembershipMapper {
-    void insert(Membership membership);
     List<Membership> findAll();
-    Membership findById(int id);
-    void update(Membership membership);
-    void delete(int id);
+    Membership findById(Integer id);
+    void insert(Membership dto);
+    void update(Membership dto);
+    void delete(Integer id);
 }

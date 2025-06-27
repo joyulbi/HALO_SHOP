@@ -5,24 +5,24 @@
 
 <mapper namespace="com.company.haloshop.membership.MembershipMapper">
 
-    <!-- 등급 등록 -->
-    <insert id="insert" parameterType="Membership">
+    <!-- 전체 조회 -->
+    <select id="findAll" resultType="com.company.haloshop.dto.shop.Membership">
+        SELECT * FROM membership ORDER BY id DESC
+    </select>
+
+    <!-- ID로 단건 조회 -->
+    <select id="findById" parameterType="int" resultType="com.company.haloshop.dto.shop.Membership">
+        SELECT * FROM membership WHERE id = #{id}
+    </select>
+
+    <!-- 등록 -->
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.Membership">
         INSERT INTO membership (name, price, price_point)
         VALUES (#{name}, #{price}, #{pricePoint})
     </insert>
 
-    <!-- 등급 전체 조회 -->
-    <select id="findAll" resultType="Membership">
-        SELECT * FROM membership ORDER BY id ASC
-    </select>
-
-    <!-- 등급 상세 조회 -->
-    <select id="findById" parameterType="int" resultType="Membership">
-        SELECT * FROM membership WHERE id = #{id}
-    </select>
-
-    <!-- 등급 수정 -->
-    <update id="update" parameterType="Membership">
+    <!-- 수정 -->
+    <update id="update" parameterType="com.company.haloshop.dto.shop.Membership">
         UPDATE membership
         SET name = #{name},
             price = #{price},
@@ -30,7 +30,7 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 등급 삭제 -->
+    <!-- 삭제 -->
     <delete id="delete" parameterType="int">
         DELETE FROM membership WHERE id = #{id}
     </delete>

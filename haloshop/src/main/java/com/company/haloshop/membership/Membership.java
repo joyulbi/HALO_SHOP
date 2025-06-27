@@ -17,4 +17,6 @@ public class Membership {
     private Integer id;
     private String name;
     private int price;
+    private int pricePoint;
 }
+   
