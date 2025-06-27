@@ -84,7 +84,7 @@
 		</dependency>
 		<!--                       -->
 		<!--                       -->
-		      <!-- 추가 -->
+	  <!-- 추가 -->
       <!-- 추가 -->
       <dependency>
          <groupId>org.springframework.boot</groupId>
@@ -121,6 +121,15 @@
          <artifactId>gson</artifactId>
          <!-- <version>2.8.2</version> -->
       </dependency>
+      
+      
+      <dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt</artifactId>
+    <version>0.9.1</version>
+</dependency>
+      
+      
 	</dependencies>
 
 	<build>
