@@ -1,4 +1,6 @@
-package com.company.haloshop.domain;
+package com.company.haloshop.donate_domain;
+
+import com.company.haloshop.team.Team;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

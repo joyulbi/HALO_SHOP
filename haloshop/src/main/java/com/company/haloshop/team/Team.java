@@ -1,9 +1,11 @@
-package com.company.haloshop.domain;
+package com.company.haloshop.team;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.OneToMany;
+
+import com.company.haloshop.donate_domain.DonationCampaign;
 
 import lombok.Builder;
 import lombok.Getter;

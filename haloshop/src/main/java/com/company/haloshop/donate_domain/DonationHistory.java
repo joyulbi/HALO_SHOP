@@ -1,4 +1,4 @@
-package com.company.haloshop.domain;
+package com.company.haloshop.donate_domain;
 
 import java.time.LocalDateTime;
 
