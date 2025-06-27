@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.haloshop.review.ReviewImageMapper">
+    <insert id="insertReviewImage" parameterType="ReviewImage">
+        insert into review_image (
+            review_id, imageUrl, uploadedAt
+        ) values (
+            #{reviewId}, #{imageUrl}, now()
+        )
+    </insert>
+
+    <select id="findByReviewId" parameterType="long" resultType="ReviewImage">
+        select * from review_image where review_id = #{reviewId}
+    </select>
+</mapper>
