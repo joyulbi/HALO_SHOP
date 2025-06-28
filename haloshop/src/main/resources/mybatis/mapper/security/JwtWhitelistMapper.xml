@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.security.mapper.JwtWhitelistMapper">
+
+  <!--
+    JwtWhitelistDto 결과 매핑
+  -->
+  <resultMap id="JwtWhitelistResultMap" type="com.company.haloshop.dto.security.JwtWhitelistDto">
+    <id property="id" column="id" />
+    <result property="accountId" column="account_id" />
+    <result property="refreshToken" column="refresh_token" />
+    <result property="issuedAt" column="issued_at" />
+    <result property="expiresAt" column="expires_at" />
+    <result property="createdAt" column="created_at" />
+    <result property="lastUsedAt" column="last_used_at" />
+    <result property="isActive" column="is_active" />
+  </resultMap>
+
+  <select id="selectById" parameterType="long" resultMap="JwtWhitelistResultMap">
+    SELECT * FROM jwt_whitelist WHERE id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="JwtWhitelistResultMap">
+    SELECT * FROM jwt_whitelist
+  </select>
+
+  <insert id="insertWhitelist" parameterType="com.company.haloshop.dto.security.JwtWhitelistDto" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO jwt_whitelist (
+      account_id, refresh_token, issued_at, expires_at, created_at, last_used_at, is_active
+    ) VALUES (
+      #{accountId}, #{refreshToken}, #{issuedAt}, #{expiresAt}, #{createdAt}, #{lastUsedAt}, #{isActive}
+    )
+  </insert>
+
+  <update id="updateWhitelist" parameterType="com.company.haloshop.dto.security.JwtWhitelistDto">
+    UPDATE jwt_whitelist
+    SET
+      account_id = #{accountId},
+      refresh_token = #{refreshToken},
+      issued_at = #{issuedAt},
+      expires_at = #{expiresAt},
+      created_at = #{createdAt},
+      last_used_at = #{lastUsedAt},
+      is_active = #{isActive}
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById" parameterType="long">
+    DELETE FROM jwt_whitelist WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteAllByAccountId" parameterType="long">
+    DELETE FROM jwt_whitelist WHERE account_id = #{accountId}
+  </delete>
+
+<update id="deactivateToken">
+  UPDATE jwt_whitelist
+  SET is_active = false
+  WHERE account_id = #{accountId} AND refresh_token = #{refreshToken}
+</update>
+
+</mapper>
