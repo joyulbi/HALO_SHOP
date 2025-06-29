@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.order.OrderMapper">
+
+    <resultMap id="OrderDtoMap" type="com.company.haloshop.dto.shop.OrderDto">
+        <id property="id" column="id" />
+        <result property="accountId" column="account_id" />
+        <result property="deliveryId" column="delivery_id" />
+        <result property="totalPrice" column="total_price" />
+        <result property="used" column="used" />
+        <result property="paymentStatus" column="payment_status" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <select id="findAll" resultMap="OrderDtoMap">
+        SELECT id, account_id, delivery_id, total_price, used, payment_status, created_at, updated_at
+        FROM orders
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="OrderDtoMap">
+        SELECT id, account_id, delivery_id, total_price, used, payment_status, created_at, updated_at
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.OrderDto">
+        INSERT INTO orders (account_id, delivery_id, total_price, used, payment_status)
+        VALUES (#{accountId}, #{deliveryId}, #{totalPrice}, #{used}, #{paymentStatus})
+    </insert>
+
+    <update id="update" parameterType="com.company.haloshop.dto.shop.OrderDto">
+        UPDATE orders
+        SET account_id = #{accountId},
+            delivery_id = #{deliveryId},
+            total_price = #{totalPrice},
+            used = #{used},
+            payment_status = #{paymentStatus}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM orders WHERE id = #{id}
+    </delete>
+
+</mapper>

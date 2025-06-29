@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.orderitem.OrderItemMapper">
+
+    <resultMap id="OrderItemDtoMap" type="com.company.haloshop.dto.shop.OrderItemDto">
+        <id property="id" column="id" />
+        <result property="ordersId" column="orders_id" />
+        <result property="itemId" column="item_id" />
+        <result property="itemName" column="item_name" />
+        <result property="productPrice" column="product_price" />
+        <result property="quantity" column="quantity" />
+    </resultMap>
+
+    <select id="findAll" resultMap="OrderItemDtoMap">
+        SELECT id, orders_id, item_id, item_name, product_price, quantity
+        FROM order_item
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="OrderItemDtoMap">
+        SELECT id, orders_id, item_id, item_name, product_price, quantity
+        FROM order_item
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.OrderItemDto">
+        INSERT INTO order_item (orders_id, item_id, item_name, product_price, quantity)
+        VALUES (#{ordersId}, #{itemId}, #{itemName}, #{productPrice}, #{quantity})
+    </insert>
+
+    <update id="update" parameterType="com.company.haloshop.dto.shop.OrderItemDto">
+        UPDATE order_item
+        SET orders_id = #{ordersId},
+            item_id = #{itemId},
+            item_name = #{itemName},
+            product_price = #{productPrice},
+            quantity = #{quantity}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM order_item WHERE id = #{id}
+    </delete>
+
+</mapper>

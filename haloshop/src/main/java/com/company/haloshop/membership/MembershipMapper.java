@@ -1,5 +1,22 @@
 package com.company.haloshop.membership;
 
+import com.company.haloshop.dto.shop.MembershipDto;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface MembershipMapper {
+    List<MembershipDto> findAll();
+    MembershipDto findById(Integer id);
+    void insert(MembershipDto dto);
+    void update(MembershipDto dto);
+    void delete(Integer id);
+}
+
+
+/*package com.company.haloshop.membership;
+
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -11,4 +28,4 @@ public interface MembershipMapper {
     void insert(Membership dto);
     void update(Membership dto);
     void delete(Integer id);
-}
+}*/
