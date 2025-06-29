@@ -1,4 +1,4 @@
-package com.company.haloshop.delivery;
+package com.company.haloshop.delivery.mapper;
 
 import java.util.List;
 

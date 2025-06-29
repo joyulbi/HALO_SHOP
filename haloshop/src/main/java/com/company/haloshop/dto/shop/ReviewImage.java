@@ -16,6 +16,6 @@ import lombok.ToString;
 public class ReviewImage {
     private Long id;
     private Long reviewId;
-    private String imageUrl;
+    private String url;
     private LocalDateTime uploadedAt;
 }

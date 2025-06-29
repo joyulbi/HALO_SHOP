@@ -1,4 +1,4 @@
-package com.company.haloshop.delivery;
+package com.company.haloshop.delivery.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.company.haloshop.delivery.service.DeliveryTrackingService;
 import com.company.haloshop.dto.shop.DeliveryTracking;
 
 @Controller
@@ -24,7 +25,7 @@ public class DeliveryTrackingController {
     }
 
     @GetMapping("/order/{orderItemsId}")
-    public DeliveryTracking getTracking(@PathVariable Long orderItemsId) {
+    public DeliveryTracking getTracking(@PathVariable("orderItemsId") Long orderItemsId) {
         return deliveryTrackingService.getTrackingByOrderItemsId(orderItemsId);
     }
 

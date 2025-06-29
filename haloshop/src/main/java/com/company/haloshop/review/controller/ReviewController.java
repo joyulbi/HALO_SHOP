@@ -1,4 +1,4 @@
-package com.company.haloshop.review;
+package com.company.haloshop.review.controller;
 
 import java.util.List;
 
@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.company.haloshop.dto.shop.Review;
+import com.company.haloshop.review.service.ReviewService;
 
 @Controller
-@RequestMapping("/api/reviews")
+@RequestMapping("/mypage/reviews")
 public class ReviewController {
 	@Autowired
 	private ReviewService reviewService;
@@ -28,9 +29,9 @@ public class ReviewController {
 		}
 	}
 	
-	@GetMapping("/user/{userId}")
-	public List<Review> getUserReviews(@PathVariable Long userId) {
-		return reviewService.getReviewByUser(userId);
+	@GetMapping("/user/{accountId}")
+	public List<Review> getUserReviews(@PathVariable("account_id") Long accountId) {
+		return reviewService.getReviewByUser(accountId);
 	}
 	
 	@GetMapping("/order/{orderItemsId}")

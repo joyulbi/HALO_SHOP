@@ -1,4 +1,4 @@
-package com.company.haloshop.delivery;
+package com.company.haloshop.delivery.controller;
 
 import java.util.List;
 
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.company.haloshop.delivery.service.DeliveryService;
 import com.company.haloshop.dto.shop.Delivery;
 
 @Controller
@@ -24,8 +25,8 @@ public class DeliveryController {
 		return "배송지 등록 완료";
 	}
 	
-	@GetMapping("/user/{userId}")
-	public List<Delivery> getDeliveries(@PathVariable Long userId) {
-		return deliveryService.getDeliveriesByUser(userId);
+	@GetMapping("/user/{accountId}")
+	public List<Delivery> getDeliveries(@PathVariable("accountId") Long accountId) {
+		return deliveryService.getDeliveriesByUser(accountId);
 	}
 }

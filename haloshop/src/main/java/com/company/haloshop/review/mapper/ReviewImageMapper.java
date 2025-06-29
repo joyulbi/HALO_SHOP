@@ -1,4 +1,4 @@
-package com.company.haloshop.review;
+package com.company.haloshop.review.mapper;
 
 import java.util.List;
 

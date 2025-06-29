@@ -16,7 +16,7 @@ import lombok.ToString;
 public class Review {
     private Long id;
     private Long orderItemsId;
-    private Long userId;
+    private Long accountId;
     private String content;
     private int rating;
     private LocalDateTime createdAt;
