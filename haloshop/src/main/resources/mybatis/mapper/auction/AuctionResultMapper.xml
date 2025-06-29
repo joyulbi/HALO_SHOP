@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.haloshop.auction.mapper.AuctionResultMapper">
+
+    <!-- 낙찰 결과 단건 조회 -->
+    <select id="selectByAuctionId" resultType="com.company.haloshop.auction.dto.AuctionResult">
+        SELECT *
+        FROM auction_result
+        WHERE auction_id = #{auctionId}
+    </select>
+
+    <!-- 낙찰 결과 등록 -->
+    <insert id="insert" parameterType="com.company.haloshop.auction.dto.AuctionResult">
+        INSERT INTO auction_result (
+            auction_id,
+            account_id,
+            final_price,
+            created_at,
+            confirmed,
+            confirmed_at,
+            canceled_reason,
+            admin_memo,
+            re_registered
+        )
+        VALUES (
+            #{auctionId},
+            #{accountId},
+            #{finalPrice},
+            #{createdAt},
+            #{confirmed},
+            #{confirmedAt},
+            #{canceledReason},
+            #{adminMemo},
+            #{reRegistered}
+        )
+    </insert>
+
+    <!-- 낙찰 결과 수정 -->
+    <update id="update" parameterType="com.company.haloshop.auction.dto.AuctionResult">
+        UPDATE auction_result
+        SET
+            account_id = #{accountId},
+            final_price = #{finalPrice},
+            confirmed = #{confirmed},
+            confirmed_at = #{confirmedAt},
+            canceled_reason = #{canceledReason},
+            admin_memo = #{adminMemo},
+            re_registered = #{reRegistered}
+        WHERE auction_id = #{auctionId}
+    </update>
+
+    <!-- 낙찰 결과 삭제 -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM auction_result
+        WHERE auction_id = #{auctionId}
+    </delete>
+</mapper>
