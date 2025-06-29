@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.member.mapper.UserMapper">
+
+  <!--
+    UserDto 결과 매핑
+    테이블 user 컬럼과 DTO 필드 연결
+  -->
+  <resultMap id="UserResultMap" type="com.company.haloshop.dto.member.UserDto">
+    <id property="accountId" column="account_id" />
+    <result property="address" column="address" />
+    <result property="addressDetail" column="address_detail" />
+    <result property="zipcode" column="zipcode" />
+    <result property="birth" column="birth" />
+    <result property="gender" column="gender" />
+  </resultMap>
+
+  <!--
+    account_id로 User 조회 쿼리
+  -->
+  <select id="selectByAccountId" parameterType="long" resultMap="UserResultMap">
+    SELECT * FROM user WHERE account_id = #{accountId}
+  </select>
+
+  <!--
+    모든 User 목록 조회 쿼리
+  -->
+  <select id="selectAll" resultMap="UserResultMap">
+    SELECT * FROM user
+  </select>
+
+  <!--
+    User 데이터 삽입 쿼리
+  -->
+  <insert id="insertUser" parameterType="com.company.haloshop.dto.member.UserDto">
+    INSERT INTO user (
+      account_id, address, address_detail, zipcode, birth, gender
+    ) VALUES (
+      #{accountId}, #{address}, #{addressDetail}, #{zipcode}, #{birth}, #{gender}
+    )
+  </insert>
+
+  <!--
+    User 데이터 수정 쿼리
+  -->
+  <update id="updateUser" parameterType="com.company.haloshop.dto.member.UserDto">
+    UPDATE user
+    SET
+      address = #{address},
+      address_detail = #{addressDetail},
+      zipcode = #{zipcode},
+      birth = #{birth},
+      gender = #{gender}
+    WHERE account_id = #{accountId}
+  </update>
+
+  <!--
+    account_id 기준 User 삭제 쿼리
+  -->
+  <delete id="deleteByAccountId" parameterType="long">
+    DELETE FROM user WHERE account_id = #{accountId}
+  </delete>
+
+</mapper>
