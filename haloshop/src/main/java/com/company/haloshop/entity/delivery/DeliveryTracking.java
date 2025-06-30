@@ -2,6 +2,7 @@ package com.company.haloshop.entity.delivery;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -12,8 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-//import com.company.haloshop.entity.order.OrderItem;
-
+import com.company.haloshop.orderitem.OrderItem;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,14 +28,16 @@ public class DeliveryTracking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "order_items_id")
-//    private OrderItem orderItem;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_items_id")
+    private OrderItem orderItem;
 
     private String trackingNumber;
     private String carrier;
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private DeliveryStatus status;
 }
 

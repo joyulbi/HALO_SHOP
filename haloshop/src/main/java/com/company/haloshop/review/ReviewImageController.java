@@ -1,4 +1,4 @@
-package com.company.haloshop.review.controller;
+package com.company.haloshop.review;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,15 +9,8 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.company.haloshop.review.mapper.ReviewImageMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,7 +21,7 @@ public class ReviewImageController {
 
     private final ReviewImageMapper reviewImageMapper;
 
-    private final String uploadDir = "/uploads/reviews/";
+    private final String uploadDir = new File("src/main/resources/static/upload/review/").getAbsolutePath() + "/";
 
     @PostMapping("/{reviewId}/upload")
     public ResponseEntity<?> uploadReviewImage(@PathVariable Long reviewId,
@@ -39,7 +32,7 @@ public class ReviewImageController {
             dest.getParentFile().mkdirs();
             file.transferTo(dest);
 
-            String url = "/uploads/reviews/" + fileName;
+            String url = "/upload/review/" + fileName; // static 기준 URL
 
             reviewImageMapper.insertReviewImage(reviewId, url, LocalDateTime.now());
 
@@ -56,4 +49,3 @@ public class ReviewImageController {
         return ResponseEntity.ok(urls);
     }
 }
-

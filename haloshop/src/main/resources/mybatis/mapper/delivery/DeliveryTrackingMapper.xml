@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.company.haloshop.delivery.DeliveryTrackingMapper">
-	<insert id="insertTracking" parameterType="DeliveryTracking">
-		insert into delivery_tracking (order_items_id, status, tracking_number, carrier, updated_at)
-		values (#{orderItemsId}, #{status}, #{trackingNumber}, #{carrier}, now())
-	</insert>
-	
-    <select id="findByOrderItemsId" parameterType="long" resultType="DeliveryTracking">
-        select * from delivery_tracking where order_items_id = #{orderItemsId}
+
+    <resultMap id="DeliveryTrackingResultMap" type="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
+        <id property="id" column="id" />
+        <result property="orderItemsId" column="order_items_id" />
+        <result property="status" column="status" />
+        <result property="trackingNumber" column="tracking_number" />
+        <result property="carrier" column="carrier" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <select id="findByOrderItemsId" resultMap="DeliveryTrackingResultMap">
+        SELECT * FROM delivery_tracking WHERE order_items_id = #{orderItemsId}
     </select>
 
-    <update id="updateStatus" parameterType="DeliveryTracking">
-        update delivery_tracking
-        set status = #{status}, updated_at = now()
-        where order_items_id = #{orderItemsId}
+    <insert id="insertTracking" parameterType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
+        INSERT INTO delivery_tracking (order_items_id, status, tracking_number, carrier, updated_at)
+        VALUES (#{orderItemsId}, #{status}, #{trackingNumber}, #{carrier}, now())
+    </insert>
+
+    <update id="updateStatus" parameterType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
+        UPDATE delivery_tracking
+        SET status = #{status}, updated_at = now()
+        WHERE order_items_id = #{orderItemsId}
     </update>
+
 </mapper>

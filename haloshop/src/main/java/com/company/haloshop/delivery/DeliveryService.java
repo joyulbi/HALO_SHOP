@@ -1,11 +1,10 @@
-package com.company.haloshop.delivery.service;
+package com.company.haloshop.delivery;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.company.haloshop.delivery.mapper.DeliveryMapper;
 import com.company.haloshop.dto.shop.DeliveryDTO;
 
 @Service

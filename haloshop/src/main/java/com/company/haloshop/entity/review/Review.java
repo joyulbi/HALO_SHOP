@@ -10,13 +10,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import com.company.haloshop.entity.member.Account;
 //import com.company.haloshop.entity.order.OrderItem;
+import com.company.haloshop.orderitem.OrderItem;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,9 +31,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "order_items_id")
-//    private OrderItem orderItem;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_items_id")
+    private OrderItem orderItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")

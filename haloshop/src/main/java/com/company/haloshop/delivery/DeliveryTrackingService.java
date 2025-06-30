@@ -1,9 +1,8 @@
-package com.company.haloshop.delivery.service;
+package com.company.haloshop.delivery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.company.haloshop.delivery.mapper.DeliveryTrackingMapper;
 import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 
 @Service
