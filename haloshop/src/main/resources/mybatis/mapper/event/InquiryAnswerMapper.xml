@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.inquiryanswer.InquiryAnswerMapper">
+
+    <resultMap id="InquiryAnswerResultMap" type="com.company.haloshop.inquiryanswer.InquiryAnswer">
+        <id property="inquiryId" column="inquiry_id" />
+        <result property="answer" column="answer" />
+        <result property="accountId" column="account_id" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
+    <insert id="insertInquiryAnswer" parameterType="com.company.haloshop.inquiryanswer.InquiryAnswer" useGeneratedKeys="false">
+        INSERT INTO inquiry_answer (inquiry_id, answer, account_id, created_at)
+        VALUES (#{inquiryId}, #{answer}, #{accountId}, #{createdAt})
+    </insert>
+
+    <select id="findInquiryAnswerById" parameterType="long" resultMap="InquiryAnswerResultMap">
+        SELECT * FROM inquiry_answer WHERE inquiry_id = #{inquiryId}
+    </select>
+
+    <update id="updateInquiryAnswer" parameterType="com.company.haloshop.inquiryanswer.InquiryAnswer">
+        UPDATE inquiry_answer
+        SET answer = #{answer},
+            account_id = #{accountId}
+        WHERE inquiry_id = #{inquiryId}
+    </update>
+
+    <delete id="deleteInquiryAnswer" parameterType="long">
+        DELETE FROM inquiry_answer WHERE inquiry_id = #{value}
+    </delete>
+
+</mapper>

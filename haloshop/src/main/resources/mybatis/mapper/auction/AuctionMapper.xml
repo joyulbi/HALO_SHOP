@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.haloshop.auction.mapper.AuctionMapper">
+
+    <!-- 단일 경매 조회 -->
+    <select id="selectById" resultType="com.company.haloshop.auction.dto.Auction">
+        SELECT *
+        FROM auction
+        WHERE id = #{id}
+    </select>
+
+    <!-- 전체 경매 목록 -->
+    <select id="selectAll" resultType="com.company.haloshop.auction.dto.Auction">
+        SELECT *
+        FROM auction
+    </select>
+
+    <!-- 경매 등록 -->
+    <insert id="insert" parameterType="com.company.haloshop.auction.dto.Auction">
+        INSERT INTO auction (
+            title,
+            description,
+            start_price,
+            start_time,
+            end_time,
+            status,
+            created_at
+        )
+        VALUES (
+            #{title},
+            #{description},
+            #{startPrice},
+            #{startTime},
+            #{endTime},
+            #{status},
+            #{createdAt}
+        )
+    </insert>
+
+    <!-- 경매 수정 -->
+    <update id="update" parameterType="com.company.haloshop.auction.dto.Auction">
+        UPDATE auction
+        SET
+            title = #{title},
+            description = #{description},
+            start_price = #{startPrice},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 경매 삭제 -->
+    <delete id="delete" parameterType="long">
+        DELETE FROM auction
+        WHERE id = #{id}
+    </delete>
+</mapper>

@@ -3,12 +3,25 @@ package com.company.haloshop.membership;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.company.haloshop.dto.shop.MembershipDto;
+
 
 @Mapper
 public interface MembershipMapper {
-    void insert(Membership membership);
-    List<Membership> findAll();
-    Membership findById(int id);
-    void update(Membership membership);
-    void delete(int id);
+
+    List<MembershipDto> findAllOrderByPriceDesc();
+
+    MembershipDto findBestMatchByTotalPayment(long totalPayment);
+
+
+
+
+    void insert(MembershipDto dto);
+
+    void update(MembershipDto dto);
+
+    void delete(Integer id);
 }
+

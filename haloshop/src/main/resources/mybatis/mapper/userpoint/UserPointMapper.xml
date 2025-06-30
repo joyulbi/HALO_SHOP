@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.userpoint.UserPointMapper">
+
+    <resultMap id="UserPointMap" type="com.company.haloshop.dto.shop.UserPointDto">
+        <id property="id" column="id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="totalPayment" column="total_payment"/>
+        <result property="totalPoint" column="total_point"/>
+        <result property="grade" column="grade"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 전체 조회 -->
+    <select id="findAll" resultMap="UserPointMap">
+        SELECT * FROM user_point
+    </select>
+
+    <!-- 회원별 단일 조회 -->
+    <select id="findByAccountId" parameterType="long" resultMap="UserPointMap">
+        SELECT * FROM user_point WHERE account_id = #{accountId}
+    </select>
+
+    <!-- 생성 -->
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.UserPointDto">
+        INSERT INTO user_point (account_id, total_payment, total_point, grade, updated_at)
+        VALUES (#{accountId}, #{totalPayment}, #{totalPoint}, #{grade}, NOW())
+    </insert>
+
+    <!-- 수정 -->
+    <update id="update" parameterType="com.company.haloshop.dto.shop.UserPointDto">
+        UPDATE user_point
+        SET total_payment = #{totalPayment},
+            total_point = #{totalPoint},
+            grade = #{grade},
+            updated_at = NOW()
+        WHERE account_id = #{accountId}
+    </update>
+
+    <!-- 삭제 (회원 탈퇴 시) -->
+    <delete id="deleteByAccountId" parameterType="long">
+        DELETE FROM user_point WHERE account_id = #{accountId}
+    </delete>
+
+</mapper>

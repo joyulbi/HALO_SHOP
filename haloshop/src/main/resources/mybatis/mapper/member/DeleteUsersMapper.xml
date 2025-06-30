@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.member.mapper.DeleteUsersMapper">
+
+  <!--
+    DeleteUsersDto 결과 매핑
+  -->
+  <resultMap id="DeleteUsersResultMap" type="com.company.haloshop.dto.member.DeleteUsersDto">
+    <id property="accountId" column="account_id" />
+    <result property="deletedAt" column="deleted_at" />
+  </resultMap>
+
+  <select id="selectByAccountId" parameterType="long" resultMap="DeleteUsersResultMap">
+    SELECT * FROM deleteusers WHERE account_id = #{accountId}
+  </select>
+
+  <select id="selectAll" resultMap="DeleteUsersResultMap">
+    SELECT * FROM deleteusers
+  </select>
+
+  <insert id="insertDeleteUsers" parameterType="com.company.haloshop.dto.member.DeleteUsersDto">
+    INSERT INTO deleteusers (account_id, deleted_at) VALUES (#{accountId}, #{deletedAt})
+  </insert>
+
+  <update id="updateDeleteUsers" parameterType="com.company.haloshop.dto.member.DeleteUsersDto">
+    UPDATE deleteusers SET deleted_at = #{deletedAt} WHERE account_id = #{accountId}
+  </update>
+
+  <delete id="deleteByAccountId" parameterType="long">
+    DELETE FROM deleteusers WHERE account_id = #{accountId}
+  </delete>
+
+</mapper>

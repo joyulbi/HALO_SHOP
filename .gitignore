@@ -9,23 +9,24 @@ Thumbs.db
 *.swp
 
 ######################################
-# ☕ Spring Boot / Maven
+# ☕ Spring Boot / Maven (haloshop)
 ######################################
 haloshop/target/
-haloshop/*.iml
+haloshop/logs/
 haloshop/.mvn/
 haloshop/mvnw
 haloshop/mvnw.cmd
-haloshop/logs/
 haloshop/.classpath
 haloshop/.project
 haloshop/.settings/
 haloshop/.springBeans
 haloshop/.apt_generated
 haloshop/.factorypath
+haloshop/*.iml
+haloshop/bin/
 
 ######################################
-# ⚛️ React (Create React App 기준)
+# ⚛️ React (haloshop_react - CRA 기준)
 ######################################
 haloshop_react/node_modules/
 haloshop_react/build/
@@ -44,20 +45,37 @@ test-output/
 coverage/
 
 ######################################
-# 🧾 IDE 설정 (공통: 충돌 방지용)
+# 🧾 IDE 설정 (Eclipse, IntelliJ, VSCode)
 ######################################
+*.iml
 .idea/
 .vscode/
-*.iml
+.classpath
+.project
+.factorypath
+.settings/
+.springBeans
+.apt_generated
+.sts4-cache
 
 ######################################
-# 🛠 Eclipse workspace 설정 폴더
+# 🛠 Eclipse Workspace 설정 폴더 (비추적)
 ######################################
 .metadata/
 Servers/
 
 ######################################
-# 📂 업로드, 실행 중 생성되는 파일
+# 🧱 Build 도구 불필요 파일 (Gradle, NetBeans 등)
+######################################
+build/
+dist/
+nbbuild/
+nbdist/
+nbproject/private/
+.nb-gradle/
+
+######################################
+# 📂 업로드 파일, DB 등
 ######################################
 upload/
 uploads/
