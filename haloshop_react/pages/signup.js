@@ -7,7 +7,7 @@ export default function Signup() {
     nickname: "",
     phone: "",
     address: "",
-    address_detail: "",
+    addressDetail: "",
     zipcode: "",
     birth: "",
     gender: "",
@@ -42,7 +42,7 @@ export default function Signup() {
         nickname: "",
         phone: "",
         address: "",
-        address_detail: "",
+        addressDetail: "",
         zipcode: "",
         birth: "",
         gender: "",
@@ -98,9 +98,9 @@ export default function Signup() {
         /><br />
         <input
           type="text"
-          name="address_detail"
+          name="addressDetail"
           placeholder="상세주소"
-          value={formData.address_detail}
+          value={formData.addressDetail}
           onChange={handleChange}
           required
         /><br />
