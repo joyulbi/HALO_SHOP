@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.member.mapper.SocialMapper">
+
+  <!--
+    SocialDto 결과 매핑
+  -->
+  <resultMap id="SocialResultMap" type="com.company.haloshop.dto.member.SocialDto">
+    <id property="id" column="id" />
+    <result property="socialType" column="social_type" />
+  </resultMap>
+
+  <select id="selectById" parameterType="int" resultMap="SocialResultMap">
+    SELECT * FROM social WHERE id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="SocialResultMap">
+    SELECT * FROM social
+  </select>
+
+  <insert id="insertSocial" parameterType="com.company.haloshop.dto.member.SocialDto">
+    INSERT INTO social (id, social_type) VALUES (#{id}, #{socialType})
+  </insert>
+
+  <update id="updateSocial" parameterType="com.company.haloshop.dto.member.SocialDto">
+    UPDATE social SET social_type = #{socialType} WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById" parameterType="int">
+    DELETE FROM social WHERE id = #{id}
+  </delete>
+
+</mapper>

@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 public class Delivery {
     private Long id;
-    private Long userId;
+    private Long accountId;
     private String address;
     private String addressDetail;
     private Integer zipcode;

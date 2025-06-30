@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.member.mapper.DeletedUsersBackupMapper">
+
+  <!--
+    DeletedUsersBackupDto 결과 매핑
+  -->
+  <resultMap id="DeletedUsersBackupResultMap" type="com.company.haloshop.dto.member.DeletedUsersBackupDto">
+    <id property="accountId" column="account_id" />
+    <result property="email" column="email" />
+    <result property="password" column="password" />
+    <result property="emailChk" column="email_chk" />
+    <result property="nickname" column="nickname" />
+    <result property="isAdmin" column="is_admin" />
+    <result property="lastActive" column="last_active" />
+    <result property="ip" column="ip" />
+    <result property="phone" column="phone" />
+    <result property="passwordUpdatedAt" column="password_updated_at" />
+    <result property="createdAt" column="createdAt" />
+    <result property="userStatusId" column="user_status_id" />
+    <result property="updatedAt" column="updatedAt" />
+    <result property="socialType" column="social_type" />
+  </resultMap>
+
+  <select id="selectByAccountId" parameterType="long" resultMap="DeletedUsersBackupResultMap">
+    SELECT * FROM deleted_users_backup WHERE account_id = #{accountId}
+  </select>
+
+  <select id="selectAll" resultMap="DeletedUsersBackupResultMap">
+    SELECT * FROM deleted_users_backup
+  </select>
+
+  <insert id="insertDeletedUsersBackup" parameterType="com.company.haloshop.dto.member.DeletedUsersBackupDto">
+    INSERT INTO deleted_users_backup (
+      account_id, email, password, email_chk, nickname, is_admin, last_active, ip, phone, password_updated_at,
+      createdAt, user_status_id, updatedAt, social_type
+    ) VALUES (
+      #{accountId}, #{email}, #{password}, #{emailChk}, #{nickname}, #{isAdmin}, #{lastActive}, #{ip}, #{phone}, #{passwordUpdatedAt},
+      #{createdAt}, #{userStatusId}, #{updatedAt}, #{socialType}
+    )
+  </insert>
+
+  <update id="updateDeletedUsersBackup" parameterType="com.company.haloshop.dto.member.DeletedUsersBackupDto">
+    UPDATE deleted_users_backup
+    SET
+      email = #{email},
+      password = #{password},
+      email_chk = #{emailChk},
+      nickname = #{nickname},
+      is_admin = #{isAdmin},
+      last_active = #{lastActive},
+      ip = #{ip},
+      phone = #{phone},
+      password_updated_at = #{passwordUpdatedAt},
+      createdAt = #{createdAt},
+      user_status_id = #{userStatusId},
+      updatedAt = #{updatedAt},
+      social_type = #{socialType}
+    WHERE account_id = #{accountId}
+  </update>
+
+  <delete id="deleteByAccountId" parameterType="long">
+    DELETE FROM deleted_users_backup WHERE account_id = #{accountId}
+  </delete>
+
+</mapper>
