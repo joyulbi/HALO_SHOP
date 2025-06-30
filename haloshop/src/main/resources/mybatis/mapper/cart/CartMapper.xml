@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.cart.CartMapper">
+
+    <insert id="insertCart">
+        INSERT INTO cart (account_id, items_id, quantity, created_at, updated_at)
+        VALUES (#{accountId}, #{itemsId}, #{quantity}, NOW(), NOW())
+    </insert>
+
+    <select id="getCartList" resultType="com.company.haloshop.dto.shop.Cart">
+        SELECT * FROM cart
+        WHERE account_id = #{accountId}
+    </select>
+
+    <update id="updateCart">
+        UPDATE cart
+        SET quantity = #{quantity}, updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteCart">
+        DELETE FROM cart
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

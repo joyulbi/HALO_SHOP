@@ -18,8 +18,12 @@ public class UserPoint {
     private Long id;
 
     private Long accountId;      // FK: account.id
+    
+    private Long totalPayment;
 
-    private Long totalPayment;   // 총 포인트
+    private Long totalPoint;   // 총 포인트
+    
+    private String grade; // 멤버십 등급 (BRONZE, SILVER, GOLD, VIP)
 
     private java.sql.Timestamp updatedAt; // 등급 변경 날짜
 }

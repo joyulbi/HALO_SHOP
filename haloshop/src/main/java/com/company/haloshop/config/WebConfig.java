@@ -10,18 +10,21 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // React에서 호출하는 API 경로
-                .allowedOrigins("http://localhost:3000")
+        registry.addMapping("/**")  // 모든 경로 CORS 허용 (API + 정적 리소스 등 포함)
+                .allowedOrigins("http://localhost:3000")  // 프론트 주소만 허용
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
-    
-    // 정적 리소스 핸들링 설정 (리뷰 이미지 접근용)
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 리뷰 이미지 (프로젝트 내부 리소스)
         registry.addResourceHandler("/uploads/reviews/**")
                 .addResourceLocations("file:src/main/resources/static/upload/review/");
-        // 또는 실제 서버 루트 외부에 저장한 경우엔 아래처럼 사용
-        // .addResourceLocations("file:./upload/review/");
+
+        // 상품 이미지 (외부 디렉토리)
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:///C:/upload/");
     }
 }

@@ -23,6 +23,7 @@
         SELECT COUNT(*) > 0 FROM review WHERE order_items_id = #{orderItemsId}
     </select>
 
+
     <select id="findByAccountId" resultMap="ReviewResultMap">
         SELECT * FROM review WHERE account_id = #{accountId}
     </select>

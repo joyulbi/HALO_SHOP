@@ -42,4 +42,20 @@
         DELETE FROM orders WHERE id = #{id}
     </delete>
 
+    <!-- ✅ 카카오페이 연동용 TID 업데이트 -->
+    <update id="updateTid">
+        UPDATE orders
+        SET tid = #{tid},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- ✅ 카카오페이 연동용 결제 상태 업데이트 -->
+    <update id="updateStatus">
+        UPDATE orders
+        SET payment_status = #{paymentStatus},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
 </mapper>

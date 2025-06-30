@@ -18,6 +18,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.company.haloshop.attendance.Attendance;
 import com.company.haloshop.entity.delivery.Delivery;
 import com.company.haloshop.entity.review.Review;
 
@@ -29,7 +30,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "account")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString(exclude = {"userStatus", "social", "user", "admin", "logs"})
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString(exclude = {"userStatus", "social", "user", "admin", "logs", "attendances"})
 public class Account {
 
 	@Id
@@ -109,4 +110,9 @@ public class Account {
     // 1:N Review (mappedBy="account")
     @OneToMany(mappedBy = "account")
     private List<Review> reviews;
+    
+    // 1:N Attendance 
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attendance> attendances;
+    public Account(Long id) { this.id = id; }
 }
