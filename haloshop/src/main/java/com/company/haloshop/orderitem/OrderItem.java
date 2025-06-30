@@ -1,14 +1,20 @@
 package com.company.haloshop.orderitem;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.OneToOne;
+
+import com.company.haloshop.entity.delivery.DeliveryTracking;
+import com.company.haloshop.entity.review.Review;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Table(name = "order_items")
 @Getter
 @Setter
 public class OrderItem {
@@ -22,4 +28,12 @@ public class OrderItem {
     private String itemName;
     private Integer productPrice;
     private Integer quantity;
+    
+    // 1:1 (mappedBy = "orderItem")
+    @OneToOne(mappedBy = "orderItem")
+    private Review review;
+    
+    // 1:1 (mappedBy = "orderItem")
+    @OneToOne(mappedBy = "orderItem")
+    private DeliveryTracking deliveryTracking;
 }

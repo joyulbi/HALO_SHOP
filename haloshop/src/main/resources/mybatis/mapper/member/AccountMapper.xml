@@ -87,4 +87,10 @@
     DELETE FROM account WHERE id = #{id}
   </delete>
 
+	<update id="updateAccountLastActive" parameterType="map">
+	    UPDATE account
+	    SET last_active = #{lastActive}
+	    WHERE id = #{accountId}
+	</update>
+
 </mapper>
