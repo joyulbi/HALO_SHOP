@@ -28,5 +28,13 @@
         SET status = #{status}, updated_at = now()
         WHERE order_items_id = #{orderItemsId}
     </update>
+    
+    <select id="selectByAccountId" resultType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
+	    SELECT dt.*
+	    FROM delivery_tracking dt
+	    JOIN order_item oi ON dt.order_items_id = oi.id
+	    JOIN orders o ON oi.orders_id = o.id
+	    WHERE o.account_id = #{accountId}
+	</select>
 
 </mapper>
