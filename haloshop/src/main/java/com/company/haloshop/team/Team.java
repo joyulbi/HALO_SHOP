@@ -10,7 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import com.company.haloshop.donate.DonationCampaign;
+import com.company.haloshop.donationcampaign.DonationCampaign;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +28,7 @@ public class Team {
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "TINYINT(1) default 1")
 	private Boolean active;
 	
 	

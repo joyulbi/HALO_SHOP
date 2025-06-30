@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.member.mapper.UserStatusMapper">
+
+  <!--
+    UserStatusDto 결과 매핑
+  -->
+  <resultMap id="UserStatusResultMap" type="com.company.haloshop.dto.member.UserStatusDto">
+    <id property="id" column="id" />
+    <result property="status" column="status" />
+  </resultMap>
+
+  <select id="selectById" parameterType="int" resultMap="UserStatusResultMap">
+    SELECT * FROM user_status WHERE id = #{id}
+  </select>
+
+  <select id="selectAll" resultMap="UserStatusResultMap">
+    SELECT * FROM user_status
+  </select>
+
+  <insert id="insertUserStatus" parameterType="com.company.haloshop.dto.member.UserStatusDto">
+    INSERT INTO user_status (id, status) VALUES (#{id}, #{status})
+  </insert>
+
+  <update id="updateUserStatus" parameterType="com.company.haloshop.dto.member.UserStatusDto">
+    UPDATE user_status SET status = #{status} WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById" parameterType="int">
+    DELETE FROM user_status WHERE id = #{id}
+  </delete>
+
+</mapper>

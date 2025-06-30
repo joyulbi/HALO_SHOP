@@ -3,10 +3,10 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.company.haloshop.donate.CampaignImageMapper">
+<mapper namespace="com.company.haloshop.campaignimage.CampaignImageMapper">
 
   <!-- 결과 매핑 -->
-  <resultMap id="CampaignImageResultMap" type="com.company.haloshop.donate.CampaignImage">
+  <resultMap id="CampaignImageResultMap" type="com.company.haloshop.campaignimage.CampaignImage">
     <id property="seasonId" column="season_id" />
     <!-- season 필드는 객체 매핑 제외, 필요시 따로 조인 처리 -->
     <result property="level_1" column="level_1" />
@@ -15,7 +15,7 @@
   </resultMap>
 
   <!-- 생성: insert -->
-  <insert id="insertCampaignImage" parameterType="com.company.haloshop.donate.CampaignImage">
+  <insert id="insertCampaignImage" parameterType="com.company.haloshop.campaignimage.CampaignImage">
     INSERT INTO campaign_image (season_id, level_1, level_2, level_3)
     VALUES (#{seasonId}, #{level_1}, #{level_2}, #{level_3})
   </insert>
@@ -28,14 +28,21 @@
   </select>
 
   <!-- 수정: update by PK -->
-  <update id="updateCampaignImage" parameterType="com.company.haloshop.donate.CampaignImage">
-    UPDATE campaign_image
-    SET
-      level_1 = #{level_1},
-      level_2 = #{level_2},
-      level_3 = #{level_3}
-    WHERE season_id = #{seasonId}
-  </update>
+	<update id="updateCampaignImage" parameterType="com.company.haloshop.campaignimage.CampaignImage">
+	  UPDATE campaign_image
+	  <set>
+	    <if test="level_1 != null">
+	      level_1 = #{level_1},
+	    </if>
+	    <if test="level_2 != null">
+	      level_2 = #{level_2},
+	    </if>
+	    <if test="level_3 != null">
+	      level_3 = #{level_3},
+	    </if>
+	  </set>
+	  WHERE season_id = #{seasonId}
+	</update>
 
   <!-- 삭제: delete by PK -->
   <delete id="deleteCampaignImageBySeasonId" parameterType="long">
