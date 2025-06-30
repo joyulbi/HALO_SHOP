@@ -1,5 +1,7 @@
 package com.company.haloshop.dto.shop;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +13,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Membership {
-	private Integer id;
-	private String name;
-	private Integer price;
-	private Integer pricePoint;
+public class ReviewImageDTO {
+    private Long id;
+    private Long reviewId;
+    private String url;
+    private LocalDateTime uploadedAt;
 }

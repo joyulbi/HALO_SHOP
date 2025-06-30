@@ -1,4 +1,4 @@
-package com.company.haloshop.membership;
+package com.company.haloshop.userpoint;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,12 +11,15 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Membership {
+public class UserPoint {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private String name;
-    private int price;
-    private int pricePoint;
+    private Long id;
+
+    private Long accountId;      // FK: account.id
+
+    private Long totalPayment;   // 총 포인트
+
+    private java.sql.Timestamp updatedAt; // 등급 변경 날짜
 }
-   
