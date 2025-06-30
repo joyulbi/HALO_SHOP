@@ -25,6 +25,11 @@ public class Orders {
     private Long totalPrice;
     private String used;            // 결제 수단
     private String paymentStatus;   // PENDING, PAID, FAILED
+    private Integer amount;
+    
+    @Column(length = 50)
+    private String tid; // 카카오페이 거래 고유 번호
+    
     @Column(columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
