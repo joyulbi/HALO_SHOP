@@ -58,12 +58,14 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
         try {
-            authenticationService.logout(request.getAccountId(), request.getRefreshToken());
+            // accessToken 파라미터 추가
+            authenticationService.logout(request.getAccountId(), request.getRefreshToken(), request.getAccessToken());
             return ResponseEntity.ok("로그아웃 성공");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
     
 }

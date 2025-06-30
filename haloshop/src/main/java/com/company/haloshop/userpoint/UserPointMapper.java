@@ -7,11 +7,11 @@ import java.util.List;
 
 @Mapper
 public interface UserPointMapper {
-    // 전체 조회
+	// 전체 조회 (관리자용)
     List<UserPointDto> findAll();
 
-    // 단일 조회
-    UserPointDto findById(Long id);
+    // 회원 기준 단일 조회
+    UserPointDto findByAccountId(Long accountId);
 
     // 생성
     void insert(UserPointDto userPoint);
@@ -19,6 +19,6 @@ public interface UserPointMapper {
     // 수정
     void update(UserPointDto userPoint);
 
-    // 삭제
-    void delete(Long id);
+    // 필요 시 삭제 (회원 탈퇴 시)
+    void deleteByAccountId(Long accountId);
 }

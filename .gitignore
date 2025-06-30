@@ -23,6 +23,7 @@ haloshop/.springBeans
 haloshop/.apt_generated
 haloshop/.factorypath
 haloshop/*.iml
+haloshop/bin/
 
 ######################################
 # ⚛️ React (haloshop_react - CRA 기준)
