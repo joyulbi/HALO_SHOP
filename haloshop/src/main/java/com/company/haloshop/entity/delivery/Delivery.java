@@ -32,3 +32,4 @@ public class Delivery {
     private int zipcode;
     private String recipientName;
 }
+

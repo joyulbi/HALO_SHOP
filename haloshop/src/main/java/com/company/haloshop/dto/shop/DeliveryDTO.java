@@ -1,7 +1,5 @@
 package com.company.haloshop.dto.shop;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +11,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class DeliveryTracking {
+public class DeliveryDTO {
     private Long id;
-    private Long orderItemsId;
-    private String status;
-    private String trackingNumber;
-    private String carrier;
-    private LocalDateTime updatedAt;
+    private Long accountId;
+    private String address;
+    private String addressDetail;
+    private Integer zipcode;
+    private String recipientName;
 }

@@ -4,22 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.company.haloshop.delivery.mapper.DeliveryTrackingMapper;
-import com.company.haloshop.dto.shop.DeliveryTracking;
+import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 
 @Service
 public class DeliveryTrackingService {
 	@Autowired
 	private DeliveryTrackingMapper deliveryTrackingMapper;
 	
-	public void insertTracking(DeliveryTracking tracking) {
+	public void insertTracking(DeliveryTrackingDTO tracking) {
 		deliveryTrackingMapper.insertTracking(tracking);
 	}
 	
-	public DeliveryTracking getTrackingByOrderItemsId(Long orderItemsId) {
+	public DeliveryTrackingDTO getTrackingByOrderItemsId(Long orderItemsId) {
 		return deliveryTrackingMapper.findByOrderItemsId(orderItemsId);
 	}
 	
-	public void updateStatus(DeliveryTracking tracking) {
+	public void updateStatus(DeliveryTrackingDTO tracking) {
 		deliveryTrackingMapper.updateStatus(tracking);
 	}
 }
+

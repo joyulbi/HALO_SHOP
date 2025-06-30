@@ -5,9 +5,9 @@
 <mapper namespace="com.company.haloshop.review.ReviewImageMapper">
     <insert id="insertReviewImage" parameterType="ReviewImage">
         insert into review_image (
-            review_id, imageUrl, uploadedAt
+            review_id, url, uploadedAt
         ) values (
-            #{reviewId}, #{imageUrl}, now()
+            #{reviewId}, #{url}, #{uploadedAt}
         )
     </insert>
 

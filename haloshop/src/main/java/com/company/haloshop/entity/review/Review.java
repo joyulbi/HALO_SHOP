@@ -39,7 +39,6 @@ public class Review {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @Lob
     private String content;
 
     private int rating;
@@ -48,3 +47,4 @@ public class Review {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     private List<ReviewImage> reviewImages;
 }
+

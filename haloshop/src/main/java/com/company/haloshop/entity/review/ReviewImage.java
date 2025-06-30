@@ -20,3 +20,4 @@ public class ReviewImage {
     private String url;
     private LocalDateTime uploadedAt;
 }
+

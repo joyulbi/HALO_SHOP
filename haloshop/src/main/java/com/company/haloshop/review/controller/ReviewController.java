@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.company.haloshop.dto.shop.Review;
+import com.company.haloshop.dto.shop.ReviewDTO;
 import com.company.haloshop.review.service.ReviewService;
 
 @Controller
@@ -20,7 +20,7 @@ public class ReviewController {
 	private ReviewService reviewService;
 	
 	@PostMapping
-	public String writeReview(@RequestBody Review review) {
+	public String writeReview(@RequestBody ReviewDTO review) {
 		try {
 			reviewService.writeReview(review);
 			return "리뷰 등록 성공";
@@ -30,12 +30,13 @@ public class ReviewController {
 	}
 	
 	@GetMapping("/user/{accountId}")
-	public List<Review> getUserReviews(@PathVariable("account_id") Long accountId) {
+	public List<ReviewDTO> getUserReviews(@PathVariable("account_id") Long accountId) {
 		return reviewService.getReviewByUser(accountId);
 	}
 	
 	@GetMapping("/order/{orderItemsId}")
-	public Review getReviewByOrder(@PathVariable Long orderItemsId) {
+	public ReviewDTO getReviewByOrder(@PathVariable Long orderItemsId) {
 		return reviewService.getReviewByOrderItem(orderItemsId);
 	}
 }
+

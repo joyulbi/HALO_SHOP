@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.company.haloshop.delivery.service.DeliveryTrackingService;
-import com.company.haloshop.dto.shop.DeliveryTracking;
+import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 
 @Controller
 @RequestMapping("/api/delivery-tracking")
@@ -19,19 +19,20 @@ public class DeliveryTrackingController {
 	private DeliveryTrackingService deliveryTrackingService;
 	
     @PostMapping
-    public String insertTracking(@RequestBody DeliveryTracking tracking) {
+    public String insertTracking(@RequestBody DeliveryTrackingDTO tracking) {
         deliveryTrackingService.insertTracking(tracking);
         return "배송추적 등록 완료";
     }
 
     @GetMapping("/order/{orderItemsId}")
-    public DeliveryTracking getTracking(@PathVariable("orderItemsId") Long orderItemsId) {
+    public DeliveryTrackingDTO getTracking(@PathVariable("orderItemsId") Long orderItemsId) {
         return deliveryTrackingService.getTrackingByOrderItemsId(orderItemsId);
     }
 
     @PutMapping
-    public String updateStatus(@RequestBody DeliveryTracking tracking) {
+    public String updateStatus(@RequestBody DeliveryTrackingDTO tracking) {
         deliveryTrackingService.updateStatus(tracking);
         return "배송 상태 갱신 완료";
     }
 }
+

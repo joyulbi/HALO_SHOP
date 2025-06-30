@@ -13,11 +13,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Review {
+public class ReviewImageDTO {
     private Long id;
-    private Long orderItemsId;
-    private Long accountId;
-    private String content;
-    private int rating;
-    private LocalDateTime createdAt;
+    private Long reviewId;
+    private String url;
+    private LocalDateTime uploadedAt;
 }

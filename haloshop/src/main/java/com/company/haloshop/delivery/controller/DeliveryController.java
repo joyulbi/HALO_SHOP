@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.company.haloshop.delivery.service.DeliveryService;
-import com.company.haloshop.dto.shop.Delivery;
+import com.company.haloshop.dto.shop.DeliveryDTO;
 
 @Controller
 @RequestMapping("/api/delivery")
@@ -20,13 +20,14 @@ public class DeliveryController {
 	private DeliveryService deliveryService;
 	
 	@PostMapping
-	public String insertDelivery(@RequestBody Delivery delivery) {
+	public String insertDelivery(@RequestBody DeliveryDTO delivery) {
 		deliveryService.insertDelivery(delivery);
 		return "배송지 등록 완료";
 	}
 	
 	@GetMapping("/user/{accountId}")
-	public List<Delivery> getDeliveries(@PathVariable("accountId") Long accountId) {
+	public List<DeliveryDTO> getDeliveries(@PathVariable("accountId") Long accountId) {
 		return deliveryService.getDeliveriesByUser(accountId);
 	}
 }
+

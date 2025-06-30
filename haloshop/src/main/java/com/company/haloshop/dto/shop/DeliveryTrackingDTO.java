@@ -13,9 +13,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ReviewImage {
+public class DeliveryTrackingDTO {
     private Long id;
-    private Long reviewId;
-    private String url;
-    private LocalDateTime uploadedAt;
+    private Long orderItemsId;
+    private String status;  // enum : 배송준비중, 출고됨, 배송중, 배송완료
+    private String trackingNumber;
+    private String carrier;
+    private LocalDateTime updatedAt;
 }

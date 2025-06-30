@@ -4,12 +4,13 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.company.haloshop.dto.shop.Review;
+import com.company.haloshop.dto.shop.ReviewDTO;
 
 @Mapper
 public interface ReviewMapper {
-	void insertReview(Review review);
+	void insertReview(ReviewDTO review);
 	boolean existsReviewForOrderItem(Long orderItemsId);
-	List<Review> getReviewByUserId(Long userId);
-	Review getReviewByOrderItemsId(Long orderItemsId);
+	List<ReviewDTO> getReviewByUserId(Long userId);
+	ReviewDTO getReviewByOrderItemsId(Long orderItemsId);
 }
+
