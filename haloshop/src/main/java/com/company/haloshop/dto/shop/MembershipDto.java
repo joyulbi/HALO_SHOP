@@ -1,6 +1,18 @@
 package com.company.haloshop.dto.shop;
 
-import lombok.AllArgsConstructor;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MembershipDto {
+    private Integer id;
+    private String name;
+    private Integer price;
+    private Integer pricePoint;
+}
+/*import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,4 +28,4 @@ public class Membership {
 	private String name;
 	private Integer price;
 	private Integer pricePoint;
-}
+}*/

@@ -94,7 +94,7 @@ public class SecurityConfig {
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
-                .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
+                .antMatchers("/api/**").permitAll()       // API는 인증된 사용자만
                 .antMatchers("/user/**").authenticated()
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
                 .anyRequest().permitAll()                    // 나머지 요청 허용
