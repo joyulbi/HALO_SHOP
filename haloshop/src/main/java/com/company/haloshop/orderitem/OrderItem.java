@@ -5,6 +5,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.OneToOne;
+
+import com.company.haloshop.entity.delivery.DeliveryTracking;
+import com.company.haloshop.entity.review.Review;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,4 +28,12 @@ public class OrderItem {
     private String itemName;
     private Integer productPrice;
     private Integer quantity;
+    
+    // 1:1 (mappedBy = "orderItem")
+    @OneToOne(mappedBy = "orderItem")
+    private Review review;
+    
+    // 1:1 (mappedBy = "orderItem")
+    @OneToOne(mappedBy = "orderItem")
+    private DeliveryTracking deliveryTracking;
 }
