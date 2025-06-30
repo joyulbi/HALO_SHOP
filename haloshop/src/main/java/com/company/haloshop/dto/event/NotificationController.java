@@ -1,4 +1,4 @@
-package com.company.haloshop.event;
+package com.company.haloshop.dto.event;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.company.haloshop.event_domain.Notification;
+import com.company.haloshop.event.Notification;
 
 @RestController
 @RequestMapping("/api/notifications")

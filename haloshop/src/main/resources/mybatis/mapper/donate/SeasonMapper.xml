@@ -5,12 +5,52 @@
 
 <mapper namespace="com.company.haloshop.donate.SeasonMapper">
 
+    <!-- resultMap 정의 -->
+    <resultMap id="SeasonResultMap" type="com.company.haloshop.donate.Season">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="start_date" column="start_date" />
+        <result property="end_date" column="end_date" />
+        <result property="level_1" column="level_1" />
+        <result property="level_2" column="level_2" />
+        <result property="level_3" column="level_3" />
+        <result property="createdAt" column="created_at" />
+    </resultMap>
+
     <!-- 시즌 생성 -->
-    <!-- <insert id=insert parameterType="Season">
-    	insert into season 
-    	( name, start_date, end_date, level_1, level_2, level_3 )
-    	values
-    	( #{name}, #{start_date}, #{end_date}, #{level_1}, #{level_2}, #{level_3} )
-    </insert> -->
+    <insert id="insertSeason" parameterType="com.company.haloshop.donate.Season" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO season 
+            (name, start_date, end_date, level_1, level_2, level_3, created_at)
+        VALUES 
+            (#{name}, #{start_date}, #{end_date}, #{level_1}, #{level_2}, #{level_3}, #{createdAt})
+    </insert>
+
+    <!-- 전체 조회 -->
+    <select id="findAllSeason" resultMap="SeasonResultMap">
+        SELECT * FROM season
+    </select>
+
+    <!-- 단일 조회 (id로) -->
+    <select id="findById" parameterType="long" resultMap="SeasonResultMap">
+        SELECT * FROM season WHERE id = #{id}
+    </select>
+
+    <!-- 수정 -->
+    <update id="updateSeason" parameterType="com.company.haloshop.donate.Season">
+        UPDATE season
+        SET 
+            name = #{name},
+            start_date = #{start_date},
+            end_date = #{end_date},
+            level_1 = #{level_1},
+            level_2 = #{level_2},
+            level_3 = #{level_3}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteSeason" parameterType="long">
+        DELETE FROM season WHERE id = #{id}
+    </delete>
 
 </mapper>

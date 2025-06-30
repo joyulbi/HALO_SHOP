@@ -1,4 +1,4 @@
-package com.company.haloshop.event;
+package com.company.haloshop.dto.event;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.company.haloshop.event_domain.Notification;
+import com.company.haloshop.event.Notification;
 
 @Service
 public class NotificationService {

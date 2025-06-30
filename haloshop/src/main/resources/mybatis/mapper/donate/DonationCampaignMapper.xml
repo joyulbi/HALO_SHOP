@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.donate.DonationCampaignMapper">
+
+  <resultMap id="DonationCampaignResultMap" type="com.company.haloshop.donate.DonationCampaign">
+    <id property="id" column="id" />
+    <result property="image" column="image" />
+    <result property="total" column="total" />
+    <association property="season" column="season_id" javaType="com.company.haloshop.donate.Season"
+                 select="com.company.haloshop.donate.SeasonMapper.findById"/>
+    <association property="team" column="team_id" javaType="com.company.haloshop.team.Team"
+                 select="com.company.haloshop.team.TeamMapper.findById"/>
+  </resultMap>
+
+  <!-- 생성 -->
+  <insert id="insertDonationCampaign" parameterType="com.company.haloshop.donate.DonationCampaign" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO donation_campaign (image, total, season_id, team_id)
+    VALUES (#{image}, #{total}, #{season.id}, #{team.id})
+  </insert>
+
+  <!-- 단일 조회 -->
+  <select id="findById" parameterType="long" resultMap="DonationCampaignResultMap">
+    SELECT * FROM donation_campaign WHERE id = #{id}
+  </select>
+
+  <!-- 수정 -->
+  <update id="updateDonationCampaign" parameterType="com.company.haloshop.donate.DonationCampaign">
+    UPDATE donation_campaign
+    SET image = #{image},
+        total = #{total},
+        season_id = #{season.id},
+        team_id = #{team.id}
+    WHERE id = #{id}
+  </update>
+
+  <!-- 삭제 -->
+  <delete id="deleteDonationCampaign" parameterType="long">
+    DELETE FROM donation_campaign WHERE id = #{id}
+  </delete>
+
+</mapper>

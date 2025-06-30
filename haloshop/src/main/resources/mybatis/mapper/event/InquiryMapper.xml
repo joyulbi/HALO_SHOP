@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.event.InquiryMapper">
+
+    <resultMap id="InquiryResultMap" type="com.company.haloshop.event.Inquiry">
+        <id property="id" column="id"/>
+        <result property="accountId" column="account_id"/>
+        <result property="entityId" column="entity_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="file" column="file"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- insert -->
+    <insert id="insertInquiry" parameterType="com.company.haloshop.event.Inquiry" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO inquiry (account_id, entity_id, title, content, file, created_at, status)
+        VALUES (#{accountId}, #{entityId}, #{title}, #{content}, #{file}, #{createdAt}, #{status})
+    </insert>
+
+	<select id="findAllInquiry" parameterType="map" resultMap="InquiryResultMap">
+	    SELECT * FROM inquiry
+	    <where>
+	        <if test="accountId != null">
+	            account_id = #{accountId}
+	        </if>
+	        <if test="entityId != null">
+	            AND entity_id = #{entityId}
+	        </if>
+	        <if test="status != null">
+	            AND status = #{status}
+	        </if>
+	        <if test="startDate != null and endDate != null">
+	            AND created_at BETWEEN #{startDate} AND #{endDate}
+	        </if>
+	        <if test="startDate != null and endDate == null">
+	            AND created_at &gt;= #{startDate}
+	        </if>
+	        <if test="endDate != null and startDate == null">
+	            AND created_at &lt;= #{endDate}
+	        </if>
+	    </where>
+	    ORDER BY created_at DESC
+	</select>
+
+
+
+    <!-- findById -->
+    <select id="findInquiryById" parameterType="long" resultMap="InquiryResultMap">
+        SELECT * FROM inquiry WHERE id = #{id}
+    </select>
+
+    <!-- updateStatus -->
+    <update id="updateInquiryStatus" parameterType="map">
+        UPDATE inquiry
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+    
+	<!-- delete -->
+	<delete id="deleteInquiry" parameterType="long">
+	    DELETE FROM inquiry WHERE id = #{id}
+	</delete>
+
+</mapper>

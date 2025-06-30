@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.event.AttendanceMapper">
+
+    <resultMap id="AttendanceResultMap" type="com.company.haloshop.event.Attendance">
+        <id property="id" column="id" />
+        <result property="account.id" column="account_id" />
+        <result property="attendanceDate" column="attendance_date" />
+    </resultMap>
+
+    <!-- 출석 기록 삽입 -->
+    <insert id="insertAttendance" parameterType="com.company.haloshop.event.Attendance" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO attendance (account_id, attendance_date)
+        VALUES (#{account.id}, #{attendanceDate})
+    </insert>
+
+    <!-- 출석 기록 단일 조회 by id -->
+    <select id="findAttendanceById" parameterType="long" resultMap="AttendanceResultMap">
+        SELECT * FROM attendance WHERE id = #{id}
+    </select>
+
+    <!-- 특정 계정의 출석 기록 리스트 조회 -->
+    <select id="findAttendancesByAccountId" parameterType="long" resultMap="AttendanceResultMap">
+        SELECT * FROM attendance WHERE account_id = #{accountId} ORDER BY attendance_date DESC
+    </select>
+
+    <!-- 출석 기록 삭제 by id -->
+    <delete id="deleteAttendance" parameterType="long">
+        DELETE FROM attendance WHERE id = #{id}
+    </delete>
+
+    <!-- 특정 계정, 특정 날짜 출석 존재 여부 체크 -->
+    <select id="countByAccountIdAndDate" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM attendance
+        WHERE account_id = #{accountId} AND attendance_date = #{attendanceDate}
+    </select>
+
+</mapper>

@@ -1,11 +1,11 @@
-package com.company.haloshop.event;
+package com.company.haloshop.dto.event;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.company.haloshop.event_domain.Notification;
+import com.company.haloshop.event.Notification;
 
 @Component
 public class NotificationEventListener {

@@ -1,4 +1,4 @@
-package com.company.haloshop.event_domain;
+package com.company.haloshop.event;
 
 public enum InquiryStatus {
 	SUBMITTED, REVIEWING, ANSWERED

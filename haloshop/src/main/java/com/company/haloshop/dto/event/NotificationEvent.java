@@ -1,8 +1,8 @@
-package com.company.haloshop.event;
+package com.company.haloshop.dto.event;
 
 import org.springframework.context.ApplicationEvent;
 
-import com.company.haloshop.event_domain.Notification;
+import com.company.haloshop.event.Notification;
 
 public class NotificationEvent extends ApplicationEvent {
 	private static final long serialVersionUID = 1L;
