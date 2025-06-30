@@ -15,5 +15,7 @@ public class UserPointDto {
     private Long id;
     private Long accountId;
     private Long totalPayment;
+    private Long totalPoint;
+    private String grade;
     private LocalDateTime updatedAt;
 }

@@ -5,27 +5,64 @@
 
 <mapper namespace="com.company.haloshop.membership.MembershipMapper">
 
-<select id="findAll" resultType="com.company.haloshop.dto.shop.MembershipDto">
-    SELECT id, name, price, price_point FROM membership
-</select>
+    <!-- ✅ DTO 매핑용 resultMap -->
+    <resultMap id="MembershipMap" type="com.company.haloshop.dto.shop.MembershipDto">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="price" column="price"/>
+        <result property="pricePoint" column="price_point"/>
+    </resultMap>
 
-<select id="findById" resultType="com.company.haloshop.dto.shop.MembershipDto">
-    SELECT id, name, price, price_point FROM membership WHERE id = #{id}
-</select>
+    <!-- ✅ 전체 조회 -->
+    <select id="findAll" resultMap="MembershipMap">
+        SELECT id, name, price, price_point
+        FROM membership
+    </select>
 
-<insert id="insert">
-    INSERT INTO membership (name, price, price_point)
-    VALUES (#{name}, #{price}, #{pricePoint})
-</insert>
+    <!-- ✅ 전체 조회 (price 기준 내림차순: 등급 판정용) -->
+    <select id="findAllOrderByPriceDesc" resultMap="MembershipMap">
+        SELECT id, name, price, price_point
+        FROM membership
+        ORDER BY price DESC
+    </select>
 
-<update id="update">
-    UPDATE membership
-    SET name = #{name}, price = #{price}, price_point = #{pricePoint}
-    WHERE id = #{id}
-</update>
+    <!-- ✅ 단일 조회 -->
+    <select id="findById" parameterType="int" resultMap="MembershipMap">
+        SELECT id, name, price, price_point
+        FROM membership
+        WHERE id = #{id}
+    </select>
 
-<delete id="delete">
-    DELETE FROM membership WHERE id = #{id}
-</delete>
+    <!-- ✅ 주문 시 누적 결제 금액 기준으로 가장 높은 등급 가져오기 -->
+    <select id="findBestMatchByTotalPayment" parameterType="long" resultMap="MembershipMap">
+    <![CDATA[
+    SELECT id, name, price, price_point
+    FROM membership
+    WHERE price <= #{value}
+    ORDER BY price DESC
+    LIMIT 1
+    ]]>
+    </select>
+
+    <!-- ✅ 생성 -->
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.MembershipDto">
+        INSERT INTO membership (name, price, price_point)
+        VALUES (#{name}, #{price}, #{pricePoint})
+    </insert>
+
+    <!-- ✅ 수정 -->
+    <update id="update" parameterType="com.company.haloshop.dto.shop.MembershipDto">
+        UPDATE membership
+        SET name = #{name},
+            price = #{price},
+            price_point = #{pricePoint}
+        WHERE id = #{id}
+    </update>
+
+    <!-- ✅ 삭제 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM membership
+        WHERE id = #{id}
+    </delete>
 
 </mapper>
