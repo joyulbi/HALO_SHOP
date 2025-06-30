@@ -5,31 +5,26 @@
 
 <mapper namespace="com.company.haloshop.order.OrderMapper">
 
-    <resultMap id="OrderDtoMap" type="com.company.haloshop.dto.shop.OrderDto">
-        <id property="id" column="id" />
-        <result property="accountId" column="account_id" />
-        <result property="deliveryId" column="delivery_id" />
-        <result property="totalPrice" column="total_price" />
-        <result property="used" column="used" />
-        <result property="paymentStatus" column="payment_status" />
-        <result property="createdAt" column="created_at" />
-        <result property="updatedAt" column="updated_at" />
-    </resultMap>
+    <!-- OrderRequestDto 기반 insert -->
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.OrderRequestDto"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (account_id, delivery_id, total_price, used, payment_status, created_at, updated_at)
+        VALUES (#{accountId}, #{deliveryId}, #{totalPrice}, #{used}, #{paymentStatus}, NOW(), NOW())
+    </insert>
 
-    <select id="findAll" resultMap="OrderDtoMap">
-        SELECT id, account_id, delivery_id, total_price, used, payment_status, created_at, updated_at
-        FROM orders
+    <!-- 기존 CRUD용 -->
+    <select id="findAll" resultType="com.company.haloshop.dto.shop.OrderDto">
+        SELECT * FROM orders
     </select>
 
-    <select id="findById" parameterType="long" resultMap="OrderDtoMap">
-        SELECT id, account_id, delivery_id, total_price, used, payment_status, created_at, updated_at
-        FROM orders
-        WHERE id = #{id}
+    <select id="findById" parameterType="long" resultType="com.company.haloshop.dto.shop.OrderDto">
+        SELECT * FROM orders WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="com.company.haloshop.dto.shop.OrderDto">
-        INSERT INTO orders (account_id, delivery_id, total_price, used, payment_status)
-        VALUES (#{accountId}, #{deliveryId}, #{totalPrice}, #{used}, #{paymentStatus})
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.OrderDto"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (account_id, delivery_id, total_price, used, payment_status, created_at, updated_at)
+        VALUES (#{accountId}, #{deliveryId}, #{totalPrice}, #{used}, #{paymentStatus}, NOW(), NOW())
     </insert>
 
     <update id="update" parameterType="com.company.haloshop.dto.shop.OrderDto">
@@ -38,7 +33,8 @@
             delivery_id = #{deliveryId},
             total_price = #{totalPrice},
             used = #{used},
-            payment_status = #{paymentStatus}
+            payment_status = #{paymentStatus},
+            updated_at = NOW()
         WHERE id = #{id}
     </update>
 
