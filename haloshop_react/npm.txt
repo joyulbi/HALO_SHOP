@@ -1,3 +1,6 @@
 npm i
 
-styled-components
+styled-components@5
+
+antd@4
+@ant-design/icons@5
