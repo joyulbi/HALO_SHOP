@@ -12,7 +12,7 @@ import com.company.haloshop.entity.member.Account;
 public class JwtBlacklist {
 
     @Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
@@ -22,6 +22,9 @@ public class JwtBlacklist {
 
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
+
+    @Column(name = "access_token", length = 512)  // 새로 추가
+    private String accessToken;
 
     @Column(name = "issued_at")
     @Temporal(TemporalType.TIMESTAMP)

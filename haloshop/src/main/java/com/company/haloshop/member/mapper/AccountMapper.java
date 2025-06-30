@@ -1,5 +1,6 @@
 package com.company.haloshop.member.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -55,4 +56,6 @@ public interface AccountMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteById(@Param("id") Long id);
+    
+    int updateAccountLastActive(Long accountId, Date lastActive);
 }

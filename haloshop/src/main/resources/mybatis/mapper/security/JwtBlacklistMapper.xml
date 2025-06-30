@@ -11,6 +11,7 @@
     <id property="id" column="id" />
     <result property="accountId" column="account_id" />
     <result property="refreshToken" column="refresh_token" />
+    <result property="accessToken" column="access_token" />
     <result property="issuedAt" column="issued_at" />
     <result property="expiresAt" column="expires_at" />
     <result property="blacklistedAt" column="blacklisted_at" />
@@ -28,9 +29,9 @@
 
   <insert id="insertBlacklist" parameterType="com.company.haloshop.dto.security.JwtBlacklistDto" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO jwt_blacklist (
-      account_id, refresh_token, issued_at, expires_at, blacklisted_at, reason, ban
+      account_id, refresh_token, access_token, issued_at, expires_at, blacklisted_at, reason, ban
     ) VALUES (
-      #{accountId}, #{refreshToken}, #{issuedAt}, #{expiresAt}, #{blacklistedAt}, #{reason}, #{ban}
+      #{accountId}, #{refreshToken}, #{accessToken}, #{issuedAt}, #{expiresAt}, #{blacklistedAt}, #{reason}, #{ban}
     )
   </insert>
 
@@ -39,6 +40,7 @@
     SET
       account_id = #{accountId},
       refresh_token = #{refreshToken},
+      access_token = #{accessToken},
       issued_at = #{issuedAt},
       expires_at = #{expiresAt},
       blacklisted_at = #{blacklistedAt},

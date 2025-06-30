@@ -1,5 +1,7 @@
 package com.company.haloshop.config;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -81,9 +83,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 세션 정책 - JWT API는 stateless, 관리자 페이지는 세션 유지
+            // 세션 정책 - JWT API는 stateless 처리 (세션 생성하지 않음)
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             // CSRF 설정
             .csrf(csrf -> csrf
@@ -95,24 +97,20 @@ public class SecurityConfig {
             .authorizeRequests(authz -> authz
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
-                .antMatchers("/user/**").authenticated()
+                .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
                 .anyRequest().permitAll()                    // 나머지 요청 허용
             )
-            // 관리자 로그인 폼
-            .formLogin(form -> form
-                .loginPage("/admin/login")
-                .defaultSuccessUrl("/admin/dashboard", true)
-                .failureUrl("/admin/login?error")
-                .permitAll()
-            )
-            // 관리자 로그아웃 설정
-            .logout(logout -> logout
-                .logoutUrl("/admin/logout")
-                .logoutSuccessUrl("/admin/login?logout")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll()
+            // formLogin() 제거 (JWT 인증은 API 기반, 로그인폼 필요시 별도 설정)
+            // .formLogin(...) 
+
+            // 로그아웃 설정 제거 (JWT는 세션 로그아웃 아님, 별도 API에서 처리)
+
+            // 예외 처리 - 인증 실패 시 401 Unauthorized 응답하도록 처리
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                })
             )
             // 보안 헤더 강화
             .headers(headers -> {
@@ -125,7 +123,7 @@ public class SecurityConfig {
                 headers.contentTypeOptions();
             })
             .cors(Customizer.withDefaults())
-            // JWT 필터는 UsernamePasswordAuthenticationFilter 앞에 위치
+            // JWT 인증 필터는 UsernamePasswordAuthenticationFilter 앞에 배치
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
