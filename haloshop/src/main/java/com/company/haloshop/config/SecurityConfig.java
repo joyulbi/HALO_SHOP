@@ -1,14 +1,5 @@
 package com.company.haloshop.config;
 
-<<<<<<< HEAD
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-=======
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
@@ -28,41 +19,10 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 
 import com.company.haloshop.security.JwtAuthenticationFilter;
 import com.company.haloshop.security.UserDetailsServiceImpl;
->>>>>>> main
 
 @Configuration
 public class SecurityConfig {
 
-<<<<<<< HEAD
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	    http
-	        .cors() // CORS 허용
-	        .and()
-	        .csrf().disable()
-	        .authorizeRequests()
-	            .antMatchers("/api/**", "/images/**", "/upload/**").permitAll() // 이미지, API 전부 허용
-	            .anyRequest().permitAll() // 🔥 전체 열어두기 (테스트용. 추후 로그인 붙이면 수정)
-	        .and()
-	        .formLogin().disable();
-
-	    return http.build();
-	}
-
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-	    CorsConfiguration configuration = new CorsConfiguration();
-	    configuration.addAllowedOrigin("http://localhost:3000"); // React 포트
-	    configuration.addAllowedMethod("*");
-	    configuration.addAllowedHeader("*");
-	    configuration.setAllowCredentials(true); // 크로스 쿠키 허용 (필요 시)
-
-	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    source.registerCorsConfiguration("/**", configuration); // 🔥 모든 경로 CORS 허용
-
-	    return source;
-	}
-=======
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -136,6 +96,7 @@ public class SecurityConfig {
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
+                .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
                 .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
                 .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
@@ -168,5 +129,4 @@ public class SecurityConfig {
 
         return http.build();
     }
->>>>>>> main
 }
