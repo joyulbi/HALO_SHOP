@@ -55,12 +55,20 @@ public class AuthenticationService {
             if (!argon2Encoder.matches(rawPassword, account.getPassword())) {
                 throw new RuntimeException("비밀번호가 일치하지 않습니다.");
             }
+            // 관리자 lastActive 갱신 (필요시)
+            account.setLastActive(new Date());
+            accountMapper.updateAccountLastActive(account.getId(), account.getLastActive());
+
             return LoginResponse.adminSuccess(account);
         } else {
             // 일반 유저 로그인 (JWT 방식)
             if (!bcryptEncoder.matches(rawPassword, account.getPassword())) {
                 throw new RuntimeException("비밀번호가 일치하지 않습니다.");
             }
+
+            // 로그인 성공 시 lastActive 현재 시간으로 업데이트
+            account.setLastActive(new Date());
+            accountMapper.updateAccountLastActive(account.getId(), account.getLastActive());
 
             String accessToken = jwtTokenProvider.createAccessToken(email);
             String refreshToken = jwtTokenProvider.createRefreshToken(email);
@@ -83,7 +91,8 @@ public class AuthenticationService {
         }
     }
 
-    public void logout(Long accountId, String refreshToken) {
+
+    public void logout(Long accountId, String refreshToken, String accessToken) {
         // 화이트리스트에서 토큰 비활성화 처리
         jwtWhitelistMapper.deactivateToken(accountId, refreshToken);
 
@@ -91,6 +100,7 @@ public class AuthenticationService {
         JwtBlacklistDto blacklistDto = new JwtBlacklistDto();
         blacklistDto.setAccountId(accountId);
         blacklistDto.setRefreshToken(refreshToken);
+        blacklistDto.setAccessToken(accessToken);
         blacklistDto.setIssuedAt(jwtTokenProvider.getIssuedAt(refreshToken));
         blacklistDto.setExpiresAt(jwtTokenProvider.getExpiration(refreshToken));
         blacklistDto.setBlacklistedAt(new Date());
@@ -121,8 +131,9 @@ public class AuthenticationService {
         newAccount.setIsAdmin(false);
         newAccount.setEmailChk(false);
         newAccount.setPhone(request.getPhone());
-//        newAccount.setUserStatusId(0);
-//        newAccount.setSocialId(0);
+        newAccount.setUserStatusId(1);
+        newAccount.setSocialId(1);
+        newAccount.setCreatedAt(new Date());
         
         String ipAddress = httpRequest.getHeader("X-Forwarded-For");
         if (ipAddress == null || ipAddress.isEmpty()) {
