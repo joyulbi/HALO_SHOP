@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.OneToOne;
 
 import com.company.haloshop.entity.delivery.DeliveryTracking;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(name = "order_items")
 @Getter
 @Setter
 public class OrderItem {
