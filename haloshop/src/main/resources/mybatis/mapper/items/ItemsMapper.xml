@@ -5,20 +5,37 @@
 
 <mapper namespace="com.company.haloshop.items.ItemsMapper">
 
-    <!-- 상품 등록 -->
-    <insert id="insert" parameterType="com.company.haloshop.dto.shop.Items">
-        INSERT INTO items (name, description, price, team_id, category_id)
-        VALUES (#{name}, #{description}, #{price}, #{teamId}, #{categoryId})
+    <!-- 🔥 상품 등록 (PK 자동 세팅) -->
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.Items"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO items (name, description, price, team_id, category_id, created_at)
+        VALUES (#{name}, #{description}, #{price}, #{teamId}, #{categoryId}, NOW())
     </insert>
 
     <!-- 상품 목록 조회 -->
     <select id="findAll" resultType="com.company.haloshop.dto.shop.Items">
-        SELECT * FROM items ORDER BY id DESC
+        SELECT id,
+               name,
+               description,
+               price,
+               team_id AS teamId,
+               category_id AS categoryId,
+               created_at AS createdAt
+        FROM items
+        ORDER BY id DESC
     </select>
 
     <!-- 상품 상세 조회 -->
     <select id="findById" parameterType="long" resultType="com.company.haloshop.dto.shop.Items">
-        SELECT * FROM items WHERE id = #{id}
+        SELECT id,
+               name,
+               description,
+               price,
+               team_id AS teamId,
+               category_id AS categoryId,
+               created_at AS createdAt
+        FROM items
+        WHERE id = #{id}
     </select>
 
     <!-- 상품 수정 -->
