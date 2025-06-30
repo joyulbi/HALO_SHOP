@@ -14,6 +14,14 @@ public class PointLogService {
 
     private final PointLogMapper pointLogMapper;
 
+    public void saveLog(Long userId, String type, int amount) {
+        PointLogDto log = new PointLogDto();
+        log.setAccountId(userId);
+        log.setType(type);
+        log.setAmount(amount);
+        pointLogMapper.insert(log);
+    }
+
     public List<PointLogDto> findAll() {
         return pointLogMapper.findAll();
     }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.team.TeamMapper">
+
+	<resultMap id="TeamResultMap"
+		type="com.company.haloshop.team.Team">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="active" column="active" />
+	</resultMap>
+
+	<insert id="insertTeam"
+		parameterType="com.company.haloshop.team.Team"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO team (name) VALUES (#{name})
+	</insert>
+	
+	<select id="findAllTeam"
+		resultMap="TeamResultMap">
+		SELECT * FROM team;
+	</select>
+	
+	<select id="findById"
+		parameterType="long" 
+		resultMap="TeamResultMap">
+		SELECT * FROM team WHERE id = #{id}
+	</select>
+	
+	<update id="updateTeamSelective" parameterType="map">
+	    UPDATE team
+	    <set>
+	        <if test="name != null">name = #{name},</if>
+	        <if test="active != null">active = #{active}</if>
+	    </set>
+	    WHERE id = #{id}
+	</update>
+
+	
+</mapper>
