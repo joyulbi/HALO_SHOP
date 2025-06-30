@@ -19,7 +19,7 @@ const OrderListPage = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, []);s
 
   if (loading) {
     return <p>로딩 중...</p>;
