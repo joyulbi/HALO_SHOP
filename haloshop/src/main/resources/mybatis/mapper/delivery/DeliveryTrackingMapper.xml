@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.haloshop.delivery.DeliveryTrackingMapper">
+	<insert id="insertTracking" parameterType="DeliveryTracking">
+		insert into delivery_tracking (order_items_id, status, tracking_number, carrier, updated_at)
+		values (#{orderItemsId}, #{status}, #{trackingNumber}, #{carrier}, now())
+	</insert>
+	
+    <select id="findByOrderItemsId" parameterType="long" resultType="DeliveryTracking">
+        select * from delivery_tracking where order_items_id = #{orderItemsId}
+    </select>
+
+    <update id="updateStatus" parameterType="DeliveryTracking">
+        update delivery_tracking
+        set status = #{status}, updated_at = now()
+        where order_items_id = #{orderItemsId}
+    </update>
+</mapper>
