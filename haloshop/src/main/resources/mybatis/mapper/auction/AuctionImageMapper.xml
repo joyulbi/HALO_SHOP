@@ -31,13 +31,11 @@
     </insert>
 
     <!-- 이미지 수정 -->
-    <update id="update" parameterType="com.company.haloshop.auction.dto.AuctionImage">
-        UPDATE auction_image
-        SET
-            auction_id = #{auctionId},
-            url = #{url}
-        WHERE id = #{id}
-    </update>
+	<update id="update" parameterType="com.company.haloshop.auction.dto.AuctionImage">
+	    UPDATE auction_image
+	    SET url = #{url}
+	    WHERE id = #{id}
+	</update>
 
     <!-- 이미지 삭제 -->
     <delete id="delete" parameterType="long">

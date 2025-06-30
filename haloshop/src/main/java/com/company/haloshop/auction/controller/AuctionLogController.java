@@ -2,17 +2,16 @@ package com.company.haloshop.auction.controller;
 
 import com.company.haloshop.auction.dto.AuctionLog;
 import com.company.haloshop.auction.service.AuctionLogService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/auction-logs")
+@RequiredArgsConstructor
 public class AuctionLogController {
-    private final AuctionLogService auctionLogService;
 
-    public AuctionLogController(AuctionLogService auctionLogService) {
-        this.auctionLogService = auctionLogService;
-    }
+    private final AuctionLogService auctionLogService;
 
     // 입찰 로그 단건 조회
     @GetMapping("/{id}")

@@ -2,17 +2,16 @@ package com.company.haloshop.auction.controller;
 
 import com.company.haloshop.auction.dto.AuctionImage;
 import com.company.haloshop.auction.service.AuctionImageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/auction-images")
+@RequiredArgsConstructor
 public class AuctionImageController {
-    private final AuctionImageService auctionImageService;
 
-    public AuctionImageController(AuctionImageService auctionImageService) {
-        this.auctionImageService = auctionImageService;
-    }
+    private final AuctionImageService auctionImageService;
 
     // 경매 이미지 단건 조회
     @GetMapping("/{id}")
@@ -37,7 +36,7 @@ public class AuctionImageController {
     public void update(@PathVariable Long id, @RequestBody AuctionImage auctionImage) {
         auctionImage.setId(id);
         auctionImageService.update(auctionImage);
-    }    
+    }
 
     // 이미지 삭제
     @DeleteMapping("/{id}")

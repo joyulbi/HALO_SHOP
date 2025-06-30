@@ -3,7 +3,7 @@ package com.company.haloshop.auction.dto;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
 public class AuctionResult {
     private Long auctionId;
     private Long accountId;

@@ -1,7 +1,9 @@
 package com.company.haloshop.auction.mapper;
 
+import org.apache.ibatis.annotations.Mapper;
 import com.company.haloshop.auction.dto.AuctionResult;
 
+@Mapper
 public interface AuctionResultMapper {
     AuctionResult selectByAuctionId(Long auctionId);
     void insert(AuctionResult auctionResult);
