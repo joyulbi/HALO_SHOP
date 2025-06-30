@@ -1,4 +1,4 @@
-package com.company.haloshop.delivery.mapper;
+package com.company.haloshop.delivery;
 
 import org.apache.ibatis.annotations.Mapper;
 

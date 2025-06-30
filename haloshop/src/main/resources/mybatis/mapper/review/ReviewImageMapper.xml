@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.company.haloshop.review.ReviewImageMapper">
-    <insert id="insertReviewImage" parameterType="ReviewImage">
-        insert into review_image (
-            review_id, url, uploadedAt
-        ) values (
-            #{reviewId}, #{url}, #{uploadedAt}
-        )
+
+    <resultMap id="ReviewImageResultMap" type="com.company.haloshop.dto.shop.ReviewImageDTO">
+        <id property="id" column="id" />
+        <result property="reviewId" column="review_id" />
+        <result property="url" column="url" />
+        <result property="uploadedAt" column="uploaded_at" />
+    </resultMap>
+
+    <insert id="insertReviewImage" parameterType="com.company.haloshop.dto.shop.ReviewImageDTO">
+        INSERT INTO review_image (review_id, url, uploaded_at)
+        VALUES (#{reviewId}, #{url}, #{uploadedAt})
     </insert>
 
-    <select id="findByReviewId" parameterType="long" resultType="ReviewImage">
-        select * from review_image where review_id = #{reviewId}
+    <select id="findByReviewId" resultMap="ReviewImageResultMap">
+        SELECT * FROM review_image WHERE review_id = #{reviewId}
     </select>
+
 </mapper>

@@ -1,4 +1,4 @@
-package com.company.haloshop.review.mapper;
+package com.company.haloshop.review;
 
 import java.time.LocalDateTime;
 import java.util.List;

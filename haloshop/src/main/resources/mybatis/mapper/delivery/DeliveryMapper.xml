@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.company.haloshop.delivery.DeliveryMapper">
-    <insert id="insertDelivery" parameterType="Delivery">
-        insert into delivery (
-            user_id, address, address_detail, zipcode, recipient_name
-        ) values (
-            #{userId}, #{address}, #{addressDetail}, #{zipcode}, #{recipientName}
-        )
+
+    <resultMap id="DeliveryResultMap" type="com.company.haloshop.dto.shop.DeliveryDTO">
+        <id property="id" column="id" />
+        <result property="accountId" column="account_id" />
+        <result property="address" column="address" />
+        <result property="addressDetail" column="address_detail" />
+        <result property="zipcode" column="zipcode" />
+        <result property="recipientName" column="recipient_name" />
+    </resultMap>
+
+    <select id="findByAccountId" resultMap="DeliveryResultMap">
+        SELECT * FROM delivery WHERE account_id = #{accountId}
+    </select>
+
+    <insert id="insertDelivery" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
+        INSERT INTO delivery (account_id, address, address_detail, zipcode, recipient_name)
+        VALUES (#{accountId}, #{address}, #{addressDetail}, #{zipcode}, #{recipientName})
     </insert>
 
-    <select id="findByUserId" parameterType="long" resultType="Delivery">
-        select * from delivery where user_id = #{userId}
-    </select>
+    <update id="updateDelivery" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
+        UPDATE delivery
+        SET address = #{address},
+            address_detail = #{addressDetail},
+            zipcode = #{zipcode},
+            recipient_name = #{recipientName}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteDelivery">
+        DELETE FROM delivery WHERE id = #{id}
+    </delete>
+
 </mapper>
