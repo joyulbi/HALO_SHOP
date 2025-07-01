@@ -18,7 +18,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 권한은 ROLE_USER 고정 (필요 시 확장 가능)
+        // isAdmin 값에 따라 권한 부여 (ROLE_ADMIN or ROLE_USER)
+        if (account.getIsAdmin()) {
+            return Collections.singleton(() -> "ROLE_ADMIN");
+        }
         return Collections.singleton(() -> "ROLE_USER");
     }
 
@@ -54,5 +57,10 @@ public class CustomUserDetails implements UserDetails {
 
     public Long getId() {
         return account.getId();
+    }
+
+    // isAdmin getter 추가
+    public boolean isAdmin() {
+        return account.getIsAdmin();
     }
 }
