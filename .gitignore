@@ -81,3 +81,4 @@ upload/
 uploads/
 *.db
 *.sqlite
+**/application-oauth.properties

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+// import org.apache.ibatis.annotations.Select; // @Select를 사용하지 않으므로 이 임포트는 필요 없습니다.
 
 import com.company.haloshop.dto.security.JwtBlacklistDto;
 
@@ -53,4 +54,12 @@ public interface JwtBlacklistMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteAllByAccountId(@Param("accountId") Long accountId);
+
+    /**
+     * 토큰이 블랙리스트에 있는지 확인
+     * @param token 확인할 토큰
+     * @return 블랙리스트에 있으면 1 이상, 없으면 0
+     */
+    // @Select 애너테이션을 제거하고 XML에서 쿼리를 정의합니다.
+    int isTokenBlacklisted(@Param("token") String token);
 }

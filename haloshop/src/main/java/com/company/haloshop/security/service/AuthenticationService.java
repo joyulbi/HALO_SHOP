@@ -3,6 +3,7 @@ package com.company.haloshop.security.service;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -70,7 +71,7 @@ public class AuthenticationService {
             account.setLastActive(new Date());
             accountMapper.updateAccountLastActive(account.getId(), account.getLastActive());
 
-            String accessToken = jwtTokenProvider.createAccessToken(email);
+            String accessToken = jwtTokenProvider.createAccessToken(email, account.getId());
             String refreshToken = jwtTokenProvider.createRefreshToken(email);
 
             // 기존 유저 토큰 비활성화 또는 삭제 처리
@@ -91,23 +92,35 @@ public class AuthenticationService {
         }
     }
 
+    public void logout(Long accountId, String refreshToken, String accessToken, boolean isAdmin, HttpServletRequest request) {
+        if (isAdmin) {
+            // 관리자 세션 무효화
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            // 추가로 로그 기록이나 후처리 가능
+        } else {
+            // 화이트리스트에서 토큰 비활성화 처리
+            // 사용자가 로그아웃하면 더 이상 이 리프레시 토큰으로 새 액세스 토큰을 받지 못하게 합니다.
+            jwtWhitelistMapper.deactivateToken(accountId, refreshToken);
 
-    public void logout(Long accountId, String refreshToken, String accessToken) {
-        // 화이트리스트에서 토큰 비활성화 처리
-        jwtWhitelistMapper.deactivateToken(accountId, refreshToken);
+            // 블랙리스트에 액세스 토큰 등록
+            // 현재 사용 중인 액세스 토큰을 즉시 무효화하기 위해 블랙리스트에 추가합니다.
+            // 'ban' 컬럼이 더 이상 없으므로, 토큰이 존재하기만 해도 무효화된 것으로 간주합니다.
+            JwtBlacklistDto blacklistDto = new JwtBlacklistDto();
+            blacklistDto.setAccountId(accountId);
+            blacklistDto.setRefreshToken(refreshToken); // 리프레시 토큰도 함께 저장하여 이력 관리 및 필요 시 검증
+            blacklistDto.setAccessToken(accessToken); // 무효화할 액세스 토큰
+            // 토큰 발급 및 만료 시간 (액세스 토큰의 정보로 채우는 것이 더 정확할 수 있습니다)
+            blacklistDto.setIssuedAt(jwtTokenProvider.getIssuedAt(accessToken)); // 액세스 토큰의 발급 시간
+            blacklistDto.setExpiresAt(jwtTokenProvider.getExpiration(accessToken)); // 액세스 토큰의 만료 시간
+            blacklistDto.setBlacklistedAt(new Date()); // 블랙리스트에 추가된 (로그아웃) 시간
+            blacklistDto.setReason("사용자 로그아웃"); // 블랙리스트에 추가된 이유 명시
+            // blacklistDto.setBan(true); // 'ban' 컬럼이 DB에서 제거되었으므로, 이 라인도 제거합니다.
 
-        // 블랙리스트에 등록
-        JwtBlacklistDto blacklistDto = new JwtBlacklistDto();
-        blacklistDto.setAccountId(accountId);
-        blacklistDto.setRefreshToken(refreshToken);
-        blacklistDto.setAccessToken(accessToken);
-        blacklistDto.setIssuedAt(jwtTokenProvider.getIssuedAt(refreshToken));
-        blacklistDto.setExpiresAt(jwtTokenProvider.getExpiration(refreshToken));
-        blacklistDto.setBlacklistedAt(new Date());
-        blacklistDto.setReason("사용자 로그아웃");
-        blacklistDto.setBan(true);
-
-        jwtBlacklistMapper.insertBlacklist(blacklistDto);
+            jwtBlacklistMapper.insertBlacklist(blacklistDto);
+        }
     }
 
     // 이메일 중복 검사
@@ -134,7 +147,7 @@ public class AuthenticationService {
         newAccount.setUserStatusId(1);
         newAccount.setSocialId(1);
         newAccount.setCreatedAt(new Date());
-        
+
         String ipAddress = httpRequest.getHeader("X-Forwarded-For");
         if (ipAddress == null || ipAddress.isEmpty()) {
             ipAddress = httpRequest.getRemoteAddr();
@@ -181,5 +194,13 @@ public class AuthenticationService {
         public AccountDto getAccount() { return account; }
         public String getAccessToken() { return accessToken; }
         public String getRefreshToken() { return refreshToken; }
+    }
+
+    public boolean isAdmin(Long accountId) {
+        AccountDto account = accountMapper.selectById(accountId);
+        if (account == null) {
+            throw new RuntimeException("존재하지 않는 계정입니다.");
+        }
+        return account.getIsAdmin();
     }
 }

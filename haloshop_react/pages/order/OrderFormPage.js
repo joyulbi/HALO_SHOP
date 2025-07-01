@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import axios from '../../utils/axios';
 
@@ -7,6 +8,7 @@ const OrderFormPage = () => {
     deliveryId: '',
     used: 'CARD',
     paymentStatus: 'PENDING',
+    amount: '' // ✅ 포인트 사용 금액
   });
 
   const [items, setItems] = useState([
@@ -30,7 +32,6 @@ const OrderFormPage = () => {
     setItems([...items, { itemId: '', itemName: '', productPrice: '', quantity: '' }]);
   };
 
-  // 🩶 totalPrice 자동 계산
   const calculateTotalPrice = () => {
     return items.reduce((acc, item) => {
       const price = Number(item.productPrice) || 0;
@@ -46,6 +47,7 @@ const OrderFormPage = () => {
         ...order,
         accountId: Number(order.accountId),
         deliveryId: Number(order.deliveryId),
+        amount: Number(order.amount) || 0,
         totalPrice: calculateTotalPrice(),
         orderItems: items.map(item => ({
           itemId: Number(item.itemId),
@@ -63,6 +65,7 @@ const OrderFormPage = () => {
         deliveryId: '',
         used: 'CARD',
         paymentStatus: 'PENDING',
+        amount: ''
       });
       setItems([{ itemId: '', itemName: '', productPrice: '', quantity: '' }]);
     } catch (error) {
@@ -83,9 +86,20 @@ const OrderFormPage = () => {
           <label>Delivery ID: </label>
           <input name="deliveryId" value={order.deliveryId} onChange={handleOrderChange} />
         </div>
+        <div>
+          <label>사용할 포인트: </label>
+          <input
+            name="amount"
+            value={order.amount}
+            onChange={handleOrderChange}
+            placeholder="사용할 포인트 금액"
+          />
+        </div>
 
-        {/* 🩶 자동 합산된 Total Price 표시 */}
         <p>총 합계: {calculateTotalPrice()} 원</p>
+        <p>
+          포인트 사용 후 결제 금액: {calculateTotalPrice() - (Number(order.amount) || 0)} 원
+        </p>
 
         <h3>주문 아이템</h3>
         {items.map((item, index) => (
@@ -125,3 +139,4 @@ const OrderFormPage = () => {
 };
 
 export default OrderFormPage;
+

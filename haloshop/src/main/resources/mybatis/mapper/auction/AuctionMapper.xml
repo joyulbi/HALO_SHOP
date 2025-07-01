@@ -18,15 +18,14 @@
     </select>
 
     <!-- 경매 등록 -->
-    <insert id="insert" parameterType="com.company.haloshop.auction.dto.Auction">
+    <insert id="insert" parameterType="com.company.haloshop.auction.dto.Auction" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO auction (
             title,
             description,
             start_price,
             start_time,
             end_time,
-            status,
-            created_at
+            status
         )
         VALUES (
             #{title},
@@ -34,8 +33,7 @@
             #{startPrice},
             #{startTime},
             #{endTime},
-            #{status},
-            #{createdAt}
+            #{status}
         )
     </insert>
 

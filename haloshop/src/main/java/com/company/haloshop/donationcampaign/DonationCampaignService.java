@@ -1,15 +1,17 @@
 package com.company.haloshop.donationcampaign;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.company.haloshop.season.Season;
 import com.company.haloshop.season.SeasonMapper;
 import com.company.haloshop.team.Team;
 import com.company.haloshop.team.TeamMapper;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +20,16 @@ public class DonationCampaignService {
     private final DonationCampaignMapper donationCampaignMapper;
     private final SeasonMapper seasonMapper;
     private final TeamMapper teamMapper;
+    
+    @Transactional(readOnly = true)
+    public List<DonationCampaign> getAllDonationCampaigns() {
+        return donationCampaignMapper.findAll(); // total DESC 정렬된 결과
+    }
+    
+    @Transactional(readOnly = true)
+    public List<DonationCampaign> getAllDonationCampaignsBySeason(Long id) {
+        return donationCampaignMapper.findBySeason(id);
+    }
 
     @Transactional
     public Long createDonationCampaign(DonationCampaignRequestDto requestDto) {
