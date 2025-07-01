@@ -26,6 +26,7 @@ public class Orders {
     private String used;            // 결제 수단
     private String paymentStatus;   // PENDING, PAID, FAILED
     private Integer amount;
+    private Long payAmount;
     
     @Column(length = 50)
     private String tid; // 카카오페이 거래 고유 번호

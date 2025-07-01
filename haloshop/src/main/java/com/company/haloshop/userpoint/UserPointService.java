@@ -44,31 +44,30 @@ public class UserPointService {
         userPointMapper.deleteByAccountId(accountId);
     }
 
-    // 주문 완료 시 포인트 적립 및 등급 갱신
+    // 주문 완료 시 포인트 적립 및 등급 갱신 후 적립된 포인트 반환
     @Transactional
-    public void updateUserPointAndGrade(Long accountId, Long totalPrice) {
+    public int updateUserPointAndGrade(Long accountId, Long payAmount) {
         UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
         Long newTotalPayment;
-        Long addedPoint = totalPrice / 100; // 기본 1% 적립
+        int addedPoint = (int) (payAmount * 0.01); // 1% 적립
 
         if (userPoint == null) {
-            newTotalPayment = totalPrice;
+            newTotalPayment = payAmount;
         } else {
-            newTotalPayment = userPoint.getTotalPayment() + totalPrice;
+            newTotalPayment = userPoint.getTotalPayment() + payAmount;
         }
 
-        // 멤버십 등급 및 포인트 조회
         MembershipDto membership = membershipMapper.findBestMatchByTotalPayment(newTotalPayment);
 
         if (membership != null) {
-            addedPoint += membership.getPricePoint(); // 멤버십 추가 포인트 적립
+            addedPoint += membership.getPricePoint();
         }
 
         if (userPoint == null) {
             userPoint = new UserPointDto();
             userPoint.setAccountId(accountId);
             userPoint.setTotalPayment(newTotalPayment);
-            userPoint.setTotalPoint(addedPoint);
+            userPoint.setTotalPoint((long) addedPoint);
             userPoint.setGrade(membership != null ? membership.getName() : "BASIC");
             userPoint.setUpdatedAt(LocalDateTime.now());
             userPointMapper.insert(userPoint);
@@ -79,5 +78,37 @@ public class UserPointService {
             userPoint.setUpdatedAt(LocalDateTime.now());
             userPointMapper.update(userPoint);
         }
+
+        return addedPoint;
     }
+
+    @Transactional
+    public int deductPointByOrder(Long accountId, Long payAmount) {
+        int deductPoint = (int) (payAmount * 0.01);
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        userPoint.setTotalPoint(userPoint.getTotalPoint() - deductPoint);
+        userPoint.setUpdatedAt(LocalDateTime.now());
+        userPointMapper.update(userPoint);
+        return deductPoint;
+    }
+
+    @Transactional
+    public void restorePoint(Long accountId, int restoreAmount) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        userPoint.setTotalPoint(userPoint.getTotalPoint() + restoreAmount);
+        userPoint.setUpdatedAt(LocalDateTime.now());
+        userPointMapper.update(userPoint);
+    }
+
+    @Transactional
+    public void usePoint(Long accountId, int useAmount) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint == null || userPoint.getTotalPoint() < useAmount) {
+            throw new IllegalArgumentException("포인트가 부족하여 사용할 수 없습니다.");
+        }
+        userPoint.setTotalPoint(userPoint.getTotalPoint() - useAmount);
+        userPoint.setUpdatedAt(LocalDateTime.now());
+        userPointMapper.update(userPoint);
+    }
+
 }
