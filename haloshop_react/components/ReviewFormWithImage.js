@@ -33,7 +33,7 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
           }
         );
 
-        setUploadedImageUrl(`http://localhost:8080${uploadRes.data.url}`);
+        setUploadedImageUrl(`http://localhost:8080/${uploadRes.data.url}`);
         alert("리뷰 및 이미지 등록 성공");
       } else {
         alert("리뷰 등록 성공 (이미지 없음)");

@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import KakaoDraggableMap from './KakaoDraggableMap';
+import { useRouter } from 'next/router';
 
 const DeliveryTrackingList = ({ accountId }) => {
   const [trackings, setTrackings] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
 
   const fetchData = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/delivery-tracking/user/${accountId}`);
+      console.log('📦 새로 받아온 배송 상태:', res.data);
       setTrackings(res.data);
     } catch (err) {
-      console.error(err);
-    //   alert('배송 추적 정보를 가져오는 데 실패했습니다.');
+      console.error("❌ 배송 조회 실패", err);
     }
   };
 
   useEffect(() => {
-    if (showModal) fetchData();
+    let intervalId;
+
+    if (showModal && accountId) {
+      fetchData(); // 최초 1회 호출
+      intervalId = setInterval(fetchData, 10000); // 10초마다 polling
+    }
+
+    return () => clearInterval(intervalId); // 모달 닫히면 polling 정지
   }, [showModal, accountId]);
 
   const getStepIndex = (status) => {
@@ -46,7 +55,7 @@ const DeliveryTrackingList = ({ accountId }) => {
                 <div key={item.id} style={{ marginBottom: '32px' }}>
                   {/* 배송 상태 진행 표시 */}
                   <div style={styles.stepContainer}>
-                    {['발송', '집하', '배송중', '도착'].map((label, idx) => (
+                    {['배송준비중', '출고됨', '배송중', '배송완료'].map((label, idx) => (
                       <span key={idx} style={{ ...styles.stepLabel, color: step >= idx ? '#ef4444' : '#ccc' }}>
                         {label}
                       </span>
@@ -60,12 +69,12 @@ const DeliveryTrackingList = ({ accountId }) => {
                   <div style={styles.productInfo}>
                     <img
                       src="/sample-product.png"
-                      alt="상품"
+                      alt={item.itemName}
                       style={styles.productImage}
                     />
                     <div>
-                      <div style={{ fontWeight: 'bold' }}>디자이너스 데일리 백(2color)</div>
-                      <div style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '12px' }}>샛-출발</div>
+                      <div style={{ fontWeight: 'bold' }}>{item.itemName}</div>
+                      <div style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '12px' }}>당일 배송</div>
                     </div>
                   </div>
 
@@ -74,22 +83,40 @@ const DeliveryTrackingList = ({ accountId }) => {
                     <h4 style={{ marginBottom: '8px' }}>배송 기록</h4>
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                       <li style={{ marginBottom: '8px' }}>
-                        <div><strong>{item.updatedAt}</strong></div>
+                        <div><strong>{new Date(item.updatedAt).toLocaleString()}</strong></div>
                         <div>{item.status} | {item.carrier} | {item.location ?? '지역 정보 없음'}</div>
                       </li>
                       <li style={{ fontSize: '12px', color: '#888' }}>
-                        2022-09-25 10:58:22<br />배송 출발 | 서울 강남구
+                        2025-07-03 10:58:22<br />배송 출발 | 서울 강남구
                       </li>
                       <li style={{ fontSize: '12px', color: '#aaa' }}>
-                        2022-09-25 09:30:00<br />배송 진행중 | 물류센터
+                        2025-07-03 09:30:00<br />배송 진행중 | 물류센터
                       </li>
                     </ul>
                   </div>
+
+                  {/* 배송완료일 경우 리뷰 쓰기 버튼 */}
+                  {item.status === '배송완료' && (
+                    <button
+                      onClick={() => router.push(`/review/${item.orderItemsId}`)}
+                      style={{
+                        marginTop: '12px',
+                        backgroundColor: '#3b82f6',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      리뷰 쓰기
+                    </button>
+                  )}
                 </div>
               );
             })}
 
-            {/* 카카오 지도 삽입 */}
+            {/* 카카오 지도 */}
             <div style={{ margin: '24px 0' }}>
               <h4 style={{ marginBottom: '8px' }}>배송 위치 지도</h4>
               <KakaoDraggableMap />
@@ -118,7 +145,7 @@ const styles = {
     padding: '24px',
     borderRadius: '10px',
     width: '90%',
-    maxWidth: '500px',
+    maxWidth: '700px',
     maxHeight: '90%',
     overflowY: 'auto',
   },

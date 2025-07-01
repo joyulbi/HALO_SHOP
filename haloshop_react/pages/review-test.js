@@ -4,7 +4,7 @@ import axios from 'axios';
 export default function ReviewTestPage() {
   const [review, setReview] = useState({
     orderItemsId: 1,
-    accountId: 100,
+    accountId: 1,
     content: '',
     rating: 5,
   });
