@@ -25,10 +25,10 @@ public class KakaoPayService {
     private final OrderMapper orderMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${kakao.pay.admin-key}")
+    //@Value("${kakao.pay.admin-key}")
     private String adminKey;
 
-    @Value("${kakao.pay.cid}")
+    //@Value("${kakao.pay.cid}")
     private String cid;
 
     @PostMapping("/ready/{orderId}")
