@@ -201,7 +201,7 @@ public class SecurityConfig {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN,
                                 "Access Denied: Bot/Crawler blocked");
                         return;
-                    }	
+                    }   
                 }
             }
 
