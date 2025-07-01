@@ -27,8 +27,9 @@ public class AuctionController {
 
     // 경매 등록
     @PostMapping
-    public void create(@RequestBody Auction auction) {
+    public Auction create(@RequestBody Auction auction) {
         auctionService.create(auction);
+        return auction;
     }
 
     // 경매 수정

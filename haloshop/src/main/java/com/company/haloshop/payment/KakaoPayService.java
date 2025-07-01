@@ -37,10 +37,10 @@ public class KakaoPayService {
     private final PointLogService pointLogService;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${kakao.pay.admin-key}")
+    //@Value("${kakao.pay.admin-key}")
     private String adminKey;
 
-    @Value("${kakao.pay.cid}")
+    //@Value("${kakao.pay.cid}")
     private String cid;
 
     // ✅ 결제 준비: UUID 기반 tempOrderId 반환 (주문 insert X)

@@ -17,5 +17,4 @@ public class JwtBlacklistDto {
     private Date expiresAt;
     private Date blacklistedAt;
     private String reason;
-    private Boolean ban;
 }

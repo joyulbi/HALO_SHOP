@@ -40,12 +40,13 @@ const Header = () => {
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: '200px',            // 🔥 메뉴 간 간격 넉넉하게
+        gap: '100px',            // 🔥 메뉴 간 간격 넉넉하게
         fontSize: '18px'
       }}>
         <Link href="/" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>홈</Link>
         <Link href="/items" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>상품</Link>
         <Link href="/donation" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>기부캠페인</Link>
+        <Link href="/auction" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>경매</Link>
         <Link href="/customer" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>고객센터</Link>
       </nav>
     </header>

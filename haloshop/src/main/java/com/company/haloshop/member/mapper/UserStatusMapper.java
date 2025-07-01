@@ -21,6 +21,14 @@ public interface UserStatusMapper {
     UserStatusDto selectById(@Param("id") Integer id);
 
     /**
+     * 상태 값으로 UserStatus 조회
+     * 'status' 컬럼은 DB에서 INT 타입이므로, Integer 값을 파라미터로 받습니다.
+     * @param statusValue 조회할 상태 값 (예: 1, 2, 3, 4 등)
+     * @return UserStatusDto 객체
+     */
+    UserStatusDto selectByStatus(@Param("statusValue") Integer statusValue); // <-- 이 부분을 추가했습니다.
+
+    /**
      * 모든 UserStatus 목록 조회
      * @return UserStatusDto 리스트
      */
@@ -46,4 +54,10 @@ public interface UserStatusMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteById(@Param("id") Integer id);
+
+    /**
+     * UserStatus 테이블의 전체 레코드 개수 조회
+     * @return 전체 레코드 개수
+     */
+    int countUserStatuses();
 }
