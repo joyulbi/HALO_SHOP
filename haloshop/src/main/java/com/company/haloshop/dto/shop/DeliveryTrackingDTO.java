@@ -16,6 +16,7 @@ import lombok.ToString;
 public class DeliveryTrackingDTO {
     private Long id;
     private Long orderItemsId;
+    private String itemName;
     private String status;  // enum : 배송준비중, 출고됨, 배송중, 배송완료
     private String trackingNumber;
     private String carrier;

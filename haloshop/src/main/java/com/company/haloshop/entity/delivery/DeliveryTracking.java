@@ -29,7 +29,7 @@ public class DeliveryTracking {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_items_id")
+    @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
     private String trackingNumber;

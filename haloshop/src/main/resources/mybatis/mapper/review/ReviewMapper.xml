@@ -5,35 +5,78 @@
 
 <mapper namespace="com.company.haloshop.review.ReviewMapper">
 
-    <resultMap id="ReviewResultMap" type="com.company.haloshop.dto.shop.ReviewDTO">
-        <id property="id" column="id"/>
-        <result property="orderItemsId" column="order_items_id"/>
-        <result property="accountId" column="account_id"/>
-        <result property="content" column="content"/>
-        <result property="rating" column="rating"/>
-        <result property="createdAt" column="created_at"/>
-    </resultMap>
+	<resultMap id="ReviewResultMap"
+		type="com.company.haloshop.dto.shop.ReviewDTO">
+		<id property="id" column="id" />
+		<result property="orderItemsId" column="order_item_id" />
+		<result property="accountId" column="account_id" />
+		<result property="content" column="content" />
+		<result property="rating" column="rating" />
+		<result property="createdAt" column="created_at" />
+	</resultMap>
 
-    <insert id="insertReview" parameterType="com.company.haloshop.dto.shop.ReviewDTO">
-        INSERT INTO review (order_items_id, account_id, content, rating, created_at)
-        VALUES (#{orderItemsId}, #{accountId}, #{content}, #{rating}, #{createdAt})
-    </insert>
+	<resultMap id="ReviewWithImageMap"
+		type="com.company.haloshop.dto.shop.ReviewDTO"
+		extends="ReviewResultMap">
+		<collection property="images"
+			ofType="com.company.haloshop.dto.shop.ReviewImageDTO">
+			<id property="id" column="image_id" />
+			<result property="reviewId" column="review_id" />
+			<result property="url" column="url" />
+			<result property="uploadedAt" column="uploaded_at" />
+		</collection>
+	</resultMap>
 
-    <select id="existsByOrderItemId" resultType="boolean">
-        SELECT COUNT(*) > 0 FROM review WHERE order_items_id = #{orderItemsId}
-    </select>
+	<insert id="insertReview"
+		parameterType="com.company.haloshop.dto.shop.ReviewDTO"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO review (order_item_id, account_id, content, rating, created_at)
+		VALUES (#{orderItemsId}, #{accountId}, #{content}, #{rating},
+		#{createdAt})
+	</insert>
 
+	<select id="existsByOrderItemId" resultType="boolean">
+		SELECT COUNT(*) > 0 FROM review WHERE order_item_id = #{orderItemsId}
+	</select>
 
-    <select id="findByAccountId" resultMap="ReviewResultMap">
-        SELECT * FROM review WHERE account_id = #{accountId}
-    </select>
+	<select id="findByAccountId" resultMap="ReviewResultMap">
+		SELECT * FROM review WHERE account_id = #{accountId}
+	</select>
 
-    <select id="findByOrderItemsId" resultMap="ReviewResultMap">
-        SELECT * FROM review WHERE order_items_id = #{orderItemsId}
-    </select>
+	<select id="findByOrderItemsId" resultMap="ReviewResultMap">
+		SELECT * FROM review WHERE order_item_id = #{orderItemsId}
+	</select>
 
-    <select id="findAll" resultMap="ReviewResultMap">
-        SELECT * FROM review
-    </select>
+	<select id="findAll" resultMap="ReviewResultMap">
+		SELECT * FROM review
+	</select>
+
+	<select id="findWithImagesByAccountId"
+		resultMap="ReviewWithImageMap">
+		SELECT
+		r.*,
+		i.id AS image_id,
+		i.review_id,
+		i.url,
+		i.uploaded_at
+		FROM review r
+		LEFT JOIN review_image i ON r.id = i.review_id
+		WHERE r.account_id = #{accountId}
+	</select>
+
+	<select id="findById" resultMap="ReviewResultMap">
+		SELECT * FROM review WHERE id = #{id}
+	</select>
+
+	<update id="updateReview"
+		parameterType="com.company.haloshop.dto.shop.ReviewDTO">
+		UPDATE review
+		SET content = #{content}, rating = #{rating}
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="deleteReview">
+	    DELETE FROM review WHERE id = #{id}
+	</delete>
 
 </mapper>

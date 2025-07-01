@@ -1,6 +1,7 @@
 package com.company.haloshop.dto.shop;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,4 +21,5 @@ public class ReviewDTO {
     private String content;
     private Integer rating;
     private LocalDateTime createdAt;
+    private List<String> images;
 }
