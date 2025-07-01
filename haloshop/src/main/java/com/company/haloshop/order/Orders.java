@@ -1,6 +1,6 @@
 package com.company.haloshop.order;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,8 +32,9 @@ public class Orders {
     private String tid; // 카카오페이 거래 고유 번호
     
     @Column(columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column(columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
+
 }
