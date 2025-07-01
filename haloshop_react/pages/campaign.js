@@ -70,6 +70,7 @@ const Campaign = () => {
       <ListTop>
         <CampaignRank />
       </ListTop>
+
       <ListBottom>
 
         {teamData.map(team => (

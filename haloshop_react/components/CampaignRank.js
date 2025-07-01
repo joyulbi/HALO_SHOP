@@ -9,6 +9,16 @@ const CircleContainer = styled.div`
   height: 100%;
 `;
 
+const CircleWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* 이미지와 텍스트 간 간격 */
+  color: black;
+  font-size: 1.2rem;
+  font-weight: 600;
+`;
+
 const CircleBorder = styled.div`
   background: linear-gradient(
     45deg, 
@@ -42,10 +52,28 @@ const Circle = styled.div`
   }
 `;
 
+const Rank = styled.p`
+  color: #000;
+  font-Size: 22px;
+`
+
+const Amount = styled.p`
+  color: #a5a8a8;
+  font-Size: 16px;
+`;
+
+
 const RankCircle = ({ $width, $height, $imgSrc }) => (
   <Circle $width={$width} $height={$height}>
     { $imgSrc ? <img src={$imgSrc} alt="circle img" /> : null }
   </Circle>
+);
+
+const RankDescription = () => (
+  <div>
+  <Rank>Rank</Rank>
+  <Amount>total</Amount>
+  </div>
 );
 
 
@@ -56,28 +84,38 @@ const CampaignRank = () => {
       <CircleContainer>
 
         {/* 2등 */}
+        <CircleWrapper>
         <CircleBorder $colors="#e0e0e0, #c0c0c0, #f0f0f0">
           <RankCircle  
-            $width="250px" 
-            $height="250px" 
+            $width="225px" 
+            $height="225px" 
             $imgSrc="https://cdn-icons-png.flaticon.com/256/2220/2220083.png" />
           </CircleBorder>
+          <RankDescription />
+        </CircleWrapper>
+
 
         {/* 1등 */}
-        <CircleBorder $colors="#FFD86E , #FFBB00 , #E4D098">
-          <RankCircle  
-            $width="300px" 
-            $height="300px" 
-            $imgSrc="https://cdn-icons-png.flaticon.com/256/2220/2220093.png" />  
-          </CircleBorder>
+        <CircleWrapper>
+          <CircleBorder $colors="#FFD86E , #FFBB00 , #E4D098">
+            <RankCircle  
+              $width="250px" 
+              $height="250px" 
+              $imgSrc="https://cdn-icons-png.flaticon.com/256/2220/2220093.png" />  
+            </CircleBorder>
+          <RankDescription />
+        </CircleWrapper>
 
         {/* 3등 */}
-        <CircleBorder $colors="#D3917A  , #AE4D08  , #8C4600">
-          <RankCircle 
-            $width="200px" 
-            $height="200px" 
-            $imgSrc="https://cdn-icons-png.flaticon.com/256/5077/5077571.png" />
-          </CircleBorder>
+        <CircleWrapper>
+          <CircleBorder $colors="#D3917A  , #AE4D08  , #8C4600">
+            <RankCircle 
+              $width="200px" 
+              $height="200px" 
+              $imgSrc="https://cdn-icons-png.flaticon.com/256/5077/5077571.png" />
+            </CircleBorder>
+            <RankDescription />
+        </CircleWrapper>
 
       </CircleContainer>
     </>
