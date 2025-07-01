@@ -1,96 +1,186 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from 'styled-components';
 import CampaignRank from "../components/CampaignRank";
+import axios from 'axios';
+
+import { Dropdown, Button, Space, Menu, message } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 
 const Header = styled.div`
+  background-color: #fff;
+  width: 100%;
+  padding: 1.2rem 2rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background-color: #000;
-  width: 100vw;
-  height: 8vh;
+  gap: 0.75rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+`;
+
+const TextGroup = styled.div`
+  text-align: center;
+
+  @media (min-width: 768px) {
+    position: static;
+    transform: none;
+  }
+`;
+
+const ButtonWrapper = styled.div`
+  @media (min-width: 768px) {
+    position: static;
+  }
 `;
 
 const ListTop = styled.div`
   background-color: #fff;
-  width: 100vw;
-  height: 42vh;
+  width: 80vw;
+  min-height: 42vh; /* 최소 높이만 보장 */
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2% 0;
+  margin-top: 2rem;
+  flex-wrap: wrap; /* 반응형 대응 */
 `;
 
-const ListBottom = styled.div`
+// 카드형 컨테이너 (flex-wrap)
+const CardContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 80vw;
+  padding: 2rem 0;
+  background-color: #eee;
+`;
+
+// 카드 개별 스타일
+const TeamCard = styled.div`
+  background: #fff;
+  width: 220px;
+  padding: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background-color: #eee;
-`
+  gap: 1rem;
+  transition: transform 0.2s ease;
 
-const CampaignTeamBar = styled.div`
-  width: 50vw;
-  height: 10vh;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.1)
-  );
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 아주 옅은 그림자 */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* 연한 테두리 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #555; /* 차분한 텍스트 색 */
-  font-weight: 600;
-  font-size: 1.2rem;
-  user-select: none;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
 `;
 
-const teamData = [
-  { id: 1, image: '이미지1', name: '팀 A', total: 100 },
-  { id: 2, image: '이미지2', name: '팀 B', total: 80 },
-  { id: 3, image: '이미지3', name: '팀 C', total: 50 },
-  // 더 추가 가능
-];
+const TeamImage = styled.img`
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: #f9f9f9;
+  padding: 0.5rem;
+`;
+
+const TeamName = styled.p`
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0;
+  text-align: center;
+`;
+
+const TeamTotal = styled.p`
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+  text-align: center;
+`;
+
+const CampaignTitle = styled.p`
+  margin: 0;
+  font-size: ${({ fontSize }) => fontSize || "16px"};
+  color: ${({ color }) => color || "#000"};
+`;
+
+  const handleButtonClick = (e) => {
+    message.info('Click on left button.');
+    console.log('click left button', e);
+  };
+  const handleMenuClick = (e) => {
+    message.info('Click on menu item.');
+    console.log('click', e);
+  };
 
 const Campaign = () => {
+
+
+  const menu = (
+    <Menu onClick={(e) => {
+      message.info(`Click on menu item ${e.key}`);
+      console.log('click', e);
+    }}>
+      <Menu.Item key="1">1st menu item</Menu.Item>
+      <Menu.Item key="2">2nd menu item</Menu.Item>
+      <Menu.Item key="3">3rd menu item</Menu.Item>
+    </Menu>
+  );
+
+  const [rankList, setRankList] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:8080/api/donation-campaigns")
+      .then((res) => setRankList(res.data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const top3 = rankList.slice(0, 3);
+  const others = rankList.slice(3);
+
   return (
     <>
       <Header>
-        <p style={{color:"#fff", fontSize: "24px"}}>시즌1 : 나무 키우기</p>
-        <p style={{color:"#eee", fontSize: "18px"}}>25.01.01 - 20.03.28</p>
-        
+        <ButtonWrapper>
+          <Dropdown overlay={menu}>
+            <Button>
+              <Space>
+                시즌
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
+        </ButtonWrapper>
+
+        <TextGroup>
+          <CampaignTitle fontSize="24px" color="#222">시즌1 : 수목 성장</CampaignTitle>
+          <CampaignTitle fontSize="18px" color="#888">25.01.01 - 25.03.28</CampaignTitle>
+        </TextGroup>
       </Header>
 
       <ListTop>
-        <CampaignRank />
+        <CampaignRank top3={top3} />
       </ListTop>
 
-      <ListBottom>
-
-        {teamData.map(team => (
-          <CampaignTeamBar key={team.id}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                padding: "0 3%"
-              }}
-            >
-              <span>{team.image}</span>
-              <span>{team.name}</span>
-              <span>{team.total}</span>
-            </div>
-          </CampaignTeamBar>
+      {/* 카드형 컨테이너 */}
+      <CardContainer>
+        {others.map((campaign) => (
+          <TeamCard key={campaign.id}>
+            <TeamImage
+              src={campaign.image}
+              alt={campaign.team?.name || "팀 이미지"}
+            />
+            <TeamName>{campaign.team?.name || "팀명 없음"}</TeamName>
+            <TeamTotal>{campaign.total?.toLocaleString() || 0} 원</TeamTotal>
+          </TeamCard>
         ))}
-
-      </ListBottom>
+      </CardContainer>
     </>
   );
 }

@@ -4,3 +4,4 @@ styled-components@5
 
 antd@4
 @ant-design/icons@5
+npm install rc-util@^4

@@ -32,9 +32,9 @@ public class Season {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    private Long level_1;
-    private Long level_2;
-    private Long level_3;
+    private Long level_1 = 0L;
+    private Long level_2 = 0L;
+    private Long level_3 = 0L;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();

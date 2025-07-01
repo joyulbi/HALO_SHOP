@@ -19,6 +19,15 @@
     INSERT INTO donation_campaign (image, total, season_id, team_id)
     VALUES (#{image}, #{total}, #{season.id}, #{team.id})
   </insert>
+  
+  <select id="findAll" resultMap="DonationCampaignResultMap">
+	  SELECT * FROM donation_campaign
+	  ORDER BY total DESC
+	</select>
+	
+	<select id="findBySeason" resultMap="DonationCampaignResultMap">
+		SELECT * FROM donation_campaign where season_id=#{season.id} ORDER BY total DESC
+	</select>
 
   <select id="findById" parameterType="long" resultMap="DonationCampaignResultMap">
     SELECT * FROM donation_campaign WHERE id = #{id}
