@@ -21,6 +21,9 @@ public interface OrderMapper {
     void update(OrderDto orderDto);
 
     void delete(Long id);
+    
+    void insertOrderWithItems(OrderRequestDto orderRequestDto); // ✅ 추가
+
 
     // ✅ 카카오페이 연동용 TID 업데이트
     void updateTid(@Param("id") Long id, @Param("tid") String tid);

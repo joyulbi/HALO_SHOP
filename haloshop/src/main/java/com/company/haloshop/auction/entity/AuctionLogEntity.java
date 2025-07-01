@@ -3,6 +3,7 @@ package com.company.haloshop.auction.entity;
 import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import com.company.haloshop.entity.member.Account;
 
 @Entity
 @Table(name = "auction_log")
@@ -22,7 +23,7 @@ public class AuctionLogEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
-    private AccountEntity account;
+    private Account account;
 
     @Column(nullable = false)
     private Integer price;

@@ -41,6 +41,5 @@ public class JwtBlacklist {
     @Column(name = "reason", length = 255)
     private String reason;
 
-    @Column(name = "ban")
-    private Boolean ban;
+
 }

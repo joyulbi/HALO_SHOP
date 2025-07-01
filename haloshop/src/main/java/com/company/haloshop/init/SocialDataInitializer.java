@@ -4,12 +4,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.company.haloshop.dto.member.SocialDto;
 import com.company.haloshop.member.mapper.SocialMapper;
 
 @Component
+@Order(1)
 public class SocialDataInitializer implements CommandLineRunner {
 
     private final SocialMapper socialMapper;
