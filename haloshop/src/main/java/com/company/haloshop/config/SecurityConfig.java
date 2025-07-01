@@ -1,6 +1,13 @@
 package com.company.haloshop.config;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,19 +23,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.company.haloshop.security.JwtAuthenticationFilter;
 import com.company.haloshop.security.UserDetailsServiceImpl;
+import com.company.haloshop.security.JwtTokenProvider;
+import com.company.haloshop.security.mapper.JwtBlacklistMapper;
 
 @Configuration
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtBlacklistMapper jwtBlacklistMapper;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtTokenProvider jwtTokenProvider, JwtBlacklistMapper jwtBlacklistMapper) {
         this.userDetailsService = userDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtBlacklistMapper = jwtBlacklistMapper;
     }
 
     @Bean
@@ -75,17 +87,27 @@ public class SecurityConfig {
         userProvider.setUserDetailsService(userDetailsService);
         userProvider.setPasswordEncoder(userPasswordEncoder());
 
-        // 관리자용 DaoAuthenticationProvider 별도 구현 가능
+        // 관리자용 DaoAuthenticationProvider 별도 구현 가능 (필요시 추가)
 
         return new ProviderManager(userProvider);
     }
 
     @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, jwtBlacklistMapper);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 세션 정책 - JWT API는 stateless 처리 (세션 생성하지 않음)
+            // 세션 정책
+            // JWT 로그인(일반 유저)은 stateless 처리 (세션 생성하지 않음)
+            // 세션 로그인(어드민)은 세션 생성 허용 (세션 사용 필요)
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                // 세션 정책을 IF_REQUIRED로 설정하여
+                // 필요 시 세션 생성 허용 (어드민 로그인용 세션)
+                // JWT API 요청 시 stateless로 별도 필터에서 처리 권장
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             // CSRF 설정
             .csrf(csrf -> csrf
@@ -124,9 +146,67 @@ public class SecurityConfig {
                 headers.contentTypeOptions();
             })
             .cors(Customizer.withDefaults())
+            
             // JWT 인증 필터는 UsernamePasswordAuthenticationFilter 앞에 배치
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+
+            // =======================
+            // 10대 공격 차단 및 봇 차단 필터 추가
+            // =======================
+            // - 봇 차단 필터 추가 (구글봇 제외)
+            //   : User-Agent 검사하여 주요 봇 및 크롤러 차단, 구글봇은 whitelist 처리
+            .addFilterBefore(new BotDetectionFilter(), JwtAuthenticationFilter.class)
+
+            // - 기타 HTTP 헤더 기반 공격 차단 및 요청 패턴 필터 추가 가능
+            //   : 예) RateLimitingFilter, SQLInjectionFilter 등 추가 가능
+            ;
 
         return http.build();
+    }
+
+    /**
+     * 봇 및 크롤러 차단 필터 (구글봇 예외)
+     * User-Agent 헤더를 검사하여 주요 봇을 차단하고,
+     * 구글봇은 whitelist로 예외 처리함.
+     */
+    public static class BotDetectionFilter extends OncePerRequestFilter {
+
+        // 차단할 봇/크롤러 User-Agent 키워드 목록 (대소문자 구분 없음)
+        private static final List<String> BLOCKED_BOTS = Arrays.asList(
+            "BingBot", "Slurp", "DuckDuckBot", "Baiduspider", "YandexBot",
+            "Sogou", "Exabot", "facebot", "ia_archiver", "AhrefsBot",
+            "MJ12bot", "SemrushBot", "DotBot", "SeznamBot", "Screaming Frog"
+        );
+
+        // 허용할 봇 (구글봇)
+        private static final String ALLOWED_GOOGLEBOT = "Googlebot";
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+                throws ServletException, IOException {
+
+            String userAgent = request.getHeader("User-Agent");
+            if (userAgent != null) {
+                String uaLower = userAgent.toLowerCase();
+
+                // 구글봇 예외 처리 (허용)
+                if (userAgent.contains(ALLOWED_GOOGLEBOT)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // 주요 차단 봇이 포함되면 403 Forbidden 처리
+                for (String bot : BLOCKED_BOTS) {
+                    if (uaLower.contains(bot.toLowerCase())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                                "Access Denied: Bot/Crawler blocked");
+                        return;
+                    }   
+                }
+            }
+
+            // 봇이 아니거나 User-Agent 헤더가 없으면 정상 진행
+            filterChain.doFilter(request, response);
+        }
     }
 }
