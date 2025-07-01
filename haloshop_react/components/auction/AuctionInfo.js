@@ -2,24 +2,28 @@ import React from "react";
 
 export default function AuctionInfo({ images, title, desc, status }) {
   return (
-    <div style={{ flex: 3, display: "flex", gap: 24 }}>
+    <div style={{
+      background: "#fff", border: "4px solid #b0c7f8", borderRadius: 12, padding: 28, display: "flex",
+      flex: 1, minWidth: 180, alignItems: "center", justifyContent: "center"
+    }}>
+      {/* 이미지 */}
       <div style={{
-        flex: 1, minWidth: 240, background: "#fff", height: 320,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        border: "2px solid #ccc"
+        flex: 1, minWidth: 180, display: "flex", alignItems: "center", justifyContent: "center"
       }}>
         {images.length > 0 ? (
-          <img src={images[0].url} alt="경매이미지" style={{ maxWidth: "100%", maxHeight: "90%" }} />
+          <img src={images[0].url} alt="경매이미지" style={{ maxHeight: 220, maxWidth: 180 }} />
         ) : "이미지 자리"}
       </div>
-      <div style={{
-        flex: 1, minWidth: 240, background: "#fff", height: 320,
-        border: "2px solid #ccc", padding: 24
-      }}>
-        <h2 style={{ marginTop: 0 }}>{title || "경매 제목"}</h2>
-        <p>{desc || "경매 상세 정보"}</p>
-        <div style={{ marginTop: 12, fontWeight: "bold" }}>
-          {status === "FINISHED" ? "경매 종료" : status === "ONGOING" ? "진행 중" : status}
+      {/* 상세정보 */}
+      <div style={{ flex: 1, minWidth: 180, marginLeft: 28 }}>
+        <div style={{ fontWeight: 600, fontSize: "1.2rem", marginBottom: 8 }}>{title || "경매 제목"}</div>
+        <div>{desc || "경매 상세 정보"}</div>
+        <div style={{ marginTop: 14, fontWeight: "bold" }}>
+          {status === "READY"    ? "준비 중"
+           : status === "ONGOING" ? "진행 중"
+           : status === "FINISHED"? "경매 종료"
+           : status === "CANCELED"? "취소됨"
+           : status}
         </div>
       </div>
     </div>
