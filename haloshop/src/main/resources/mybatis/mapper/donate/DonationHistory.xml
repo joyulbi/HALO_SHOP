@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.donationhistory.DonationHistoryMapper">
+
+    <!-- ResultMap -->
+	<resultMap id="DonationHistoryResultMap" type="com.company.haloshop.donationhistory.DonationHistory">
+	    <id property="id" column="id" />
+	    <result property="amount" column="amount" />
+	    <result property="createdAt" column="created_at" />
+	    <association property="campaign" column="campaign_id" javaType="com.company.haloshop.donationcampaign.DonationCampaign" />
+	    <association property="pointLog" column="point_log_id" javaType="com.company.haloshop.pointlog.PointLog" />
+	</resultMap>
+
+    <!-- Insert -->
+    <insert id="insertDonationHistory" parameterType="com.company.haloshop.donationhistory.DonationHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO donation_history (campaign_id, point_log_id, amount, created_at)
+        VALUES (#{campaign.id}, #{pointLog.id}, #{amount}, #{createdAt})
+    </insert>
+
+    <!-- Select by id -->
+    <select id="selectDonationHistoryById" parameterType="long" resultMap="DonationHistoryResultMap">
+        SELECT * FROM donation_history
+        WHERE id = #{id}
+    </select>
+
+    <!-- Select all -->
+    <select id="selectAllDonationHistories" resultMap="DonationHistoryResultMap">
+        SELECT * FROM donation_history
+    </select>
+
+    <!-- Delete -->
+    <delete id="deleteDonationHistoryById" parameterType="long">
+        DELETE FROM donation_history WHERE id = #{id}
+    </delete>
+
+</mapper>

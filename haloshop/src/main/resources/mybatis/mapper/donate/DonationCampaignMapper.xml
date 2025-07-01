@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.donationcampaign.DonationCampaignMapper">
+
+  <resultMap id="DonationCampaignResultMap" type="com.company.haloshop.donationcampaign.DonationCampaign">
+    <id property="id" column="id" />
+    <result property="image" column="image" />
+    <result property="total" column="total" />
+    <association property="season" column="season_id" javaType="com.company.haloshop.season.Season"
+                 select="com.company.haloshop.season.SeasonMapper.findById"/>
+    <association property="team" column="team_id" javaType="com.company.haloshop.team.Team"
+                 select="com.company.haloshop.team.TeamMapper.findById"/>
+  </resultMap>
+
+  <insert id="insertDonationCampaign" parameterType="com.company.haloshop.donationcampaign.DonationCampaign" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO donation_campaign (image, total, season_id, team_id)
+    VALUES (#{image}, #{total}, #{season.id}, #{team.id})
+  </insert>
+
+  <select id="findById" parameterType="long" resultMap="DonationCampaignResultMap">
+    SELECT * FROM donation_campaign WHERE id = #{id}
+  </select>
+
+	<update id="updateDonationCampaign" parameterType="com.company.haloshop.donationcampaign.DonationCampaign">
+	  UPDATE donation_campaign
+	  <set>
+	    <if test="image != null">
+	      image = #{image},
+	    </if>
+	    <if test="total != null">
+	      total = #{total},
+	    </if>
+	    <if test="season != null and season.id != null">
+	      season_id = #{season.id},
+	    </if>
+	    <if test="team != null and team.id != null">
+	      team_id = #{team.id},
+	    </if>
+	  </set>
+	  WHERE id = #{id}
+	</update>
+
+  <delete id="deleteDonationCampaign" parameterType="long">
+    DELETE FROM donation_campaign WHERE id = #{id}
+  </delete>
+
+</mapper>
+

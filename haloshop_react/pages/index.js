@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import Slider from 'react-slick';
 import ProductCard from '../components/ProductCard';
-import api from '../utils/axios';  // axios 세팅 파일 import
+import api from '../utils/axios';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
 
-  // 슬라이드 샘플 이미지
   const bannerImages = [
-    '/images/banner1.jpg',
-    '/images/banner2.jpg',
-    '/images/banner3.jpg'
+    '/images/기아응원타올.jpg',
+    '/images/삼성케이스.jpg',
+    '/images/ssg유니폼.jpg'
   ];
 
-  // 슬라이드 설정
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -24,9 +21,8 @@ const Home = () => {
     autoplay: true
   };
 
-  // 🔥 상품 API 연동
   useEffect(() => {
-    api.get('/api/items')  // Spring Boot API 경로
+    api.get('/api/items')
       .then(res => {
         setProducts(res.data);
       })
@@ -36,30 +32,20 @@ const Home = () => {
   }, []);
 
   return (
-    <div>
-      {/* 네비게이션 */}
-      <header>
-        <nav>
-          <Link href="/">홈</Link> | 
-          <Link href="/items">상품</Link> | 
-          <Link href="/donation">기부캠페인</Link> | 
-          <Link href="/customer">고객센터</Link>
-        </nav>
-      </header>
-
+    <>
       {/* 메인 슬라이드 */}
-      <section className="banner">
+      <section className="banner" style={{ marginBottom: '50px' }}>
         <Slider {...sliderSettings}>
           {bannerImages.map((img, idx) => (
             <div key={idx}>
-              <img src={img} alt={`banner-${idx}`} style={{ width: '100%' }} />
+              <img src={img} alt={`banner-${idx}`} style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '10px' }} />
             </div>
           ))}
         </Slider>
       </section>
 
       {/* 메인 상품 목록 */}
-      <section className="product-list" style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '30px' }}>
+      <section className="product-list" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', marginBottom: '50px' }}>
         {products.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
@@ -71,7 +57,7 @@ const Home = () => {
         <button>🛒</button>
         <button>👤</button>
       </div>
-    </div>
+    </>
   );
 };
 

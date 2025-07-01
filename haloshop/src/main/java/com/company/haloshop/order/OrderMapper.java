@@ -3,13 +3,14 @@ package com.company.haloshop.order;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
 
 @Mapper
 public interface OrderMapper {
-	void insert(OrderRequestDto orderRequestDto);
+    void insert(OrderRequestDto orderRequestDto);
 
     List<OrderDto> findAll();
 
@@ -20,4 +21,10 @@ public interface OrderMapper {
     void update(OrderDto orderDto);
 
     void delete(Long id);
+
+    // ✅ 카카오페이 연동용 TID 업데이트
+    void updateTid(@Param("id") Long id, @Param("tid") String tid);
+
+    // ✅ 카카오페이 연동용 결제 상태 업데이트
+    void updateStatus(@Param("id") Long id, @Param("paymentStatus") String paymentStatus);
 }
