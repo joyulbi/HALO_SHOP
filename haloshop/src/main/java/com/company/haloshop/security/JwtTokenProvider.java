@@ -30,8 +30,9 @@ public class JwtTokenProvider {
     }
 
     // Access Token 생성
-    public String createAccessToken(String email) {
+    public String createAccessToken(String email, Long accountId) {
         Claims claims = Jwts.claims().setSubject(email);
+        claims.put("accountId", accountId); // accountId 추가
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
 
@@ -67,6 +68,16 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    // 토큰에서 accountId 추출
+    public Long getAccountId(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("accountId", Long.class);
+    }
+
     // 토큰 유효성 검사
     public boolean validateToken(String token) {
         try {
@@ -87,7 +98,7 @@ public class JwtTokenProvider {
         return null;
     }
     
- // 토큰에서 발행일 반환
+    // 토큰에서 발행일 반환
     public Date getIssuedAt(String token) {
         Claims claims = Jwts.parserBuilder()
             .setSigningKey(key)

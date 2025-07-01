@@ -11,7 +11,7 @@ import java.util.Date;
 public class AdminDto {
     private Long accountId;
     private Integer role;
-    private Boolean lock;
+    private Boolean isLocked;
     private Long assignedBy;
     private Date updatedAt;
     private String lastIp;

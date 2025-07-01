@@ -4,61 +4,42 @@
 
 <mapper namespace="com.company.haloshop.member.mapper.AdminMapper">
 
-  <!--
-    AdminDto 결과 매핑
-    테이블 admin 컬럼과 DTO 필드 연결
-  -->
   <resultMap id="AdminResultMap" type="com.company.haloshop.dto.member.AdminDto">
     <id property="accountId" column="account_id" />
     <result property="role" column="role" />
-    <result property="lock" column="lock" />
+    <result property="isLocked" column="is_locked" />
     <result property="assignedBy" column="assigned_by" />
     <result property="updatedAt" column="updated_at" />
     <result property="lastIp" column="last_ip" />
   </resultMap>
 
-  <!--
-    account_id로 Admin 조회 쿼리
-  -->
   <select id="selectByAccountId" parameterType="long" resultMap="AdminResultMap">
     SELECT * FROM admin WHERE account_id = #{accountId}
   </select>
 
-  <!--
-    모든 Admin 목록 조회 쿼리
-  -->
   <select id="selectAll" resultMap="AdminResultMap">
     SELECT * FROM admin
   </select>
 
-  <!--
-    Admin 데이터 삽입 쿼리
-  -->
   <insert id="insertAdmin" parameterType="com.company.haloshop.dto.member.AdminDto">
     INSERT INTO admin (
-      account_id, role, lock, assigned_by, updated_at, last_ip
+      account_id, role, is_locked, assigned_by, updated_at, last_ip
     ) VALUES (
-      #{accountId}, #{role}, #{lock}, #{assignedBy}, #{updatedAt}, #{lastIp}
+      #{accountId}, #{role}, #{isLocked}, #{assignedBy}, #{updatedAt}, #{lastIp}
     )
   </insert>
 
-  <!--
-    Admin 데이터 수정 쿼리
-  -->
   <update id="updateAdmin" parameterType="com.company.haloshop.dto.member.AdminDto">
     UPDATE admin
     SET
       role = #{role},
-      lock = #{lock},
+      is_locked = #{isLocked},
       assigned_by = #{assignedBy},
       updated_at = #{updatedAt},
       last_ip = #{lastIp}
     WHERE account_id = #{accountId}
   </update>
 
-  <!--
-    account_id 기준 Admin 삭제 쿼리
-  -->
   <delete id="deleteByAccountId" parameterType="long">
     DELETE FROM admin WHERE account_id = #{accountId}
   </delete>
