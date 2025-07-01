@@ -1,6 +1,0 @@
-npm i
-
-styled-components@5
-
-antd@4
-@ant-design/icons@5
