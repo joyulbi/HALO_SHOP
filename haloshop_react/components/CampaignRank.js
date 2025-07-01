@@ -81,7 +81,7 @@ const RankCircle = ({ $width, $height, $imgSrc }) => (
 const RankDescription = ({ team, amount }) => (
   <div style={{ textAlign: "center" }}>
     <Rank>{team?.name || "팀명없음"}</Rank>
-    <Amount>{amount?.toLocaleString() || "0"}</Amount>
+    <Amount>{amount?.toLocaleString() || "0"} Pt</Amount>
   </div>
 );
 
@@ -125,11 +125,11 @@ const CampaignRank = ({ top3 }) => {
           <RankCircle 
             $width="200px" 
             $height="200px" 
-            $imgSrc={top3?.[2]?.image.toLocaleString()} />
+            $imgSrc={top3?.[2]?.image} />
         </CircleBorder>
         <RankDescription 
           team={top3?.[2]?.team} 
-          amount={top3?.[2]?.total} 
+          amount={top3?.[2]?.total}
         />
       </CircleWrapper>
     </CircleContainer>

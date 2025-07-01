@@ -177,7 +177,7 @@ const Campaign = () => {
               alt={campaign.team?.name || "팀 이미지"}
             />
             <TeamName>{campaign.team?.name || "팀명 없음"}</TeamName>
-            <TeamTotal>{campaign.total?.toLocaleString() || 0} 원</TeamTotal>
+            <TeamTotal>{campaign.total?.toLocaleString() || 0} Pt</TeamTotal>
           </TeamCard>
         ))}
       </CardContainer>
