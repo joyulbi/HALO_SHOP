@@ -1,5 +1,7 @@
 package com.company.haloshop.delivery;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +36,12 @@ public class DeliveryTrackingController {
     public ResponseEntity<String> updateStatus(@RequestBody DeliveryTrackingDTO tracking) {
         deliveryTrackingService.updateStatus(tracking);
         return ResponseEntity.ok("배송 상태 갱신 완료");
+    }
+    
+    @GetMapping("user/{accountId}")
+    public ResponseEntity<List<DeliveryTrackingDTO>> getTrackingByAccountId(@PathVariable("accountId") Long accountId) {
+    	List<DeliveryTrackingDTO> trackings = deliveryTrackingService.getTrackingListByAccountId(accountId);
+    	return ResponseEntity.ok(trackings);
     }
 }
 

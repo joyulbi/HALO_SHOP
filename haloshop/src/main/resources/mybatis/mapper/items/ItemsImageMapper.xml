@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.items.ItemsImageMapper">
+
+<insert id="insert" parameterType="com.company.haloshop.dto.shop.ItemsImage">
+    INSERT INTO items_image (items_id, url)
+    VALUES (#{itemsId}, #{url})
+</insert>
+
+<select id="findByItemsId" parameterType="long" resultType="com.company.haloshop.dto.shop.ItemsImage">
+    SELECT * FROM items_image WHERE items_id = #{itemsId}
+</select>
+
+<delete id="delete" parameterType="long">
+    DELETE FROM items_image WHERE id = #{id}
+</delete>
+
+<delete id="deleteByItemsId" parameterType="long">
+    DELETE FROM items_image WHERE items_id = #{itemsId}
+</delete>
+</mapper>
