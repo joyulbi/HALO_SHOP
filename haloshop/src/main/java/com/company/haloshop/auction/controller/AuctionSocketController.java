@@ -13,7 +13,7 @@ public class AuctionSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final AuctionLogService auctionLogService;
 
-    @MessageMapping("/bid/{auctionId}")
+    @MessageMapping("/auction/{auctionId}")
     public void bid(@DestinationVariable Long auctionId, AuctionLog auctionLog) {
         auctionLog.setAuctionId(auctionId);
         auctionLogService.create(auctionLog);
