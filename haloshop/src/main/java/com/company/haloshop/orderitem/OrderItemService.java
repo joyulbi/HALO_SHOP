@@ -31,4 +31,8 @@ public class OrderItemService {
     public void delete(Long id) {
         orderItemMapper.delete(id);
     }
+    
+    public List<OrderItemDto> findAllByCategoryId(Long categoryId) {
+        return orderItemMapper.findAllByCategoryId(categoryId);
+    }
 }

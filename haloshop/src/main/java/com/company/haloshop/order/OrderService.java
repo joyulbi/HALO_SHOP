@@ -1,6 +1,7 @@
 package com.company.haloshop.order;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,5 +82,12 @@ public class OrderService {
             pointLogService.saveLog(accountId, "SAVE", savePoint);
         }
     }
+    
+    @Transactional
+    public void updatePaymentStatus(Long orderId, String paymentStatus) {
+        orderMapper.updateStatus(orderId, paymentStatus);
+    }
+
+
 
 }

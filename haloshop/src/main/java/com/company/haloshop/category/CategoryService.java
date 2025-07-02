@@ -1,9 +1,9 @@
 package com.company.haloshop.category;
 
 import java.util.List;
-import java.util.Locale.Category;
 
 import org.springframework.stereotype.Service;
+import com.company.haloshop.dto.shop.Category; // ✅ DTO로 import
 
 import lombok.RequiredArgsConstructor;
 
