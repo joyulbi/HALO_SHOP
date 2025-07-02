@@ -2,149 +2,114 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../utils/axios';
 import { useRouter } from 'next/router';
 
-const API_BASE_URL = 'http://localhost:8080';
-
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // 로그인 상태 유지: JWT 토큰 우선 체크, 없으면 세션 로그인 체크
+  /**
+   * 공통 프로필 패칭 함수
+   * 1. /admin/me → 성공시 관리자 정보 반환
+   * 2. /user/me → 실패시 일반 유저 정보 반환
+   */
+  const fetchProfile = async () => {
+    try {
+      // (1) 세션 기반 관리자
+      const resAdmin = await api.get('/admin/me');
+      if (resAdmin.status === 200 && resAdmin.data && resAdmin.data.admin) {
+        setUser({
+          ...resAdmin.data.account,
+          admin: resAdmin.data.admin,
+        });
+        setIsLoggedIn(true);
+        setLoading(false);
+        return 'admin';
+      }
+    } catch {}
+    try {
+      // (2) JWT 기반 일반 유저
+      const resUser = await api.get('/user/me');
+      if (resUser.status === 200 && resUser.data) {
+        setUser({
+          ...(resUser.data.account || {}),
+          user: resUser.data.user || {},
+        });
+        setIsLoggedIn(true);
+        setLoading(false);
+        return 'user';
+      }
+    } catch {}
+    // (3) 둘 다 아님 → 로그아웃 상태
+    setUser(null);
+    setIsLoggedIn(false);
+    setLoading(false);
+    return null;
+  };
+
+  // 마운트/새로고침 시 프로필 자동 체크
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-
-    const normalizeUser = (rawUser) => {
-      if (!rawUser) return null;
-      return {
-        id: rawUser.id || null,
-        email: rawUser.email || '',
-        nickname: rawUser.nickname || rawUser.email || '사용자',
-        isAdmin: !!rawUser.isAdmin,
-        // 필요한 필드 추가 가능
-      };
-    };
-
-    if (accessToken) {
-      setIsLoggedIn(true);
-      (async () => {
-        try {
-          const userInfoRes = await api.get(`${API_BASE_URL}/user/me`);
-          if (userInfoRes.status === 200 && userInfoRes.data) {
-            const rawUser = userInfoRes.data.account || userInfoRes.data.user || null;
-            setUser(normalizeUser(rawUser));
-          } else {
-            setUser(null);
-            setIsLoggedIn(false);
-          }
-        } catch (e) {
-          setUser(null);
-          setIsLoggedIn(false);
-        }
-      })();
-    } else {
-      // JWT 토큰 없으면 세션 로그인(관리자)인지 서버에 한번 확인
-      (async () => {
-        try {
-          const res = await api.get(`${API_BASE_URL}/user/me`);
-          if (res.status === 200 && res.data) {
-            const rawUser = res.data.account || res.data.user || null;
-            if (rawUser && rawUser.isAdmin) {
-              setIsLoggedIn(true);
-              setUser(normalizeUser(rawUser));
-            } else {
-              setIsLoggedIn(false);
-              setUser(null);
-            }
-          } else {
-            setIsLoggedIn(false);
-            setUser(null);
-          }
-        } catch (e) {
-          setIsLoggedIn(false);
-          setUser(null);
-        }
-      })();
-    }
+    fetchProfile();
+    // eslint-disable-next-line
   }, []);
 
-  // 로그인 함수 (JWT 유저 / 관리자 세션 로그인 구분)
+  // ===== 로그인 =====
   const login = async (email, password) => {
     try {
-      const res = await api.post(`${API_BASE_URL}/auth/login`, { email, password });
+      const res = await api.post('/auth/login', { email, password });
       const data = res.data;
-
-      // 1. 관리자(세션) 로그인 성공 메시지 기준
-      if (typeof data === 'string' && data.includes("관리자 로그인 성공")) {
-        setIsLoggedIn(true);
-        setUser({
-          id: null,
-          email,
-          nickname: '관리자',
-          isAdmin: true,
-        });
+      // (1) 세션 관리자
+      if (typeof data === 'string' && data.includes('관리자 로그인 성공')) {
+        await fetchProfile();
         router.push('/');
         return { success: true };
       }
-      // 2. 일반유저(JWT)
+      // (2) JWT 유저
       else if (data && data.accessToken && data.refreshToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        setIsLoggedIn(true);
-
-        // JWT 유저 정보 조회 및 통일된 형태로 저장
-        try {
-          const userInfoRes = await api.get(`${API_BASE_URL}/user/me`);
-          if (userInfoRes.status === 200 && userInfoRes.data) {
-            const rawUser = userInfoRes.data.account || userInfoRes.data.user || null;
-            setUser(normalizeUser(rawUser));
-          } else {
-            setUser(null);
-          }
-        } catch {
-          setUser(null);
-        }
-
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        await fetchProfile();
         router.push('/');
         return { success: true };
       } else {
-        return { success: false, message: "로그인 응답 형식이 올바르지 않습니다." };
+        return { success: false, message: '로그인 응답이 올바르지 않습니다.' };
       }
     } catch (err) {
       return {
         success: false,
-        message: err.response ? err.response.data : "네트워크 오류 또는 서버 응답 없음."
+        message: err?.response?.data || "네트워크 오류 또는 서버 응답 없음."
       };
     }
   };
 
-  // 로그아웃 처리: JWT 토큰 있으면 JWT 로그아웃, 없으면 세션 로그아웃
+  // ===== 로그아웃 =====
   const logoutUser = async () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
       if (accessToken && refreshToken) {
-        await api.post(`${API_BASE_URL}/auth/logout`, { accessToken, refreshToken });
+        await api.post('/auth/logout', { accessToken, refreshToken });
       } else {
-        await api.post(`${API_BASE_URL}/auth/logout`, {}); // 세션 로그아웃
+        await api.post('/auth/logout', {}); // 세션 로그아웃
       }
-    } catch (error) {
-      // 무시
-    } finally {
-      setIsLoggedIn(false);
-      setUser(null);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      router.push('/login');
-    }
+    } catch {}
+    setUser(null);
+    setIsLoggedIn(false);
+    setLoading(false);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    router.push('/login');
   };
 
   const authContextValue = {
     isLoggedIn,
     user,
+    loading,
     login,
     logout: logoutUser,
+    refreshProfile: fetchProfile,
   };
 
   return (
@@ -156,8 +121,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

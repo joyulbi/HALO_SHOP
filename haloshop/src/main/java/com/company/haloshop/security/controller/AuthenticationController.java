@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import com.company.haloshop.security.UserDetailsServiceImpl;
 import com.company.haloshop.security.service.AuthenticationService;
 import com.company.haloshop.security.service.AuthenticationService.LoginResponse;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -61,8 +63,15 @@ public class AuthenticationController {
 
                 // 👇 (선택) JSESSIONID 명시적으로 생성 (사실 이 줄은 없어도 됨)
                 httpRequest.getSession(true);
+                
+                System.out.println("==== 로그인 직후 세션 체크 ====");
+                System.out.println("SessionID: " + httpRequest.getSession().getId());
+                System.out.println("Auth: " + SecurityContextHolder.getContext().getAuthentication());
+                System.out.println("Principal: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+                System.out.println("=================================");
 
                 return ResponseEntity.ok("관리자 로그인 성공");
+                
             } else {
                 return ResponseEntity.ok(new JwtLoginResponse(
                     response.getAccessToken(), response.getRefreshToken()
