@@ -47,7 +47,7 @@ const Header = () => {
         <Link href="/items" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>상품</Link>
         <Link href="/campaign" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>기부캠페인</Link>
         <Link href="/auction" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>경매</Link>
-        <Link href="/customer" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>고객센터</Link>
+        <Link href="/contact" style={navLinkStyle} onMouseEnter={(e) => e.target.style.color = '#c8102e'} onMouseLeave={(e) => e.target.style.color = 'black'}>고객센터</Link>
       </nav>
     </header>
   );

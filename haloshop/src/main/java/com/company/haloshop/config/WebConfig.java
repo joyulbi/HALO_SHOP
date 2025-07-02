@@ -26,5 +26,9 @@ public class WebConfig implements WebMvcConfigurer {
         // 상품 이미지 (외부 디렉토리)
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:///C:/upload/");
+        
+        // 캠페인 이미지 (외부 디렉토리)
+        registry.addResourceHandler("/uploads/campaign/**")
+        	.addResourceLocations("file:///C:/upload/campaign/");
     }
 }

@@ -40,7 +40,7 @@ const AdminMainPage = () => {
         { label: '문의 관리 페이지', path: '/admin/inquiries' },
         { label: '야구팀 설정 페이지', path: '/admin/teams' },
         { label: '시즌 설정 페이지', path: '/admin/seasons' },
-        { label: '기부 캠페인 페이지', path: '/admin/donation' },
+        { label: '기부 캠페인 페이지', path: '/admin/campaign' },
       ]
     }
   ];

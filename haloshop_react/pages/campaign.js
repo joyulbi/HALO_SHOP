@@ -87,6 +87,7 @@ const TeamImage = styled.img`
   border-radius: 50%;
   background-color: #f9f9f9;
   padding: 0.5rem;
+  
 `;
 
 const TeamName = styled.p`
@@ -110,48 +111,96 @@ const CampaignTitle = styled.p`
   color: ${({ color }) => color || "#000"};
 `;
 
-  const handleButtonClick = (e) => {
-    message.info('Click on left button.');
-    console.log('click left button', e);
-  };
-  const handleMenuClick = (e) => {
-    message.info('Click on menu item.');
-    console.log('click', e);
-  };
-
-const Campaign = () => {
-
-
-  const menu = (
-    <Menu onClick={(e) => {
-      message.info(`Click on menu item ${e.key}`);
-      console.log('click', e);
-    }}>
-      <Menu.Item key="1">1st menu item</Menu.Item>
-      <Menu.Item key="2">2nd menu item</Menu.Item>
-      <Menu.Item key="3">3rd menu item</Menu.Item>
-    </Menu>
-  );
-
+const campaign = () => {
+  const [seasons, setSeasons] = useState([]);
+  const [selectedSeason, setSelectedSeason] = useState(null);
+  const [campaignImage, setCampaignImage] = useState({});
   const [rankList, setRankList] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/donation-campaigns")
-      .then((res) => setRankList(res.data))
-      .catch((err) => console.error(err));
+    axios.get("http://localhost:8080/api/seasons")
+      .then(res => {
+        const seasonList = res.data;
+        setSeasons(seasonList);
+        if (seasonList.length > 0) {
+          // id가 가장 큰 시즌 선택
+          const latest = seasonList.reduce((max, curr) => (curr.id > max.id ? curr : max), seasonList[0]);
+          setSelectedSeason(latest);
+        }
+      })
+      .catch(err => console.error(err));
   }, []);
 
+  useEffect(() => {
+    if (!selectedSeason) return;
+
+    // 시즌 상세정보
+    axios.get(`http://localhost:8080/api/seasons/${selectedSeason.id}`)
+      .then(res => setSelectedSeason(prev => ({ ...prev, ...res.data })))
+      .catch(err => console.error(err));
+
+    // 시즌 이미지
+    axios.get(`http://localhost:8080/api/campaign-images/${selectedSeason.id}`)
+      .then(res => setCampaignImage(res.data))
+      .catch(err => console.error(err));
+
+    // 시즌 캠페인
+    axios.get(`http://localhost:8080/api/donation-campaigns/season/${selectedSeason.id}`)
+      .then(res => setRankList(res.data))
+      .catch(err => console.error(err));
+  }, [selectedSeason?.id]);
+
+  // 이미지 선별
+  const imgURL = 'http://localhost:8080/uploads/campaign/';
+  
+  const getImageByTotal = (total) => {
+    if (!selectedSeason || !campaignImage) return imgURL + "default.jpg";
+
+    const { level_1: lvl1, level_2: lvl2, level_3: lvl3 } = selectedSeason;
+    let img = null;
+
+    if (total >= lvl3) img = campaignImage.level_3;
+    else if (total >= lvl2) img = campaignImage.level_2;
+    else if (total >= lvl1) img = campaignImage.level_1;
+
+    if (!img) {
+      return imgURL + "default.jpg";
+    }
+    return imgURL + img;
+  };
+
+  const seasonMenu = (
+    <Menu
+      onClick={({ key }) => {
+        const season = seasons.find(s => s.id === Number(key));
+        if (season) setSelectedSeason(season);
+      }}
+    >
+      {[...seasons]
+        .sort((a, b) => b.id - a.id) // 최신순 정렬
+        .map(season => (
+          <Menu.Item key={season.id}>
+            시즌 {season.id} : {season.name}
+          </Menu.Item>
+        ))}
+    </Menu>
+  );
+
   const top3 = rankList.slice(0, 3);
+  const top3WithImage = top3.map(item => ({
+  ...item,
+  image: getImageByTotal(item.total),
+  }));
   const others = rankList.slice(3);
 
   return (
     <>
       <Header>
         <ButtonWrapper>
-          <Dropdown overlay={menu}>
+          <Dropdown overlay={seasonMenu}>
             <Button>
               <Space>
-                시즌
+                {selectedSeason?.name && `시즌 ${selectedSeason.id} : ${selectedSeason.name}` || "시즌 선택" }
                 <DownOutlined />
               </Space>
             </Button>
@@ -159,13 +208,17 @@ const Campaign = () => {
         </ButtonWrapper>
 
         <TextGroup>
-          <CampaignTitle fontSize="24px" color="#222">시즌1 : 수목 성장</CampaignTitle>
-          <CampaignTitle fontSize="18px" color="#888">25.01.01 - 25.03.28</CampaignTitle>
+          <CampaignTitle fontSize="24px" color="#222">
+            {selectedSeason?.name && `시즌 ${selectedSeason.id} : ${selectedSeason.name}` || "시즌명을 선택하세요"}
+          </CampaignTitle>
+          <CampaignTitle fontSize="18px" color="#888">
+            {selectedSeason?.start_date?.slice(0, 10)} - {selectedSeason?.end_date?.slice(0, 10)}
+          </CampaignTitle>
         </TextGroup>
       </Header>
 
       <ListTop>
-        <CampaignRank top3={top3} />
+        <CampaignRank top3={top3WithImage} />
       </ListTop>
 
       {/* 카드형 컨테이너 */}
@@ -173,7 +226,7 @@ const Campaign = () => {
         {others.map((campaign) => (
           <TeamCard key={campaign.id}>
             <TeamImage
-              src={campaign.image}
+              src={getImageByTotal(campaign.total)}
               alt={campaign.team?.name || "팀 이미지"}
             />
             <TeamName>{campaign.team?.name || "팀명 없음"}</TeamName>
@@ -185,4 +238,4 @@ const Campaign = () => {
   );
 }
 
-export default Campaign;
+export default campaign;

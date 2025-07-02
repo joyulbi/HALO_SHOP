@@ -44,7 +44,7 @@ public class SeasonService {
 
     @Transactional
     public int deleteSeason(Long id) {
-        donationCampaignMapper.deleteDonationCampaign(id);
+        donationCampaignMapper.deleteDonationCampaignBySeasonId(id);
         campaignImageMapper.deleteCampaignImageBySeasonId(id);
         return seasonMapper.deleteSeason(id);
     }

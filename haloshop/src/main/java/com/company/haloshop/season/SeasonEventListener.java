@@ -31,21 +31,21 @@ public class SeasonEventListener {
 
         // DonationCampaign 자동 생성
         for (Team team : teams) {
-            DonationCampaign campaign = DonationCampaign.builder()
-                .season(season)
-                .team(team)
-                .total(0L)
-                .build();
+        	// 활성화 상태인 경우에만 생성
+            if (Boolean.TRUE.equals(team.getActive())) {
+                DonationCampaign campaign = DonationCampaign.builder()
+                    .season(season)
+                    .team(team)
+                    .total(0L)
+                    .build();
 
-            donationCampaignMapper.insertDonationCampaign(campaign);
+                donationCampaignMapper.insertDonationCampaign(campaign);
+            }
         }
 
         // CampaignImage 자동 생성
         CampaignImage image = CampaignImage.builder()
             .seasonId(season.getId())
-            .level_1("http://via.placeholder.com/100x100")
-            .level_2("http://via.placeholder.com/200x200")
-            .level_3("http://via.placeholder.com/300x300")
             .build();
 
         campaignImageMapper.insertCampaignImage(image);

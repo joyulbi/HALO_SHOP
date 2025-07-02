@@ -55,6 +55,10 @@
   <delete id="deleteDonationCampaign" parameterType="long">
     DELETE FROM donation_campaign WHERE id = #{id}
   </delete>
+  
+  <delete id="deleteDonationCampaignBySeasonId" parameterType="long">
+  	DELETE FROM donation_campaign WHERE season_id=#{season.id}
+  </delete>
 
 </mapper>
 

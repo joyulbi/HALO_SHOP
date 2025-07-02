@@ -55,8 +55,8 @@ const Circle = styled.div`
   overflow: hidden; /* 이미지 자르기 */
 
   img {
-    width: 80%;
-    height: 80%;
+    width: 100%;
+    height: 100%;
     object-fit: contain; /* 이미지 비율 유지하며 꽉 채우기 */
     background-color: #fff;
   }
