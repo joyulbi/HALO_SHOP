@@ -16,19 +16,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
-
+    
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 리뷰 이미지 (프로젝트 내부 리소스)
-        registry.addResourceHandler("/uploads/reviews/**")
-                .addResourceLocations("file:src/main/resources/static/upload/review/");
-
+        // 리뷰 이미지 (외부 디렉토리로 수정)
+        registry.addResourceHandler("/upload/review/**")
+        		.addResourceLocations("file:///C:/upload/review/");
+        
         // 상품 이미지 (외부 디렉토리)
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:///C:/upload/");
     }
-
 }
-
-
-

@@ -1,21 +1,28 @@
 package com.company.haloshop.payment;
 
-import com.company.haloshop.dto.shop.OrderDto;
-import com.company.haloshop.order.OrderMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.company.haloshop.dto.shop.OrderDto;
+import com.company.haloshop.order.OrderMapper;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@ConditionalOnProperty(name = "kakao.pay.enabled", havingValue = "true", matchIfMissing = false)
 @RestController
 @RequestMapping("/api/pay/kakao")
 @RequiredArgsConstructor

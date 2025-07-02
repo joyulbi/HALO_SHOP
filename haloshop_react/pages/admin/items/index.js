@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import ImageUpload from '../../../components/ImageUpload';
+import useCategories from '../../../hooks/useCategories';
 
 const AdminItemPage = () => {
   const router = useRouter();
-
+  const categories = useCategories();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -13,7 +14,7 @@ const AdminItemPage = () => {
   const [categoryId, setCategoryId] = useState('');
   const [imageUrls, setImageUrls] = useState([]);
   const [isMultiUpload, setIsMultiUpload] = useState(false);
-
+  
   const [items, setItems] = useState([]);
 
   const fetchItems = async () => {
@@ -32,7 +33,7 @@ const AdminItemPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (imageUrls.length === 0) { 
+    if (imageUrls.length === 0) {
       alert('이미지를 업로드해주세요.');
       return;
     }
@@ -66,12 +67,12 @@ const AdminItemPage = () => {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">관리자 상품 등록 페이지</h1>
+    <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>관리자 상품 등록 페이지</h1>
 
-      <div className="mb-4">
-        <label className="mr-4">업로드 모드: </label>
-        <label className="mr-2">
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ marginRight: '16px' }}>업로드 모드: </label>
+        <label style={{ marginRight: '8px' }}>
           <input
             type="radio"
             name="uploadMode"
@@ -93,75 +94,106 @@ const AdminItemPage = () => {
         </label>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 border-2 border-pink-300 p-4 w-[400px] mb-10">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: '2px solid #f9a8d4', padding: '16px', width: '400px', marginBottom: '40px' }}>
         <div>
           <label>상품 이미지: </label>
           <ImageUpload
-            isMultiUpload={isMultiUpload} // 🔥 전달 필수
+            isMultiUpload={isMultiUpload}
             onUploadSuccess={(urls) => {
               if (isMultiUpload) {
-                setImageUrls((prev) => [...prev, ...urls]); // 다중 추가
+                setImageUrls((prev) => [...prev, ...urls]);
               } else {
-                setImageUrls(urls); // 단일 덮어쓰기
+                setImageUrls(urls);
               }
             }}
           />
         </div>
         <div>
           <label>상품명: </label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="border w-full" required />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
         </div>
         <div>
           <label>상품 금액: </label>
-          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="border w-full" required />
+          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
         </div>
         <div>
           <label>상품 설명: </label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="border w-full" required />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
         </div>
         <div>
           <label>카테고리: </label>
-          <input type="text" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="border w-full" required />
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
+            required
+          >
+            <option value="">카테고리를 선택하세요</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label>팀 선택: </label>
-          <input type="text" value={teamId} onChange={(e) => setTeamId(e.target.value)} className="border w-full" required />
+          <input type="text" value={teamId} onChange={(e) => setTeamId(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
         </div>
 
-        <div className="flex space-x-4">
-          <button type="reset" className="bg-gray-400 text-white px-4 py-2 rounded">등록 취소</button>
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">상품 등록</button>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <button type="reset" style={{ backgroundColor: '#9ca3af', color: 'white', padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>등록 취소</button>
+          <button type="submit" style={{ backgroundColor: '#3b82f6', color: 'white', padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>상품 등록</button>
         </div>
       </form>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">상품 목록</h2>
-        <div className="grid grid-cols-4 gap-4">
-          {items.map(item => {
-            console.log('🔥 item.images:', item.images);
-            return (
-              <div key={item.id} className="border p-4 flex flex-col items-center">
-                <img
-                  src={item.images[0] ? `http://localhost:8080${item.images[0].url}` : ''}
-                  alt={item.name}
-                  className="w-32 h-32 object-cover mb-2"
-                />
-                <p className="font-bold">{item.name}</p>
-                <p>{item.price}원</p>
-                <p>{item.description}</p>
-                <div className="flex space-x-2 mt-2">
-                  <button
-                    onClick={() => router.push(`/admin/items/${item.id}`)}
-                    className="bg-yellow-400 px-2 py-1 rounded"
-                  >
-                    상품 수정
-                  </button>
+      {/* ✅ 화면 가득 확장 시작 */}
+      <div style={{ width: '100vw', position: 'relative', left: '50%', transform: 'translateX(-50%)', padding: '0 40px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' , textAlign: 'center' }}>상품 목록</h2>
+
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+            {items.map(item => {
+              console.log('🔥 item.images:', item.images);
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    border: '1px solid #ddd',
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    width: '100%',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'box-shadow 0.3s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'}
+                >
+                  <img
+                    src={item.images[0] ? `http://localhost:8080${item.images[0].url}` : ''}
+                    alt={item.name}
+                    style={{ width: '128px', height: '128px', objectFit: 'cover', marginBottom: '8px' }}
+                  />
+                  <p style={{ fontWeight: 'bold' }}>{item.name}</p>
+                  <p>{item.price}원</p>
+                  <p style={{ textAlign: 'center' }}>{item.description}</p>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                      onClick={() => router.push(`/admin/items/${item.id}`)}
+                      style={{ backgroundColor: '#facc15', padding: '4px 8px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
+                    >
+                      상품 수정
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
+      {/* ✅ 화면 가득 확장 끝 */}
     </div>
   );
 };
