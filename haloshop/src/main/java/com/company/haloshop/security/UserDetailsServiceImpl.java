@@ -20,9 +20,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         AccountDto account = accountMapper.selectByEmail(email);
-        if (account == null || account.getIsAdmin()) {
-            throw new UsernameNotFoundException("User not found or is admin");
+        if (account == null) {
+            throw new UsernameNotFoundException("User not found");
         }
+        // 관리자든 일반유저든 무조건 반환!
         return new CustomUserDetails(account);
     }
 }

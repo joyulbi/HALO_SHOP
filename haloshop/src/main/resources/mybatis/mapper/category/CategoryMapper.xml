@@ -10,4 +10,8 @@
         ORDER BY id ASC
     </select>
 
+    <insert id="insert" parameterType="com.company.haloshop.dto.shop.Category">
+        INSERT INTO category (name) VALUES (#{name})
+    </insert>
+
 </mapper>

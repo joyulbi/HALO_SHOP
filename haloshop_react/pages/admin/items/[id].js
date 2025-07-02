@@ -8,6 +8,7 @@ const EditItemPage = () => {
   const { id } = router.query;
   const categories = useCategories();
   const [item, setItem] = useState(null);
+  const [teams, setTeams] = useState([]);
   const [imagePreview, setImagePreview] = useState('');
 
   const fetchItem = async () => {
@@ -21,8 +22,18 @@ const EditItemPage = () => {
     }
   };
 
+    const fetchTeams = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/teams');
+      setTeams(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (id) fetchItem();
+    fetchTeams(); 
   }, [id]);
 
   const handleUpdate = async (e) => {
@@ -162,13 +173,19 @@ const EditItemPage = () => {
           </div>
           <div>
             <label>팀 선택: </label>
-            <input
-              type="text"
-              value={item.teamId}
-              onChange={(e) => setItem({ ...item, teamId: e.target.value })}
+            <select
+              value={String(item.teamId)}
+              onChange={(e) => setItem({ ...item, teamId: parseInt(e.target.value) })}
               style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
-            />
+            >
+              <option value="">팀을 선택하세요</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{ display: 'flex', gap: '16px' }}>

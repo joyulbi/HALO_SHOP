@@ -1,13 +1,19 @@
+// pages/_app.js
+import { wrapper } from '../store/configureStore';
+import { AuthProvider } from '../hooks/useAuth';
+import Layout from '../components/Layout';
 import '../styles/globals.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import Layout from '../components/Layout';
 import 'antd/dist/antd.css';
 
-export default function App({ Component, pageProps }) {
+function MyApp({ Component, pageProps }) {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <AuthProvider>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </AuthProvider>
   );
 }
+export default wrapper.withRedux(MyApp);

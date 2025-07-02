@@ -16,6 +16,7 @@ const AdminItemPage = () => {
   const [isMultiUpload, setIsMultiUpload] = useState(false);
   
   const [items, setItems] = useState([]);
+  const [teams, setTeams] = useState([]);
 
   const fetchItems = async () => {
     try {
@@ -26,8 +27,18 @@ const AdminItemPage = () => {
     }
   };
 
+  const fetchTeams = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/teams');
+      setTeams(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchTeams();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -138,7 +149,19 @@ const AdminItemPage = () => {
         </div>
         <div>
           <label>팀 선택: </label>
-          <input type="text" value={teamId} onChange={(e) => setTeamId(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
+          <select
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value)}
+            style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
+            required
+          >
+            <option value="">팀을 선택하세요</option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div style={{ display: 'flex', gap: '16px' }}>

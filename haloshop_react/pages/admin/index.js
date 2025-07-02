@@ -16,7 +16,7 @@ const AdminMainPage = () => {
       title: '상품 관리',
       buttons: [
         { label: '상품 등록 페이지', path: '/admin/items' },
-        { label: '상품 재고 관리 페이지', path: '/admin/stock' },
+        { label: '상품 재고 관리 페이지', path: '/admin/inventory' },
       ]
     },
     {

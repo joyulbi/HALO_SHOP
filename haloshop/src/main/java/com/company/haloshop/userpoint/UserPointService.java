@@ -2,11 +2,13 @@ package com.company.haloshop.userpoint;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.company.haloshop.pointlog.PointLogService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.company.haloshop.dto.shop.MembershipDto;
+import com.company.haloshop.dto.shop.PointLogDto;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.membership.MembershipMapper;
 
@@ -18,6 +20,7 @@ public class UserPointService {
 
     private final UserPointMapper userPointMapper;
     private final MembershipMapper membershipMapper;
+    private final PointLogService pointLogService;
 
     // 관리자용 전체 조회
     public List<UserPointDto> findAll() {
@@ -110,5 +113,33 @@ public class UserPointService {
         userPoint.setUpdatedAt(LocalDateTime.now());
         userPointMapper.update(userPoint);
     }
+    
+    @Transactional
+    public void adjustPointManually(Long accountId, int adjustAmount, String adjustType) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint == null) {
+            userPoint = new UserPointDto();
+            userPoint.setAccountId(accountId);
+            userPoint.setTotalPoint((long) adjustAmount);
+            userPoint.setTotalPayment(0L);
+            userPoint.setGrade("BASIC");
+            
+            userPoint.setUpdatedAt(LocalDateTime.now());
+            userPointMapper.insert(userPoint);
+        } else {
+            userPoint.setTotalPoint(userPoint.getTotalPoint() + adjustAmount);
+            userPoint.setUpdatedAt(LocalDateTime.now());
+            userPointMapper.update(userPoint);
+        }
+
+        PointLogDto pointLogDto = new PointLogDto();
+        pointLogDto.setAccountId(accountId);
+        pointLogDto.setAmount(adjustAmount);
+        pointLogDto.setType(adjustType);  // "MANUAL_ADJUST" or "MANUAL_ADD_이벤트" 등
+        pointLogDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(pointLogDto);
+    }
+
+
 
 }

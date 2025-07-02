@@ -122,7 +122,7 @@ export default function AuctionRoomLayout() {
   if (!AUCTION_ID) return <div>로딩중...</div>;
 
   return (
-    <div style={{ background: "#ddd", minHeight: "100vh", padding: 0, margin: 0 }}>
+    <div style={{ background: "#ddd", minHeight: "100vh", padding: 0, margin: 0 }}> 
       <div style={{
         display: "grid",
         gridTemplateColumns: "3fr 2fr",

@@ -41,8 +41,16 @@ public class OrderService {
     }
 
     public void delete(Long id) {
+        OrderDto order = orderMapper.findById(id);
+        if (order == null) {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+        if ("PAID".equals(order.getPaymentStatus())) {
+            throw new IllegalStateException("이미 결제 완료된 주문은 삭제할 수 없습니다.");
+        }
         orderMapper.delete(id);
     }
+
 
     @Transactional
     public void insertOrderWithItems(OrderRequestDto orderRequestDto) {

@@ -7,9 +7,9 @@ const Home = () => {
   const [products, setProducts] = useState([]);
 
   const bannerImages = [
-    '/images/기아응원타올.jpg',
-    '/images/삼성케이스.jpg',
-    '/images/ssg유니폼.jpg'
+    '/images/slide1.png',
+    '/images/slide2.jpeg',
+    '/images/slide3.jpeg'
   ];
 
   const sliderSettings = {
@@ -18,7 +18,8 @@ const Home = () => {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true
+    autoplay: true,
+    fade: true
   };
 
   useEffect(() => {
@@ -45,6 +46,11 @@ const Home = () => {
       </section>
 
       {/* 메인 상품 목록 */}
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', textAlign: 'center' }}>
+        추천 상품
+      </h2>
+
+      {/* 메인 상품 목록 */}
       <section className="product-list" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', marginBottom: '50px' }}>
         {products.map(product => (
           <ProductCard key={product.id} product={product} />
@@ -53,9 +59,9 @@ const Home = () => {
 
       {/* 사이드 퀵 메뉴 (고정) */}
       <div className="quick-menu" style={{ position: 'fixed', right: '20px', top: '200px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <button>💳</button>
-        <button>🛒</button>
-        <button>👤</button>
+        <button title="결제" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>💳</button>
+        <button title="장바구니" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>🛒</button>
+        <button title="마이페이지" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>👤</button>
       </div>
     </>
   );
