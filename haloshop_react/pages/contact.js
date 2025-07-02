@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import ContactForm from "../components/ContactForm";
+import InquiryForm from "../components/InquiryForm"; // 기존 ContactForm → InquiryForm
 import InquiryList from "../components/InquiryList";
+
+// 예시 사용자 정보
+const mockUser = {
+  id: 1,
+  name: "홍길동",
+  email: "gildong@example.com",
+};
 
 const Wrapper = styled.div`
   display: flex;
-  height: 100vh;
+  min-height: 100vh;  // 화면 전체 높이 유지
+  background: #fafafa;
 `;
 
 const Sidebar = styled.div`
-  width: 200px;
+  width: 220px;  // 약간 넓게
   background-color: #f0f0f0;
-  padding: 2rem 1rem;
+  padding: 2rem 1.5rem;
   box-shadow: 2px 0 5px rgba(0,0,0,0.05);
 `;
 
@@ -34,12 +42,15 @@ const TabButton = styled.button`
 
 const Main = styled.div`
   flex: 1;
-  padding: 2rem;
+  padding: 3rem 4rem;  // 좌우 위아래 padding 넉넉히
   overflow-y: auto;
+  min-height: 100vh;
+  background-color: #fff;
+  box-sizing: border-box;
 `;
 
-const contact = ({ user }) => {
-  const [selectedTab, setSelectedTab] = useState("write"); // "write" or "list"
+const contact = ({ user = mockUser }) => {
+  const [selectedTab, setSelectedTab] = useState("write");
 
   return (
     <Wrapper>
@@ -58,8 +69,8 @@ const contact = ({ user }) => {
         </TabButton>
       </Sidebar>
       <Main>
-        {selectedTab === "write" && <ContactForm />}
-        {selectedTab === "list" && <InquiryList />}
+        {selectedTab === "write" && <InquiryForm user={user} />}
+        {selectedTab === "list" && <InquiryList user={user} />}
       </Main>
     </Wrapper>
   );
