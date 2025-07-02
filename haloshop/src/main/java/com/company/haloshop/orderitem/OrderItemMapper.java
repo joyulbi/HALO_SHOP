@@ -19,4 +19,6 @@ public interface OrderItemMapper {
     void update(OrderItemDto orderItemDto);
 
     void delete(Long id);
+    
+    List<OrderItemDto> findAllByCategoryId(Long categoryId);
 }
