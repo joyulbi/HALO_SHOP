@@ -10,9 +10,14 @@
         VALUES (#{accountId}, #{itemsId}, #{quantity}, NOW(), NOW())
     </insert>
 
+    <!-- 조인으로 item 정보까지 불러오기 -->
     <select id="getCartList" resultType="com.company.haloshop.dto.shop.Cart">
-        SELECT * FROM cart
-        WHERE account_id = #{accountId}
+        SELECT c.id, c.account_id, c.items_id, c.quantity, c.created_at, c.updated_at,
+               i.name, i.price, 
+               (SELECT url FROM items_image WHERE items_id = i.id LIMIT 1) AS imageUrl
+        FROM cart c
+        JOIN items i ON c.items_id = i.id
+        WHERE c.account_id = #{accountId}
     </select>
 
     <update id="updateCart">

@@ -229,6 +229,7 @@ public class SecurityConfig {
             filterChain.doFilter(request, response);
         }
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -245,3 +246,6 @@ public class SecurityConfig {
         return source;
     }
 }
+
+
+

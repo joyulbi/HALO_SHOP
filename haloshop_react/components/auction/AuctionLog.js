@@ -1,8 +1,10 @@
-import React from "react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function AuctionLog({
   logs, highest, inputBid, setInputBid, handleBid, isFinished
 }) {
+  const { user } = useAuth();
+
   return (
     <div style={{
       background: "#eef3ff", border: "4px solid #3d6fee", borderRadius: 12, padding: 18,
@@ -12,7 +14,13 @@ export default function AuctionLog({
       <div style={{ flex: 2, marginRight: 18 }}>
         <div style={{ fontWeight: "bold", marginBottom: 8 }}>경매 로그 실시간 정보</div>
         {logs.length > 0 ? logs.map((log, i) => (
-          <div key={i}>{log.accountId}님이 {log.price}원에 입찰</div>
+          <div key={i}>
+            {/* 내 로그만 내 닉네임, 나머진 accountId */}
+            {user && log.accountId === user.id
+              ? `${user.nickname}님`
+              : `${log.accountId}님`
+            }이 {log.price}원에 입찰
+          </div>
         )) : <div>입찰 로그 없음</div>}
       </div>
       {/* 입찰폼 */}

@@ -14,8 +14,10 @@ public interface DonationCampaignMapper {
     List<DonationCampaign> findAll();
     
     List<DonationCampaign> findBySeason(Long id);
-
+    
     int updateDonationCampaign(DonationCampaign campaign);
 
     int deleteDonationCampaign(Long id);
+    
+    int deleteDonationCampaignBySeasonId(Long id);
 }
