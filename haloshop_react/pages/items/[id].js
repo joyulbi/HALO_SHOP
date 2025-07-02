@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useCart } from '../../context/CartContext';
 import api from '../../utils/axios';
 
 const ItemDetail = () => {
@@ -11,6 +12,7 @@ const ItemDetail = () => {
 
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const [showLens, setShowLens] = useState(false);
+  const { setCartCount } = useCart();
 
   const lensSize = 150;
   const zoom = 2;
@@ -38,14 +40,18 @@ const ItemDetail = () => {
     setLensPosition({ x, y });
   };
 
-  const handleAddToCart = () => {
-    api.post('/api/cart', {
-      itemId: item.id,
-      quantity: quantity
+const handleAddToCart = () => {
+  api.post('/api/cart', {
+    accountId: 8, // 임시 계정 ID
+    itemsId: item.id,
+    quantity: quantity
+  })
+    .then(() => {
+      alert('장바구니에 담겼습니다.');
+      setCartCount(prev => prev + quantity); // 🔥 cartCount 올리기
     })
-      .then(() => alert('장바구니에 담겼습니다.'))
-      .catch(err => console.error('장바구니 담기 실패:', err));
-  };
+    .catch(err => console.error('장바구니 담기 실패:', err));
+};
 
   const handleBuyNow = () => {
     router.push(`/order?itemId=${item.id}&quantity=${quantity}`);
