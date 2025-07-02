@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import axios from '../../utils/axios';
 import { useRouter } from 'next/router';
+import DeliveryForm from '../../components/DeliveryForm';
 
 const OrderFormPage = () => {
   const router = useRouter();
 
   const [order, setOrder] = useState({
     accountId: '',
-    deliveryId: '',
     used: 'CARD',
     paymentStatus: 'PENDING',
-    amount: ''
   });
 
   const [items, setItems] = useState([
     { itemId: '', itemName: '', productPrice: '', quantity: '' }
   ]);
 
+  const [point, setPoint] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const handleOrderChange = (e) => {
@@ -44,34 +44,19 @@ const OrderFormPage = () => {
     }, 0);
   };
 
-  const validateForm = () => {
-    if (!order.accountId || !order.deliveryId) {
-      alert('Account ID와 Delivery ID를 입력해주세요.');
-      return false;
-    }
-    if (items.length === 0 || items.some(item => !item.itemId || !item.productPrice || !item.quantity)) {
-      alert('모든 아이템 정보를 입력해주세요.');
-      return false;
-    }
-    const total = calculateTotalPrice();
-    if ((Number(order.amount) || 0) > total) {
-      alert('사용 포인트가 결제 금액을 초과할 수 없습니다.');
-      return false;
-    }
-    return true;
+  const formatKRW = (amount) => {
+    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
     setLoading(true);
     try {
       const payload = {
         ...order,
         accountId: Number(order.accountId),
-        deliveryId: Number(order.deliveryId),
-        amount: Number(order.amount) || 0,
         totalPrice: calculateTotalPrice(),
+        amount: point,
         orderItems: items.map(item => ({
           itemId: Number(item.itemId),
           itemName: item.itemName,
@@ -97,72 +82,130 @@ const OrderFormPage = () => {
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">주문 등록</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1">Account ID</label>
-          <input name="accountId" value={order.accountId} onChange={handleOrderChange} className="border p-2 w-full" />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-8 max-w-6xl mx-auto font-sans text-gray-800">
+      <div>
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-1">Account ID </label>
+          <input
+            name="accountId"
+            value={order.accountId}
+            onChange={handleOrderChange}
+            className="border border-gray-300 p-3 w-full rounded-md focus:outline-none focus:ring focus:border-black"
+          />
         </div>
-        <div>
-          <label className="block mb-1">Delivery ID</label>
-          <input name="deliveryId" value={order.deliveryId} onChange={handleOrderChange} className="border p-2 w-full" />
-        </div>
-        <div>
-          <label className="block mb-1">결제 수단</label>
-          <select name="used" value={order.used} onChange={handleOrderChange} className="border p-2 w-full">
-            <option value="CARD">카드(Mock)</option>
-            <option value="KAKAOPAY">카카오페이</option>
-            
-          </select>
-        </div>
-        <div>
-          <label className="block mb-1">사용할 포인트</label>
-          <input name="amount" value={order.amount} onChange={handleOrderChange} placeholder="사용할 포인트 금액" className="border p-2 w-full" />
-        </div>
-        <p>총 합계: {calculateTotalPrice()} 원</p>
-        <p>포인트 사용 후 결제 금액: {calculateTotalPrice() - (Number(order.amount) || 0)} 원</p>
 
-        <h3 className="text-lg font-semibold mt-4">주문 아이템</h3>
+        <br />
+
+        <div className="flex items-center gap-3 mb-6">
+          <h4>포인트 사용</h4>
+          <input
+            type="number"
+            value={point}
+            onChange={(e) => setPoint(Number(e.target.value) || 0)}
+            placeholder="포인트 사용"
+            className="flex-1 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring"
+          />
+          <button
+            type="button"
+            className="px-4 py-2 bg-black text-white rounded-md shadow hover:opacity-90"
+          >
+            Apply
+          </button>
+        </div>
+
+        <div className="text-sm space-y-1 mb-8">
+          <div className="flex justify-between">
+            <span>Subtotal </span>
+            <span>{formatKRW(calculateTotalPrice())}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Shipping </span>
+            <span>{formatKRW(1000)}</span>
+          </div>
+          <div className="flex justify-between font-bold">
+            <span>Total </span>
+            <span>{formatKRW(calculateTotalPrice() + 1000 - point)}</span>
+          </div>
+        </div>
+
+        <br />
+
+        <h3 className="text-lg font-semibold mb-4">주문 아이템</h3>
         {items.map((item, index) => (
-          <div key={index} className="space-y-2 border p-2 mb-2">
+          <div key={index} className="grid grid-cols-4 gap-2 border p-3 mb-3 rounded-md">
             <input
               name="itemId"
               placeholder="Item ID"
               value={item.itemId}
               onChange={(e) => handleItemChange(index, e)}
-              className="border p-1 w-full"
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="itemName"
               placeholder="Item Name"
               value={item.itemName}
               onChange={(e) => handleItemChange(index, e)}
-              className="border p-1 w-full"
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="productPrice"
               placeholder="Product Price"
               value={item.productPrice}
               onChange={(e) => handleItemChange(index, e)}
-              className="border p-1 w-full"
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="quantity"
               placeholder="Quantity"
               value={item.quantity}
               onChange={(e) => handleItemChange(index, e)}
-              className="border p-1 w-full"
+              className="border border-gray-300 p-2 rounded-md"
             />
           </div>
         ))}
-        <button type="button" onClick={addItem} className="bg-gray-200 px-3 py-1 rounded">아이템 추가</button>
-        <div>
-          <button type="submit" disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-            {loading ? '주문 처리 중...' : '주문하기'}
-          </button>
+        <button type="button" onClick={addItem} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">
+          아이템 추가
+        </button>
+      </div>
+
+      <br />
+
+      <div className="text-right">
+        <h2 className="text-2xl font-bold mb-4">Delivery</h2>
+        <DeliveryForm />
+      </div>
+
+      <br />
+
+      <div className="text-right">
+        <h2 className="text-2xl font-bold mb-4">Payment</h2>
+
+        <div className="bg-gray-100 p-6 rounded-md inline-block text-left w-full max-w-md ml-auto shadow-md">
+          <div className="flex items-center justify-between border p-3 bg-white rounded-md">
+            <select
+              name="used"
+              value={order.used}
+              onChange={handleOrderChange}
+              className="w-full bg-transparent focus:outline-none"
+            >
+              <option value="CARD">Credit Card</option>
+              <option value="KAKAOPAY">카카오페이</option>
+            </select>
+          </div>
         </div>
-      </form>
+
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="mt-6 bg-black text-white py-3 px-6 rounded-md shadow hover:opacity-90"
+        >
+          {loading ? '처리 중...' : 'Pay Now'}
+        </button>
+      </div>
     </div>
   );
 };

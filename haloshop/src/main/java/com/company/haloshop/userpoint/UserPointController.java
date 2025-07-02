@@ -3,6 +3,7 @@ package com.company.haloshop.userpoint;
 import com.company.haloshop.dto.shop.UserPointDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class UserPointController {
 
     // 관리자용 전체 조회
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserPointDto>> findAll() {
         return ResponseEntity.ok(userPointService.findAll());
     }
@@ -32,6 +34,7 @@ public class UserPointController {
 
     // 수동 생성 (필요 시)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> insert(@RequestBody UserPointDto userPoint) {
         userPointService.insert(userPoint);
         return ResponseEntity.ok().build();
@@ -39,6 +42,7 @@ public class UserPointController {
 
     // 수동 수정 (관리자 조정 용도)
     @PutMapping("/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> update(@PathVariable Long accountId, @RequestBody UserPointDto userPoint) {
         userPoint.setAccountId(accountId);
         userPointService.update(userPoint);
@@ -47,6 +51,7 @@ public class UserPointController {
 
     // 회원 탈퇴 시 연동 삭제
     @DeleteMapping("/{accountId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long accountId) {
         userPointService.deleteByAccountId(accountId);
         return ResponseEntity.ok().build();
@@ -58,6 +63,18 @@ public class UserPointController {
             @PathVariable Long accountId,
             @RequestParam Long totalPrice) {
         userPointService.updateUserPointAndGrade(accountId, totalPrice);
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 관리자 수동 포인트 조정 엔드포인트 추가
+    @PostMapping("/{accountId}/adjust")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> adjustPointManually(
+            @PathVariable Long accountId,
+            @RequestParam int adjustAmount,
+            @RequestParam String adjustType) {
+
+        userPointService.adjustPointManually(accountId, adjustAmount, adjustType);
         return ResponseEntity.ok().build();
     }
 }
