@@ -39,6 +39,14 @@
             updated_at = NOW()
         WHERE account_id = #{accountId}
     </update>
+    
+    <update id="addPoint">
+    UPDATE user_point
+    SET total_point = total_point + #{pointToAdd},
+        updated_at = NOW()
+    WHERE account_id = #{accountId}
+</update>
+    
 
     <!-- 삭제 (회원 탈퇴 시) -->
     <delete id="deleteByAccountId" parameterType="long">

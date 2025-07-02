@@ -8,18 +8,27 @@ import org.springframework.web.bind.annotation.*;
 import com.company.haloshop.dto.security.LoginRequest;
 import com.company.haloshop.dto.security.LogoutRequest;
 import com.company.haloshop.dto.security.SignupRequest;
+import com.company.haloshop.dto.member.AccountDto;
 import com.company.haloshop.dto.security.JwtLoginResponse;
+import com.company.haloshop.member.mapper.AccountMapper;
 import com.company.haloshop.security.service.AuthenticationService;
 import com.company.haloshop.security.service.AuthenticationService.LoginResponse;
+import com.company.haloshop.security.JwtTokenProvider;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final AccountMapper accountMapper;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, 
+                                    AccountMapper accountMapper,
+                                    JwtTokenProvider jwtTokenProvider) {
         this.authenticationService = authenticationService;
+        this.accountMapper = accountMapper;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -54,19 +63,31 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
+    public ResponseEntity<?> logout(@RequestBody LogoutRequest request, HttpServletRequest httpRequest) {
         try {
-            // accessToken 파라미터 추가
-            authenticationService.logout(request.getAccountId(), request.getRefreshToken(), request.getAccessToken());
+            String accessToken = request.getAccessToken();
+            if (!jwtTokenProvider.validateToken(accessToken)) {
+                return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
+            }
+            Long accountId = jwtTokenProvider.getAccountId(accessToken);
+            AccountDto account = accountMapper.selectById(accountId);
+            if (account == null) {
+                return ResponseEntity.badRequest().body("존재하지 않는 계정입니다.");
+            }
+
+            authenticationService.logout(
+                accountId,
+                request.getRefreshToken(),
+                accessToken,
+                account.getIsAdmin(),
+                httpRequest
+            );
+
             return ResponseEntity.ok("로그아웃 성공");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
-    
 }
-

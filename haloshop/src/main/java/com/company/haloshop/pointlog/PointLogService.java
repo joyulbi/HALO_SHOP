@@ -3,6 +3,7 @@ package com.company.haloshop.pointlog;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.company.haloshop.dto.shop.PointLogDto;
 
@@ -13,7 +14,8 @@ import lombok.RequiredArgsConstructor;
 public class PointLogService {
 
     private final PointLogMapper pointLogMapper;
-
+    
+    @Transactional
     public void saveLog(Long userId, String type, int amount) {
         PointLogDto log = new PointLogDto();
         log.setAccountId(userId);

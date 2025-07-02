@@ -1,6 +1,7 @@
 package com.company.haloshop.order;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,22 +46,48 @@ public class OrderService {
 
     @Transactional
     public void insertOrderWithItems(OrderRequestDto orderRequestDto) {
-        orderMapper.insert(orderRequestDto);
+
+        // ✅ 1) payAmount 계산 (결제금액 = 총 주문금액 - 사용포인트)
+        long payAmount = orderRequestDto.getTotalPrice() -
+                (orderRequestDto.getAmount() != null ? orderRequestDto.getAmount() : 0);
+        orderRequestDto.setPayAmount(payAmount);
+
+        // ✅ 2) 주문 INSERT
+        orderMapper.insertOrderWithItems(orderRequestDto);
         Long orderId = orderRequestDto.getId();
 
-        for (OrderItemDto itemDto : orderRequestDto.getOrderItems()) {
+        // ✅ 3) 주문 아이템 INSERT
+        List<OrderItemDto> orderItems = orderRequestDto.getOrderItems();
+        if (orderItems == null || orderItems.isEmpty()) {
+            throw new IllegalArgumentException("주문 아이템이 없습니다.");
+        }
+        for (OrderItemDto itemDto : orderItems) {
             itemDto.setOrdersId(orderId);
             orderItemMapper.insert(itemDto);
         }
 
         Long accountId = orderRequestDto.getAccountId();
-        Long totalPrice = orderRequestDto.getTotalPrice();
 
-        // 주문 완료 시 포인트 적립 및 등급 갱신
-        userPointService.updateUserPointAndGrade(accountId, totalPrice);
+        // ✅ 4) 포인트 사용 처리 및 사용 로그 기록
+        if (orderRequestDto.getAmount() != null && orderRequestDto.getAmount() > 0) {
+            userPointService.usePoint(accountId, orderRequestDto.getAmount());
+            pointLogService.saveLog(accountId, "USE", orderRequestDto.getAmount());
+        }
 
-        // 적립 포인트 로그 기록 (UserPointService 내부 로직과 동일 적립량 유지 필요 시 로직 공유 권장)
-        Long savePoint = totalPrice / 100; // 1% 기본 적립
-        pointLogService.saveLog(accountId, "SAVE", savePoint.intValue());
+        // ✅ 5) 포인트 적립 및 멤버십 갱신 (결제금액(payAmount) 기준으로 적립)
+        int savePoint = userPointService.updateUserPointAndGrade(accountId, payAmount);
+
+        // ✅ 6) 적립 포인트 로그 기록
+        if (savePoint > 0) {
+            pointLogService.saveLog(accountId, "SAVE", savePoint);
+        }
     }
+    
+    @Transactional
+    public void updatePaymentStatus(Long orderId, String paymentStatus) {
+        orderMapper.updateStatus(orderId, paymentStatus);
+    }
+
+
+
 }

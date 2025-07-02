@@ -1,5 +1,7 @@
 package com.company.haloshop.delivery;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,10 @@ public class DeliveryTrackingService {
 	
 	public void updateStatus(DeliveryTrackingDTO tracking) {
 		deliveryTrackingMapper.updateStatus(tracking);
+	}
+	
+	public List<DeliveryTrackingDTO> getTrackingListByAccountId(Long accountId) {
+		return deliveryTrackingMapper.selectByAccountId(accountId);
 	}
 }
 
