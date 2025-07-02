@@ -2,6 +2,10 @@ package com.company.haloshop.season;
 
 import java.time.LocalDateTime;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,13 +13,10 @@ import lombok.Setter;
 @Setter
 public class SeasonRequestDto {
 
-    private String name;
-
-    private LocalDateTime startDate;
-
-    private LocalDateTime endDate;
-
-    private Long level_1;
-    private Long level_2;
-    private Long level_3;
+	@NotBlank private String name;
+	@NotNull private LocalDateTime startDate;
+	@NotNull private LocalDateTime endDate;
+	@PositiveOrZero private Long level_1;
+	@PositiveOrZero private Long level_2;
+	@PositiveOrZero private Long level_3;
 }

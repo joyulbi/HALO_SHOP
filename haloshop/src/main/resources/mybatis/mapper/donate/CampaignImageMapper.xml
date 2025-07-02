@@ -20,6 +20,12 @@
     VALUES (#{seasonId}, #{level_1}, #{level_2}, #{level_3})
   </insert>
 
+	<!-- 전체 조회: select all -->
+	<select id="selectAllCampaignImages" resultMap="CampaignImageResultMap">
+	  SELECT season_id, level_1, level_2, level_3
+	  FROM campaign_image
+	</select>
+
   <!-- 조회: select by PK -->
   <select id="selectCampaignImageBySeasonId" parameterType="long" resultMap="CampaignImageResultMap">
     SELECT season_id, level_1, level_2, level_3

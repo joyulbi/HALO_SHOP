@@ -86,7 +86,7 @@ const Header = () => {
         <Link href="/items" legacyBehavior><a style={navLinkStyle}>상품</a></Link>
         <Link href="/campaign" legacyBehavior><a style={navLinkStyle}>기부캠페인</a></Link>
         <Link href="/auction" legacyBehavior><a style={navLinkStyle}>경매</a></Link>
-        <Link href="/customer" legacyBehavior><a style={navLinkStyle}>고객센터</a></Link>
+        <Link href="/contact" legacyBehavior><a style={navLinkStyle}>고객센터</a></Link>
       </nav>
 
       {/* 로그인/회원가입/마이페이지/로그아웃 */}

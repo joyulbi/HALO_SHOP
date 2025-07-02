@@ -91,4 +91,9 @@ public class DonationCampaignService {
     public void deleteDonationCampaign(Long id) {
         donationCampaignMapper.deleteDonationCampaign(id);
     }
+    
+    @Transactional
+    public void deleteDonationCampaignBySeasonId(Long id) {
+    	donationCampaignMapper.deleteDonationCampaignBySeasonId(id);
+    }
 }

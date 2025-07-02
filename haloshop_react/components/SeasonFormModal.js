@@ -17,88 +17,83 @@ const SeasonFormModal = ({ visible, onClose, onSubmit, form, onChange, editing }
     >
       <div
         style={{
-          backgroundColor: "white",
-          padding: 20,
-          borderRadius: 8,
-          width: 400,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+          backgroundColor: "#fff",
+          padding: 24,
+          borderRadius: 12,
+          width: 420,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
         }}
       >
-        <h2>{editing ? "시즌 수정" : "새 시즌 생성"}</h2>
-        <form onSubmit={onSubmit}>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              이름:{" "}
-              <input name="name" value={form.name} onChange={onChange} required />
-            </label>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              시작일:{" "}
-              <input
-                name="startDate"
-                type="date"
-                value={form.startDate}
-                onChange={onChange}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              종료일:{" "}
-              <input
-                name="endDate"
-                type="date"
-                value={form.endDate}
-                onChange={onChange}
-                required
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              Level 1 기준:{" "}
-              <input
-                name="level_1"
-                type="number"
-                value={form.level_1}
-                onChange={onChange}
-                min={0}
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              Level 2 기준:{" "}
-              <input
-                name="level_2"
-                type="number"
-                value={form.level_2}
-                onChange={onChange}
-                min={0}
-              />
-            </label>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>
-              Level 3 기준:{" "}
-              <input
-                name="level_3"
-                type="number"
-                value={form.level_3}
-                onChange={onChange}
-                min={0}
-              />
-            </label>
-          </div>
+        <h2 style={{ marginBottom: 20, textAlign: "center" }}>
+          {editing ? "✏️ 시즌 수정" : "➕ 새 시즌 생성"}
+        </h2>
 
-          <button type="submit" style={{ marginRight: 8 }}>
-            {editing ? "수정 저장" : "생성"}
-          </button>
-          <button type="button" onClick={onClose}>
-            닫기
-          </button>
+        <form onSubmit={onSubmit}>
+          {[
+            { label: "이름", name: "name", type: "text", required: true },
+            { label: "시작일", name: "startDate", type: "date", required: true },
+            { label: "종료일", name: "endDate", type: "date", required: true },
+            { label: "Level 1 기준", name: "level_1", type: "number" },
+            { label: "Level 2 기준", name: "level_2", type: "number" },
+            { label: "Level 3 기준", name: "level_3", type: "number" },
+          ].map(({ label, name, type, required }) => (
+            <div
+              key={name}
+              style={{
+                marginBottom: 14,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <label style={{ marginBottom: 4, fontWeight: 500 }}>{label}</label>
+              <input
+                name={name}
+                type={type}
+                value={form[name]}
+                onChange={onChange}
+                required={required}
+                min={type === "number" ? 0 : undefined}
+                style={{
+                  padding: "8px 10px",
+                  border: "1px solid #ccc",
+                  borderRadius: 6,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+          ))}
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
+            <button
+              type="submit"
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#0070f3",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              {editing ? "수정 저장" : "생성"}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#eee",
+                color: "#333",
+                border: "none",
+                borderRadius: 6,
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              닫기
+            </button>
+          </div>
         </form>
       </div>
     </div>
