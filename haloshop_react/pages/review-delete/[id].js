@@ -1,41 +1,34 @@
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import StarRating from '../../components/StarRating';
 
-const ReviewEditPage = () => {
+const ReviewDeletePage = () => {
   const router = useRouter();
   const { id } = router.query;
 
   const [review, setReview] = useState(null);
-  const [content, setContent] = useState('');
-  const [rating, setRating] = useState(5);
-
   const SERVER_URL = 'http://localhost:8080';
 
   useEffect(() => {
     if (!id) return;
     axios.get(`${SERVER_URL}/api/reviews/${id}`)
-      .then(res => {
-        setReview(res.data);
-        setContent(res.data.content);
-        setRating(res.data.rating);
-      })
-      .catch(err => {
-        console.error('리뷰 불러오기 실패', err);
-        alert('리뷰를 불러올 수 없습니다.');
+      .then((res) => setReview(res.data))
+      .catch((err) => {
+        console.error(err);
+        alert('리뷰 불러오기 실패');
         router.back();
       });
   }, [id]);
 
-  const handleSubmit = async () => {
+  const handleDelete = async () => {
     try {
-      await axios.put(`${SERVER_URL}/api/reviews/${id}`, { content, rating });
-      alert('리뷰 수정 완료');
+      await axios.delete(`${SERVER_URL}/api/reviews/${id}`);
+      alert('리뷰 삭제 완료');
       router.push('/my-reviews');
     } catch (err) {
-      alert('수정 실패');
       console.error(err);
+      alert('리뷰 삭제 실패');
     }
   };
 
@@ -48,11 +41,11 @@ const ReviewEditPage = () => {
         <p style={{ fontWeight: 'bold' }}>내가 구매한 상품</p>
         <p style={{ margin: '12px 0' }}>{review.productName || '[상품명 없음]'}</p>
 
-        {/* 메인 이미지 (첫 이미지) */}
+        {/* 메인 이미지 */}
         {review.images?.length > 0 && (
           <img
             src={`${SERVER_URL}${review.images[0]}`}
-            alt="메인 이미지"
+            alt="리뷰 이미지"
             style={{ width: '100%', maxWidth: '300px', marginBottom: '8px' }}
           />
         )}
@@ -70,30 +63,35 @@ const ReviewEditPage = () => {
         </div>
       </div>
 
-      {/* 오른쪽: 리뷰 수정 폼 */}
+      {/* 오른쪽: 삭제 확인 */}
       <div style={{ flex: '1' }}>
-        <h2 style={{ marginBottom: '16px' }}>리뷰 수정</h2>
+        <h2 style={{ marginBottom: '16px' }}>리뷰 삭제</h2>
 
         <div style={{ marginBottom: '12px' }}>
-          <label><strong>⭐ 별점:</strong></label><br />
-          <StarRating rating={rating} setRating={setRating} />
+          <strong>⭐ 별점:</strong><br />
+          <StarRating rating={review.rating} readOnly={true} />
         </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <label><strong>리뷰 내용:</strong></label><br />
-          <textarea
-            rows={5}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            style={{ width: '100%', padding: '8px' }}
-          />
+          <strong>리뷰 내용:</strong>
+          <div style={{ border: '1px solid #ccc', padding: '8px', marginTop: '4px' }}>
+            {review.content}
+          </div>
         </div>
 
-        <button onClick={handleSubmit} style={{ marginRight: '8px' }}>저장</button>
-        <button onClick={() => router.back()}>취소</button>
+        <p style={{ color: 'red', marginBottom: '16px' }}>
+          정말 이 리뷰를 삭제하시겠습니까?
+        </p>
+
+        <button onClick={handleDelete} style={{ backgroundColor: 'red', color: 'white', padding: '8px 16px' }}>
+          삭제
+        </button>
+        <button onClick={() => router.back()} style={{ marginLeft: '12px' }}>
+          취소
+        </button>
       </div>
     </div>
   );
 };
 
-export default ReviewEditPage;
+export default ReviewDeletePage;

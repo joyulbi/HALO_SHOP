@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/router';
+import StarRating from '../components/StarRating';
 
 const MyReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editContent, setEditContent] = useState('');
-  const [editRating, setEditRating] = useState(5);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const router = useRouter();
 
   const accountId = 1;
   const SERVER_URL = 'http://localhost:8080';
@@ -16,130 +17,87 @@ const MyReviewsPage = () => {
       .catch((err) => console.error('리뷰 불러오기 실패', err));
   }, []);
 
-  const handleEditClick = (review) => {
-    setEditingId(review.id);
-    setEditContent(review.content);
-    setEditRating(review.rating);
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditContent('');
-    setEditRating(5);
-  };
-
-  const handleUpdate = async (id) => {
-    try {
-      await axios.put(`${SERVER_URL}/api/reviews/${id}`, {
-        content: editContent,
-        rating: editRating,
-      });
-      alert('리뷰 수정 성공');
-      location.reload();
-    } catch (err) {
-      alert('리뷰 수정 실패');
-      console.error(err);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('정말 삭제하시겠습니까?')) return;
-    try {
-      await axios.delete(`${SERVER_URL}/api/reviews/${id}`);
-      alert('리뷰 삭제 성공');
-      location.reload();
-    } catch (err) {
-      alert('리뷰 삭제 실패');
-      console.error(err);
-    }
+  const handleClickMenu = (id) => {
+    setActiveMenuId((prev) => (prev === id ? null : id));
   };
 
   return (
     <div style={{ padding: '24px' }}>
-      <h2>내가 쓴 리뷰</h2>
+      <h2 style={{ marginBottom: '24px' }}>내가 쓴 리뷰</h2>
 
       {reviews.length === 0 ? (
         <p>작성한 리뷰가 없습니다.</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #ddd' }}>
-              <th>이미지</th>
-              <th>내용</th>
-              <th>⭐ 별점</th>
-              <th>작성일</th>
-              <th>수정/삭제</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reviews.map((review) => (
-              <tr key={review.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td>
-                  {review.images?.length > 0 ? (
-                    review.images.map((url, idx) => (
-                      <img
-                        key={idx}
-                        src={`${SERVER_URL}${url}`}
-                        alt={`리뷰 이미지 ${idx}`}
-                        style={{ width: '80px', borderRadius: '4px', marginRight: '4px' }}
-                      />
-                    ))
-                  ) : (
-                    <span style={{ color: '#999' }}>이미지 없음</span>
-                  )}
-                </td>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {reviews.map((review) => (
+            <div key={review.id} style={{ display: 'flex', gap: '16px', position: 'relative', borderBottom: '1px solid #eee', paddingBottom: '16px' }}>
+              {/* 이미지 */}
+              <div>
+                {review.images?.length > 0 ? (
+                  <img
+                    src={`${SERVER_URL}${review.images[0]}`}
+                    alt="리뷰 이미지"
+                    style={{ width: '140px', borderRadius: '8px' }}
+                  />
+                ) : (
+                  <span style={{ color: '#999' }}>이미지 없음</span>
+                )}
+              </div>
 
-                <td>
-                  {editingId === review.id ? (
-                    <textarea
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      style={{ width: '100%', height: '60px' }}
-                    />
-                  ) : (
-                    review.content
-                  )}
-                </td>
+              {/* 리뷰 내용 */}
+              <div style={{ flexGrow: 1 }}>
+                <p><strong>[{review.productName || '상품명'}]</strong></p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>별점</span>
+                  <StarRating rating={review.rating} readOnly={true} />
+                </div>
+                <p style={{ marginTop: '8px' }}>{review.content}</p>
+              </div>
 
-                <td>
-                  {editingId === review.id ? (
-                    <input
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={editRating}
-                      onChange={(e) => setEditRating(e.target.value)}
-                      style={{ width: '50px' }}
-                    />
-                  ) : (
-                    `${review.rating}점`
-                  )}
-                </td>
+              {/* ⋯ 버튼 */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => handleClickMenu(review.id)}
+                  style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+                >
+                  ⋯
+                </button>
 
-                <td>{new Date(review.createdAt).toLocaleString()}</td>
-
-                <td>
-                  {editingId === review.id ? (
-                    <>
-                      <button onClick={() => handleUpdate(review.id)}>저장</button>
-                      <button onClick={handleCancel} style={{ marginLeft: '6px' }}>취소</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => handleEditClick(review)}>수정</button>
-                      <button
-                        onClick={() => handleDelete(review.id)}
-                        style={{ marginLeft: '6px', color: 'red' }}
-                      >
-                        삭제
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                {/* 메뉴 */}
+                {activeMenuId === review.id && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '28px',
+                      right: '0px',
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      borderRadius: '6px',
+                      boxShadow: '2px 2px 6px rgba(0,0,0,0.15)',
+                      zIndex: 100,
+                      fontSize: '13px',
+                      minWidth: '80px',
+                      padding: '4px 0'
+                    }}
+                  >
+                    <div
+                      onClick={() => router.push(`/review-edit/${review.id}`)}
+                      style={{ padding: '4px 8px', cursor: 'pointer' }}
+                    >
+                      리뷰 수정
+                    </div>
+                    <div
+                      onClick={() => router.push(`/review-delete/${review.id}`)}
+                      style={{ padding: '4px 8px', cursor: 'pointer' }}
+                    >
+                      리뷰 삭제
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

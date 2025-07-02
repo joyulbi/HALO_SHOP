@@ -33,5 +33,10 @@ public class DeliveryController {
 		List<DeliveryDTO> deliveries = deliveryService.getDeliveriesByUser(accountId);
 		return ResponseEntity.ok(deliveries);
 	}
+	
+	@GetMapping("/admin/deliveries")
+	public ResponseEntity<List<DeliveryDTO>> getAllDeliveries() {
+	    List<DeliveryDTO> deliveries = deliveryService.getAllDeliveries();
+	    return ResponseEntity.ok(deliveries);
+	}
 }
-

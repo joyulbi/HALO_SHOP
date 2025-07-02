@@ -5,7 +5,7 @@ import StarRating from '../../components/StarRating';
 
 const ReviewPage = () => {
   const router = useRouter();
-  const { id } = router.query; // orderItemsId
+  const { id } = router.query;
 
   const [review, setReview] = useState({
     content: '',
@@ -29,17 +29,15 @@ const ReviewPage = () => {
     e.preventDefault();
 
     try {
-      // 1️⃣ 리뷰 먼저 등록
       const reviewRes = await axios.post(`http://localhost:8080/api/reviews`, {
         orderItemsId: id,
         content: review.content,
         rating: review.rating,
-        accountId: 1, // 실제 로그인 ID로 교체
+        accountId: 1,
       });
 
-      const reviewId = reviewRes.data.reviewId; // 백엔드에서 반환 필요
+      const reviewId = reviewRes.data.reviewId;
 
-      // 2️⃣ 이미지가 있으면 업로드
       if (image && reviewId) {
         const formData = new FormData();
         formData.append('file', image);
@@ -71,13 +69,11 @@ const ReviewPage = () => {
     <div style={{ padding: '24px' }}>
       <h2>리뷰 작성</h2>
       <form onSubmit={handleSubmit}>
-        {/* ⭐ 별점 */}
         <div style={{ marginBottom: '12px' }}>
           <label style={{ marginRight: '8px' }}>별점:</label>
           <StarRating rating={review.rating} setRating={handleRatingChange} />
         </div>
 
-        {/* 📝 내용 */}
         <div style={{ marginBottom: '12px' }}>
           <label>리뷰 내용:</label><br />
           <textarea
@@ -90,7 +86,6 @@ const ReviewPage = () => {
           />
         </div>
 
-        {/* 🖼 이미지 첨부 */}
         <div style={{ marginBottom: '12px' }}>
           <label>이미지 첨부:</label><br />
           <input type="file" accept="image/*" onChange={handleFileChange} />
