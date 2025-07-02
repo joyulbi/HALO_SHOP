@@ -10,5 +10,6 @@ import com.company.haloshop.dto.shop.DeliveryDTO;
 public interface DeliveryMapper {
 	void insertDelivery(DeliveryDTO delivery);
 	List<DeliveryDTO> findByUserId(Long userId);
+	List<DeliveryDTO> findAll();
 }
 

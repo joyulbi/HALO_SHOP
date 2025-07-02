@@ -49,7 +49,12 @@ public class ReviewService {
     
     @Transactional(readOnly = true)
     public ReviewDTO getReviewById(Long id) {
-        return reviewMapper.findById(id);
+        ReviewDTO review = reviewMapper.findById(id);
+        if (review != null) {
+            List<String> urls = reviewImageMapper.findUrlsByReviewId(id); // ✅ 이미지 URL 조회
+            review.setImages(urls); // ✅ DTO에 세팅
+        }
+        return review;
     }
 
     @Transactional

@@ -42,4 +42,10 @@ public class OrderItemController {
         orderItemService.delete(id);
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<OrderItemDto>> findByCategoryId(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(orderItemService.findAllByCategoryId(categoryId));
+    }
+
 }

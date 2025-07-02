@@ -19,5 +19,10 @@ public class DeliveryService {
 	public List<DeliveryDTO> getDeliveriesByUser(Long userId) {
 		return deliveryMapper.findByUserId(userId);
 	}
+	
+	public List<DeliveryDTO> getAllDeliveries() {
+	    return deliveryMapper.findAll(); // mapper에 아래 메서드도 필요
+	}
+
 }
 
