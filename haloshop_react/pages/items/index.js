@@ -14,27 +14,28 @@ const ItemListPage = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // 팀 목록
-  const teams = [
-    { id: 1, name: 'SSG', logoUrl: '/images/teamlogo/SSG로고.png' },
-    { id: 2, name: '삼성', logoUrl: '/images/teamlogo/삼성로고.png' },
-    { id: 3, name: '기아', logoUrl: '/images/teamlogo/기아로고.png' },
-    { id: 4, name: '한화', logoUrl: '/images/teamlogo/한화로고.png' },
-    { id: 5, name: 'LG', logoUrl: '/images/teamlogo/LG로고.png' },
-    { id: 6, name: '두산', logoUrl: '/images/teamlogo/두산로고.png' },
-    { id: 7, name: '롯데', logoUrl: '/images/teamlogo/롯데로고.png' },
-    { id: 8, name: '키움', logoUrl: '/images/teamlogo/키움로고.png' },
-    { id: 9, name: 'NC', logoUrl: '/images/teamlogo/NC로고.png' },
-    { id: 10, name: 'KT', logoUrl: '/images/teamlogo/KT로고.png' }
-  ];
+const teams = [
+  { id: 1, name: '기아', logoUrl: '/images/teamlogo/기아로고.png' },
+  { id: 2, name: '두산', logoUrl: '/images/teamlogo/두산로고.png' },
+  { id: 3, name: '롯데', logoUrl: '/images/teamlogo/롯데로고.png' },
+  { id: 4, name: '삼성', logoUrl: '/images/teamlogo/삼성로고.png' },
+  { id: 5, name: '한화', logoUrl: '/images/teamlogo/한화로고.png' },
+  { id: 6, name: '키움', logoUrl: '/images/teamlogo/키움로고.png' },
+  { id: 7, name: 'KT', logoUrl: '/images/teamlogo/KT로고.png' },
+  { id: 8, name: 'LG', logoUrl: '/images/teamlogo/LG로고.png' },
+  { id: 9, name: 'NC', logoUrl: '/images/teamlogo/NC로고.png' },
+  { id: 10, name: 'SSG', logoUrl: '/images/teamlogo/SSG로고.png' }
+];
 
   // 카테고리 목록
-  const categories = [
-    { id: 1, name: '유니폼' },
-    { id: 2, name: '모자' },
-    { id: 3, name: '의류' },
-    { id: 4, name: '잡화' },
-    { id: 5, name: '응원용품' }
-  ];
+const categories = [
+  { id: 1, name: '유니폼' },
+  { id: 2, name: '모자' },
+  { id: 3, name: '휴대폰 케이스' },
+  { id: 4, name: '야구용품' },
+  { id: 5, name: '응원/굿즈' },
+  { id: 6, name: '기타' }
+];
 
   // 전체 상품 가져오기
   useEffect(() => {
