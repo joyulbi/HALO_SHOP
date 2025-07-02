@@ -37,7 +37,7 @@ public class AuctionEntity {
     private AuctionStatus status = AuctionStatus.READY;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "auction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AuctionImageEntity> images;
@@ -50,5 +50,10 @@ public class AuctionEntity {
 
     public enum AuctionStatus {
         READY, ONGOING, FINISHED, CANCELED
+    }
+    
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 }
