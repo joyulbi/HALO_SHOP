@@ -18,4 +18,8 @@ public class DeliveryDTO {
     private String addressDetail;
     private Integer zipcode;
     private String recipientName;
+    
+    private String productName;
+    private String imageUrl;
+    private String deliveryStatus;
 }
