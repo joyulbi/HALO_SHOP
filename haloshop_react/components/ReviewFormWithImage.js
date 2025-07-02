@@ -1,4 +1,3 @@
-// components/ReviewFormWithImage.js
 import axios from "axios";
 import { useState } from "react";
 
@@ -10,7 +9,6 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
 
   const handleReviewSubmit = async () => {
     try {
-      // 1. 리뷰 먼저 등록
       const reviewRes = await axios.post("http://localhost:8080/api/reviews", {
         orderItemsId,
         accountId,
@@ -18,10 +16,9 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
         rating,
       });
 
-      const reviewId = reviewRes.data.reviewId || reviewRes.data.id; // 응답에 따라 확인
+      const reviewId = reviewRes.data.reviewId || reviewRes.data.id;
 
       if (file && reviewId) {
-        // 2. 이미지가 있으면 업로드
         const formData = new FormData();
         formData.append("file", file);
 
@@ -33,7 +30,7 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
           }
         );
 
-        setUploadedImageUrl(`http://localhost:8080${uploadRes.data.url}`);
+        setUploadedImageUrl(`http://localhost:8080/${uploadRes.data.url}`);
         alert("리뷰 및 이미지 등록 성공");
       } else {
         alert("리뷰 등록 성공 (이미지 없음)");

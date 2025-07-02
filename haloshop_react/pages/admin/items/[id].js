@@ -1,19 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import useCategories from '../../../hooks/useCategories';
 
 const EditItemPage = () => {
   const router = useRouter();
   const { id } = router.query;
-
+  const categories = useCategories();
   const [item, setItem] = useState(null);
+  const [teams, setTeams] = useState([]);
   const [imagePreview, setImagePreview] = useState('');
 
   const fetchItem = async () => {
     try {
-      const res = await axios.get(`/api/items/${id}`);
+      const res = await axios.get(`http://localhost:8080/api/items/${id}`);
+      console.log('불러온 상품 데이터 👉', res.data);
       setItem(res.data);
-      setImagePreview(res.data.imageUrl);
+      setImagePreview(res.data.images[0] ? `http://localhost:8080${res.data.images[0].url}` : '');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+    const fetchTeams = async () => {
+    try {
+      const res = await axios.get('http://localhost:8080/api/teams');
+      setTeams(res.data);
     } catch (error) {
       console.error(error);
     }
@@ -21,23 +33,35 @@ const EditItemPage = () => {
 
   useEffect(() => {
     if (id) fetchItem();
+    fetchTeams(); 
   }, [id]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('name', item.name);
-    formData.append('description', item.description);
-    formData.append('price', item.price);
-    formData.append('teamId', item.teamId);
-    formData.append('categoryId', item.categoryId);
+    formData.append('item', new Blob([JSON.stringify({
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    teamId: item.teamId,
+    categoryId: item.categoryId
+  })], { type: "application/json" }));
+
     if (item.newImage) {
       formData.append('image', item.newImage);
     }
 
+    console.log('🔥 최종 요청 데이터:', {
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    teamId: item.teamId,
+    categoryId: item.categoryId
+  });
+
     try {
-      await axios.put(`/api/admin/items/${id}`, formData, {
+      await axios.put(`http://localhost:8080/api/items/admin/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert('수정 완료');
@@ -52,7 +76,7 @@ const EditItemPage = () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
-      await axios.delete(`/api/admin/items/${id}`);
+      await axios.delete(`http://localhost:8080/api/items/admin/${id}`);
       alert('삭제 완료');
       router.push('/admin/items');
     } catch (error) {
@@ -64,11 +88,34 @@ const EditItemPage = () => {
   if (!item) return <div>Loading...</div>;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">관리자 상품 수정 페이지</h1>
-      <div className="flex">
-        <img src={imagePreview} alt="상품 이미지" className="w-80 h-80 object-cover mr-8" />
-        <form onSubmit={handleUpdate} className="space-y-4 border-2 border-pink-300 p-4 w-[400px]">
+    <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '32px', textAlign: 'center' }}>
+        관리자 상품 수정 페이지
+      </h1>
+
+      {/* 🔥 flex 구조 */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '48px', justifyContent: 'center' }}>
+        {/* 왼쪽: 상품 이미지 */}
+        <div style={{ width: '300px', height: '300px', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {imagePreview ? (
+            <img src={imagePreview} alt="상품 이미지" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          ) : (
+            <span>이미지 없음</span>
+          )}
+        </div>
+
+        {/* 오른쪽: 수정 박스 (상품 등록 박스랑 비슷하게) */}
+        <form
+          onSubmit={handleUpdate}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            border: '2px solid #f9a8d4',
+            padding: '16px',
+            width: '400px'
+          }}
+        >
           <div>
             <label>상품 이미지: </label>
             <input
@@ -85,7 +132,7 @@ const EditItemPage = () => {
               type="text"
               value={item.name}
               onChange={(e) => setItem({ ...item, name: e.target.value })}
-              className="border w-full"
+              style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
             />
           </div>
@@ -95,7 +142,7 @@ const EditItemPage = () => {
               type="number"
               value={item.price}
               onChange={(e) => setItem({ ...item, price: e.target.value })}
-              className="border w-full"
+              style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
             />
           </div>
@@ -104,49 +151,61 @@ const EditItemPage = () => {
             <textarea
               value={item.description}
               onChange={(e) => setItem({ ...item, description: e.target.value })}
-              className="border w-full"
+              style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
             />
           </div>
           <div>
             <label>카테고리: </label>
-            <input
-              type="text"
-              value={item.categoryId}
-              onChange={(e) => setItem({ ...item, categoryId: e.target.value })}
-              className="border w-full"
+            <select
+              value={String(item.categoryId)} // ✅ 무조건 문자열로
+              onChange={(e) => setItem({ ...item, categoryId: parseInt(e.target.value) })} // ✅ 숫자로 저장
+              style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
-            />
+            >
+              <option value="">카테고리를 선택하세요</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label>팀 선택: </label>
-            <input
-              type="text"
-              value={item.teamId}
-              onChange={(e) => setItem({ ...item, teamId: e.target.value })}
-              className="border w-full"
+            <select
+              value={String(item.teamId)}
+              onChange={(e) => setItem({ ...item, teamId: parseInt(e.target.value) })}
+              style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
-            />
+            >
+              <option value="">팀을 선택하세요</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex space-x-4">
+          <div style={{ display: 'flex', gap: '16px' }}>
             <button
               type="button"
               onClick={() => router.push('/admin/items')}
-              className="bg-gray-400 text-white px-4 py-2 rounded"
+              style={{ backgroundColor: '#9ca3af', color: 'white', padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
             >
               수정 취소
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+              style={{ backgroundColor: '#3b82f6', color: 'white', padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
             >
               수정 완료
             </button>
             <button
               type="button"
               onClick={handleDelete}
-              className="bg-red-500 text-white px-4 py-2 rounded"
+              style={{ backgroundColor: '#ef4444', color: 'white', padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}
             >
               상품 삭제
             </button>

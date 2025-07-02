@@ -2,6 +2,9 @@ package com.company.haloshop.entity.member;
 
 import lombok.*;
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 @Entity
@@ -27,6 +30,7 @@ public class User {
     @Column(name = "zipcode")
     private Integer zipcode;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @Column(name = "birth")
     @Temporal(TemporalType.DATE)
     private Date birth;

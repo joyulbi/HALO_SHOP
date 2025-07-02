@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const KakaoDraggableMap = ({ address = '인천광역시 미추홀구 문학동' }) => {
+const KakaoDraggableMap = ({ address = '인천광역시 미추홀구 매소홀로 618' }) => {
   const [map, setMap] = useState(null);
 
   useEffect(() => {

@@ -51,4 +51,5 @@ public class AuctionEntity {
     public enum AuctionStatus {
         READY, ONGOING, FINISHED, CANCELED
     }
+    
 }

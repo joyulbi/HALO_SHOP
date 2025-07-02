@@ -3,11 +3,14 @@ package com.company.haloshop.items;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.company.haloshop.dto.shop.Items;
 import com.company.haloshop.dto.shop.ItemsImage;
 
 import java.util.*;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/items")
 @RequiredArgsConstructor
@@ -60,10 +63,9 @@ public class ItemsApiController {
         return itemMap;
     }
 
-    // 🔥 상품 등록 (관리자 전용 화면에서 호출)
+    // 🔥 상품 등록 (변경 ❌ - 그대로 사용)
     @PostMapping("/admin")
     public ResponseEntity<Long> addItem(@RequestBody Map<String, Object> request) {
-        // 🔥 파라미터 파싱
         Map<String, Object> itemMap = (Map<String, Object>) request.get("item");
         List<String> imageUrls = (List<String>) request.get("imageUrls");
 
@@ -74,18 +76,21 @@ public class ItemsApiController {
         item.setTeamId(Long.valueOf(itemMap.get("teamId").toString()));
         item.setCategoryId(Long.valueOf(itemMap.get("categoryId").toString()));
 
-        // 🔥 서비스에서 itemId 리턴 받기
         Long itemId = itemsService.insert(item, imageUrls);
 
-        // 🔥 프론트에 itemId 리턴
         return ResponseEntity.ok(itemId);
     }
 
-    // 🔥 상품 수정
+    // 🔥 상품 수정 (multipart/form-data 전용)
     @PutMapping("/admin/{id}")
-    public ResponseEntity<String> updateItem(@PathVariable Long id, @RequestBody Items item) {
-        item.setId(id);
-        itemsService.update(item);
+    public ResponseEntity<String> updateItem(@PathVariable Long id,
+                                             @RequestPart("item") Items item,
+                                             @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        item.setId(id); // path에서 받은 id를 item에 세팅
+
+        itemsService.update(item, image);
+
         return ResponseEntity.ok("상품이 수정되었습니다.");
     }
 

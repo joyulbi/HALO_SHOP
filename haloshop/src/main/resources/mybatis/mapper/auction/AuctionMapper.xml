@@ -25,7 +25,8 @@
             start_price,
             start_time,
             end_time,
-            status
+            status,
+            created_at
         )
         VALUES (
             #{title},
@@ -33,7 +34,8 @@
             #{startPrice},
             #{startTime},
             #{endTime},
-            #{status}
+            #{status},
+            NOW()
         )
     </insert>
 

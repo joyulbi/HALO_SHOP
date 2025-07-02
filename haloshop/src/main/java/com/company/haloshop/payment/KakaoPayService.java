@@ -4,9 +4,12 @@ package com.company.haloshop.payment;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import java.util.UUID;
 
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+
 import org.springframework.web.client.RestTemplate;
 
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.order.OrderMapper;
+
 import com.company.haloshop.payment.dto.PaymentApproveRequest;
 import com.company.haloshop.payment.dto.PaymentCancelRequest;
 import com.company.haloshop.payment.dto.PaymentReadyRequest;
@@ -108,14 +114,14 @@ public class KakaoPayService {
         log.info("KakaoPay Approve Response: {}", response.getBody());
 
         // ✅ 주문 insert (결제 승인 후 최초 DB 등록)
-        OrderDto order = OrderDto.builder()
-                .accountId(request.getAccountId())
-                .payAmount(request.getPayAmount())
-                .totalPrice(request.getTotalPrice())
-                .used("KAKAO+POINT")
-                .paymentStatus("PAID")
-                .tid(request.getTid())
-                .build();
+        OrderDto order = new OrderDto();
+        order.setAccountId(request.getAccountId());
+        order.setPayAmount(request.getPayAmount());
+        order.setTotalPrice(request.getTotalPrice());
+        order.setUsed("KAKAO+POINT");
+        order.setPaymentStatus("PAID");
+        order.setTid(request.getTid());
+
 
         orderMapper.insert(order);
         log.info("주문 등록 완료: Order ID={}, User ID={}", order.getId(), request.getAccountId());

@@ -7,11 +7,11 @@ const DeliveryPage = ({ accountId }) => {
     <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
         <div>
             <h2>배송 정보 입력</h2>
-            <DeliveryForm accountId={accountId} onSubmitSuccess={() => window.location.reload()} />
+            <DeliveryForm accountId={1} onSubmitSuccess={() => window.location.reload()} />
 
             <hr />
 
-            <DeliveryTrackingList accountId={accountId} />
+            <DeliveryTrackingList accountId={1} />
         </div>
     </div>
   );

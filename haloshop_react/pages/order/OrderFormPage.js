@@ -1,19 +1,23 @@
-
 import React, { useState } from 'react';
 import axios from '../../utils/axios';
+import { useRouter } from 'next/router';
+import DeliveryForm from '../../components/DeliveryForm';
 
 const OrderFormPage = () => {
+  const router = useRouter();
+
   const [order, setOrder] = useState({
     accountId: '',
-    deliveryId: '',
     used: 'CARD',
     paymentStatus: 'PENDING',
-    amount: '' // ✅ 포인트 사용 금액
   });
 
   const [items, setItems] = useState([
     { itemId: '', itemName: '', productPrice: '', quantity: '' }
   ]);
+
+  const [point, setPoint] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const handleOrderChange = (e) => {
     setOrder({
@@ -36,19 +40,23 @@ const OrderFormPage = () => {
     return items.reduce((acc, item) => {
       const price = Number(item.productPrice) || 0;
       const quantity = Number(item.quantity) || 0;
-      return acc + (price * quantity);
+      return acc + price * quantity;
     }, 0);
+  };
+
+  const formatKRW = (amount) => {
+    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const payload = {
         ...order,
         accountId: Number(order.accountId),
-        deliveryId: Number(order.deliveryId),
-        amount: Number(order.amount) || 0,
         totalPrice: calculateTotalPrice(),
+        amount: point,
         orderItems: items.map(item => ({
           itemId: Number(item.itemId),
           itemName: item.itemName,
@@ -57,86 +65,149 @@ const OrderFormPage = () => {
         }))
       };
 
-      await axios.post('/api/orders', payload);
-      alert('주문이 등록되었습니다!');
-
-      setOrder({
-        accountId: '',
-        deliveryId: '',
-        used: 'CARD',
-        paymentStatus: 'PENDING',
-        amount: ''
-      });
-      setItems([{ itemId: '', itemName: '', productPrice: '', quantity: '' }]);
+      if (order.used === 'KAKAOPAY') {
+        const res = await axios.post('/api/orders/kakao/ready', payload);
+        window.location.href = res.data.next_redirect_pc_url;
+      } else {
+        await axios.post('/api/orders', payload);
+        alert('주문이 완료되었습니다!');
+        router.push('/order/complete');
+      }
     } catch (error) {
       console.error(error);
-      alert('주문 등록 실패!');
+      alert('주문 처리 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>주문 등록</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Account ID: </label>
-          <input name="accountId" value={order.accountId} onChange={handleOrderChange} />
-        </div>
-        <div>
-          <label>Delivery ID: </label>
-          <input name="deliveryId" value={order.deliveryId} onChange={handleOrderChange} />
-        </div>
-        <div>
-          <label>사용할 포인트: </label>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-8 max-w-6xl mx-auto font-sans text-gray-800">
+      <div>
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-1">Account ID </label>
           <input
-            name="amount"
-            value={order.amount}
+            name="accountId"
+            value={order.accountId}
             onChange={handleOrderChange}
-            placeholder="사용할 포인트 금액"
+            className="border border-gray-300 p-3 w-full rounded-md focus:outline-none focus:ring focus:border-black"
           />
         </div>
 
-        <p>총 합계: {calculateTotalPrice()} 원</p>
-        <p>
-          포인트 사용 후 결제 금액: {calculateTotalPrice() - (Number(order.amount) || 0)} 원
-        </p>
+        <br />
 
-        <h3>주문 아이템</h3>
+        <div className="flex items-center gap-3 mb-6">
+          <h4>포인트 사용</h4>
+          <input
+            type="number"
+            value={point}
+            onChange={(e) => setPoint(Number(e.target.value) || 0)}
+            placeholder="포인트 사용"
+            className="flex-1 border border-gray-300 rounded-md p-3 focus:outline-none focus:ring"
+          />
+          <button
+            type="button"
+            className="px-4 py-2 bg-black text-white rounded-md shadow hover:opacity-90"
+          >
+            Apply
+          </button>
+        </div>
+
+        <div className="text-sm space-y-1 mb-8">
+          <div className="flex justify-between">
+            <span>Subtotal </span>
+            <span>{formatKRW(calculateTotalPrice())}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Shipping </span>
+            <span>{formatKRW(1000)}</span>
+          </div>
+          <div className="flex justify-between font-bold">
+            <span>Total </span>
+            <span>{formatKRW(calculateTotalPrice() + 1000 - point)}</span>
+          </div>
+        </div>
+
+        <br />
+
+        <h3 className="text-lg font-semibold mb-4">주문 아이템</h3>
         {items.map((item, index) => (
-          <div key={index} style={{ marginBottom: '10px' }}>
+          <div key={index} className="grid grid-cols-4 gap-2 border p-3 mb-3 rounded-md">
             <input
               name="itemId"
               placeholder="Item ID"
               value={item.itemId}
               onChange={(e) => handleItemChange(index, e)}
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="itemName"
               placeholder="Item Name"
               value={item.itemName}
               onChange={(e) => handleItemChange(index, e)}
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="productPrice"
               placeholder="Product Price"
               value={item.productPrice}
               onChange={(e) => handleItemChange(index, e)}
+              className="border border-gray-300 p-2 rounded-md"
+              style={{ marginRight: '8px' }}
             />
             <input
               name="quantity"
               placeholder="Quantity"
               value={item.quantity}
               onChange={(e) => handleItemChange(index, e)}
+              className="border border-gray-300 p-2 rounded-md"
             />
           </div>
         ))}
-        <button type="button" onClick={addItem}>아이템 추가</button>
-        <br /><br />
-        <button type="submit">주문하기</button>
-      </form>
+        <button type="button" onClick={addItem} className="bg-gray-200 px-4 py-2 rounded-md hover:bg-gray-300">
+          아이템 추가
+        </button>
+      </div>
+
+      <br />
+
+      <div className="text-right">
+        <h2 className="text-2xl font-bold mb-4">Delivery</h2>
+        <DeliveryForm />
+      </div>
+
+      <br />
+
+      <div className="text-right">
+        <h2 className="text-2xl font-bold mb-4">Payment</h2>
+
+        <div className="bg-gray-100 p-6 rounded-md inline-block text-left w-full max-w-md ml-auto shadow-md">
+          <div className="flex items-center justify-between border p-3 bg-white rounded-md">
+            <select
+              name="used"
+              value={order.used}
+              onChange={handleOrderChange}
+              className="w-full bg-transparent focus:outline-none"
+            >
+              <option value="CARD">Credit Card</option>
+              <option value="KAKAOPAY">카카오페이</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="mt-6 bg-black text-white py-3 px-6 rounded-md shadow hover:opacity-90"
+        >
+          {loading ? '처리 중...' : 'Pay Now'}
+        </button>
+      </div>
     </div>
   );
 };
 
 export default OrderFormPage;
-
