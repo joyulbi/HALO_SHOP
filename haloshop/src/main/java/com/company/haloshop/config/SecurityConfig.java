@@ -1,13 +1,13 @@
 package com.company.haloshop.config;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
@@ -24,12 +24,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.company.haloshop.security.JwtAuthenticationFilter;
-import com.company.haloshop.security.UserDetailsServiceImpl;
 import com.company.haloshop.security.JwtTokenProvider;
+import com.company.haloshop.security.UserDetailsServiceImpl;
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -121,7 +126,7 @@ public class SecurityConfig {
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
                 .antMatchers("/api/items").permitAll() // 아이템도 예외
-                .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
+                .antMatchers("/api/**").permitAll()    // API는 인증된 사용자만
                 .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
                 .anyRequest().permitAll()                    // 나머지 요청 허용
@@ -224,4 +229,23 @@ public class SecurityConfig {
             filterChain.doFilter(request, response);
         }
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        config.setAllowCredentials(true);  // 반드시 true! (쿠키 인증 필수)
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        // 아래 두 줄 있으면 더 안전함 (OPTION preflight 캐시)
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 }
+
+
+
