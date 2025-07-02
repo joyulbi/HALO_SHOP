@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,12 +20,12 @@ public class InventoryController {
         inventoryService.addInventory(inventory);
     }
 
-    // 입고 내역 조회
+    // 🔥 입고 내역 조회 (리턴 타입 변경)
     @GetMapping
-    public List<Inventory> getInventoryList() {
+    public List<Map<String, Object>> getInventoryList() {
         return inventoryService.getInventoryList();
     }
-    
+
     // 재고 수정
     @PutMapping("/{id}")
     public void updateInventory(@PathVariable Long id, @RequestBody Inventory inventory) {
