@@ -3,6 +3,7 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import api from '../../utils/axios';
 import { useRouter } from "next/router";
+import { useAuth } from "../../hooks/useAuth";
 import AuctionInfo from "../../components/auction/AuctionInfo";
 import AuctionLog from "../../components/auction/AuctionLog";
 import AuctionChat from "../../components/auction/AuctionChat";
@@ -11,7 +12,7 @@ export default function AuctionRoomLayout() {
   const router = useRouter();
   const { id } = router.query;
   const AUCTION_ID = id ? Number(id) : null;
-  const USER_ID = "user1";
+  const { user, isLoggedIn } = useAuth();
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -20,8 +21,10 @@ export default function AuctionRoomLayout() {
   const [chat, setChat] = useState([]);
   const [inputBid, setInputBid] = useState("");
   const [inputMsg, setInputMsg] = useState("");
-  const [highest, setHighest] = useState(0);
+  const [highest, setHighest] = useState(null);
+  const [startPrice, setStartPrice] = useState(null);
   const [status, setStatus] = useState("");
+  const [accountMap, setAccountMap] = useState({}); // accountId → nickname/email 매핑
 
   const stompRef = useRef(null);
 
@@ -34,7 +37,8 @@ export default function AuctionRoomLayout() {
         const data = res.data;
         setTitle(data.title);
         setDesc(data.description);
-        setHighest(data.start_price || 0);
+        setStartPrice(data.start_price);
+        setHighest(data.start_price);
         setStatus(data.status || "");
       });
 
@@ -49,10 +53,28 @@ export default function AuctionRoomLayout() {
         setLogs(res.data);
         if (res.data && res.data.length > 0) {
           const max = Math.max(...res.data.map(l => l.price));
-          setHighest(max);
+          setHighest(Math.max(max, startPrice ?? 0));
+        } else if (startPrice !== null) {
+          setHighest(startPrice);
         }
       });
-  }, [AUCTION_ID]);
+  }, [AUCTION_ID, startPrice]);
+
+  // 입찰로그 내 계정 닉네임 매핑
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      if (!logs || logs.length === 0) return;
+      const uniqueIds = [...new Set(logs.map(l => l.accountId))];
+      try {
+        const res = await api.get(`/api/accounts`, { params: { ids: uniqueIds.join(',') } });
+        // [{id: 4, nickname: "조율비"}, ...]
+        const map = {};
+        res.data.forEach(acc => { map[acc.id] = acc.nickname || acc.email; });
+        setAccountMap(map);
+      } catch (e) {}
+    };
+    fetchAccounts();
+  }, [logs]);
 
   // WebSocket 연결 (실시간 입찰/채팅)
   useEffect(() => {
@@ -84,10 +106,14 @@ export default function AuctionRoomLayout() {
   // 입찰 전송
   const handleBid = () => {
     if (!inputBid || isNaN(Number(inputBid))) return;
+    if (!user || !user.id) {
+      alert("로그인 후 이용 가능합니다!");
+      return;
+    }
     if (stompRef.current && stompRef.current.connected && AUCTION_ID) {
       const log = {
         auctionId: AUCTION_ID,
-        accountId: 4, //어카운트아이디
+        accountId: user.id,
         price: Number(inputBid),
         createdAt: new Date().toISOString(),
       };
@@ -102,10 +128,14 @@ export default function AuctionRoomLayout() {
   // 채팅 전송
   const handleChat = () => {
     if (!inputMsg) return;
+    if (!user) {
+      alert("로그인 후 이용 가능합니다!");
+      return;
+    }
     if (stompRef.current && stompRef.current.connected && AUCTION_ID) {
       const msg = {
         auctionId: AUCTION_ID,
-        sender:'조율비',
+        sender: user.nickname || user.email || "익명",
         content: inputMsg,
         createdAt: new Date().toISOString(),
       };
@@ -122,7 +152,7 @@ export default function AuctionRoomLayout() {
   if (!AUCTION_ID) return <div>로딩중...</div>;
 
   return (
-    <div style={{ background: "#ddd", minHeight: "100vh", padding: 0, margin: 0 }}> 
+    <div style={{ background: "#ddd", minHeight: "100vh", padding: 0, margin: 0 }}>
       <div style={{
         display: "grid",
         gridTemplateColumns: "3fr 2fr",
@@ -148,6 +178,7 @@ export default function AuctionRoomLayout() {
             setInputBid={setInputBid}
             handleBid={handleBid}
             isFinished={isFinished}
+            accountMap={accountMap}
           />
         </div>
         {/* 오른쪽 전체: 채팅 */}
