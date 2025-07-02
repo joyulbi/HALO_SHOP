@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -112,13 +113,14 @@ public class SecurityConfig {
             // CSRF 설정
             .csrf(csrf -> csrf
                 // 회원가입, 로그인 등 인증 없이 쓰는 API는 CSRF 무시
-                .ignoringAntMatchers("/api/**", "/auth/**")
+                .ignoringAntMatchers("/api/**","/auth/**","/user/me")
                 .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
             )
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
+                .antMatchers("/api/items").permitAll() // 아이템도 예외
                 .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
                 .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
@@ -159,9 +161,22 @@ public class SecurityConfig {
 
             // - 기타 HTTP 헤더 기반 공격 차단 및 요청 패턴 필터 추가 가능
             //   : 예) RateLimitingFilter, SQLInjectionFilter 등 추가 가능
-            ;
+        ;
 
         return http.build();
+    }
+
+    /**
+     * SameSite=None 명시적 쿠키 설정 (Spring Boot 2.7.x는 명시 필요)
+     */
+    @Configuration
+    public class CookieConfig {
+
+        @Bean
+        public CookieSameSiteSupplier applicationCookieSameSiteSupplier() {
+            // 모든 쿠키에 SameSite=None 설정 (Spring Boot 2.7 호환)
+            return CookieSameSiteSupplier.ofNone();
+        }
     }
 
     /**

@@ -121,7 +121,7 @@ public class DummyDataLoader implements CommandLineRunner {
             account.setEmail(email);
             account.setNickname("유저" + i);
             account.setIsAdmin(false);
-            // SecurityConfig에서 정의한 userPasswordEncoder 빈을 사용합니다.
+            // SecurityConfig에서 정의한 userPasswordEncoder 빈을 사용
             account.setPassword(userPasswordEncoder.encode("1234")); // 수정됨
             account.setCreatedAt(new Date());
             account.setSocialId(socialIdForUser);
