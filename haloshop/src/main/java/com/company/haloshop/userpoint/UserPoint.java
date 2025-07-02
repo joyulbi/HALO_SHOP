@@ -1,5 +1,7 @@
 package com.company.haloshop.userpoint;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,5 +27,5 @@ public class UserPoint {
     
     private String grade; // 멤버십 등급 (BRONZE, SILVER, GOLD, VIP)
 
-    private java.sql.Timestamp updatedAt; // 등급 변경 날짜
+    private LocalDateTime updatedAt;
 }
