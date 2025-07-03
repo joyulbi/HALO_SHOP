@@ -12,7 +12,7 @@ export default function AuctionRoomLayout() {
   const router = useRouter();
   const { id } = router.query;
   const AUCTION_ID = id ? Number(id) : null;
-  const { user, isLoggedIn } = useAuth();
+  const { user } = useAuth();
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -21,53 +21,48 @@ export default function AuctionRoomLayout() {
   const [chat, setChat] = useState([]);
   const [inputBid, setInputBid] = useState("");
   const [inputMsg, setInputMsg] = useState("");
-  const [highest, setHighest] = useState(null);
-  const [startPrice, setStartPrice] = useState(null);
+  const [startPrice, setStartPrice] = useState(undefined); // undefined로!
   const [status, setStatus] = useState("");
-  const [accountMap, setAccountMap] = useState({}); // accountId → nickname/email 매핑
+  const [accountMap, setAccountMap] = useState({});
 
   const stompRef = useRef(null);
 
-  // REST 데이터 불러오기
+  // REST 데이터 불러오기 (시작가 → logs 순서 보장!)
   useEffect(() => {
     if (!AUCTION_ID) return;
-
-    api.get(`/api/auctions/${AUCTION_ID}`)
-      .then(res => {
-        const data = res.data;
-        setTitle(data.title);
-        setDesc(data.description);
-        setStartPrice(data.start_price);
-        setHighest(data.start_price);
-        setStatus(data.status || "");
-      });
-
+    api.get(`/api/auctions/${AUCTION_ID}`).then(res => {
+      const data = res.data;
+      setTitle(data.title);
+      setDesc(data.description);
+      setStartPrice(typeof data.startPrice === 'number' ? data.startPrice : 0);
+      setStatus(data.status || "");
+      // 반드시 시작가 세팅 이후에 logs fetch!
+      api.get(`/api/auction-logs/auction/${AUCTION_ID}`).then(res2 => setLogs(res2.data));
+    });
     api.get(`/api/auction-images/${AUCTION_ID}`)
       .then(res => {
         const result = Array.isArray(res.data) ? res.data : [res.data];
         setImages(result);
       });
+  }, [AUCTION_ID]);
 
-    api.get(`/api/auction-logs/auction/${AUCTION_ID}`)
-      .then(res => {
-        setLogs(res.data);
-        if (res.data && res.data.length > 0) {
-          const max = Math.max(...res.data.map(l => l.price));
-          setHighest(Math.max(max, startPrice ?? 0));
-        } else if (startPrice !== null) {
-          setHighest(startPrice);
-        }
-      });
-  }, [AUCTION_ID, startPrice]);
+  // 최고 입찰가: 항상 startPrice/logs 기준
+  const highest = React.useMemo(() => {
+    if (typeof startPrice !== "number" || isNaN(startPrice)) return "-";
+    if (!Array.isArray(logs)) return startPrice;
+    if (logs.length === 0) return startPrice;
+    const prices = logs.map(l => Number(l.price)).filter(v => !isNaN(v));
+    if (prices.length === 0) return startPrice;
+    return Math.max(startPrice, ...prices);
+  }, [logs, startPrice]);
 
-  // 입찰로그 내 계정 닉네임 매핑
+  // 입찰로그 내 계정 닉네임 매핑 (그대로)
   useEffect(() => {
     const fetchAccounts = async () => {
       if (!logs || logs.length === 0) return;
       const uniqueIds = [...new Set(logs.map(l => l.accountId))];
       try {
         const res = await api.get(`/api/accounts`, { params: { ids: uniqueIds.join(',') } });
-        // [{id: 4, nickname: "조율비"}, ...]
         const map = {};
         res.data.forEach(acc => { map[acc.id] = acc.nickname || acc.email; });
         setAccountMap(map);
@@ -89,7 +84,6 @@ export default function AuctionRoomLayout() {
       client.subscribe(`/topic/auction/${AUCTION_ID}`, (msg) => {
         const log = JSON.parse(msg.body);
         setLogs(prev => [...prev, log]);
-        if (log.price > highest) setHighest(log.price);
       });
       client.subscribe(`/topic/chat/${AUCTION_ID}`, (msg) => {
         const chatMsg = JSON.parse(msg.body);
@@ -101,7 +95,7 @@ export default function AuctionRoomLayout() {
     stompRef.current = client;
     return () => client.deactivate();
     // eslint-disable-next-line
-  }, [AUCTION_ID, highest]);
+  }, [AUCTION_ID]);
 
   // 입찰 전송
   const handleBid = () => {
@@ -149,7 +143,7 @@ export default function AuctionRoomLayout() {
 
   const isFinished = status === "FINISHED" || status === "CANCELED";
 
-  if (!AUCTION_ID) return <div>로딩중...</div>;
+  if (!AUCTION_ID || typeof startPrice !== "number" || isNaN(startPrice)) return <div>로딩중...</div>;
 
   return (
     <div style={{ background: "#ddd", minHeight: "100vh", padding: 0, margin: 0 }}>
