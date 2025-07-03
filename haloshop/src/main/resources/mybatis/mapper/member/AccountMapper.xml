@@ -91,5 +91,15 @@
 	    SET last_active = #{lastActive}
 	    WHERE id = #{accountId}
 	</update>
+	
+  <!-- 부분(닉네임/이메일) 수정 쿼리 -->
+  <update id="updateAccountFields" parameterType="com.company.haloshop.dto.member.AccountDto">
+    UPDATE account
+    <set>
+      <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>
+      <if test="email != null and email != ''">email = #{email},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
 
 </mapper>
