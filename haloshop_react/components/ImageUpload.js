@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const ImageUpload = ({ isMultiUpload, onUploadSuccess }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -10,12 +13,10 @@ const ImageUpload = ({ isMultiUpload, onUploadSuccess }) => {
     const files = Array.from(e.target.files);
 
     if (isMultiUpload) {
-      // 다중 모드: 기존 파일 유지 + 추가
       setSelectedFiles((prev) => [...prev, ...files]);
       const newPreviews = files.map(file => URL.createObjectURL(file));
       setPreviewUrls((prev) => [...prev, ...newPreviews]);
     } else {
-      // 단일 모드: 마지막 선택 파일 1개만 유지
       setSelectedFiles(files);
       setPreviewUrls(files.map(file => URL.createObjectURL(file)));
     }
@@ -30,9 +31,8 @@ const ImageUpload = ({ isMultiUpload, onUploadSuccess }) => {
     setUploading(true);
 
     try {
-      const uploadedUrls = [];
-
-      for (const file of selectedFiles) {
+      // 🔥 병렬 업로드
+      const uploadPromises = selectedFiles.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
 
@@ -40,28 +40,34 @@ const ImageUpload = ({ isMultiUpload, onUploadSuccess }) => {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
-        uploadedUrls.push(res.data);
-      }
+        console.log('서버 응답:', res.data);
+        return res.data; // 서버에서 받은 상대 경로 붙이기
+      });
+
+      // 🔥 모든 업로드가 끝날 때까지 기다림
+      const uploadedUrls = await Promise.all(uploadPromises);
 
       alert('이미지 업로드 성공!');
       console.log('업로드된 이미지 URL:', uploadedUrls);
 
       if (onUploadSuccess) {
-        if (isMultiUpload) {
-          onUploadSuccess(uploadedUrls); // 다중
-        } else {
-          onUploadSuccess([uploadedUrls[0]]); // 단일
-        }
+        onUploadSuccess(uploadedUrls);
       }
 
-      setSelectedFiles([]);
-      setPreviewUrls([]);
     } catch (error) {
       console.error(error);
       alert('이미지 업로드 실패');
     } finally {
       setUploading(false);
     }
+  };
+
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
   };
 
   return (
@@ -71,11 +77,22 @@ const ImageUpload = ({ isMultiUpload, onUploadSuccess }) => {
         multiple={isMultiUpload}
         onChange={handleFileChange}
       />
-      <div className="flex flex-wrap gap-4">
-        {previewUrls.map((url, index) => (
-          <img key={index} src={url} alt={`미리보기-${index}`} className="w-32 h-32 object-cover" />
-        ))}
-      </div>
+
+      {previewUrls.length > 0 && isMultiUpload && (
+        <Slider {...sliderSettings}>
+          {previewUrls.map((url, index) => (
+            <div key={index}>
+              <img src={url} alt="" className="w-80 h-80 object-cover mx-auto" />
+            </div>
+          ))}
+        </Slider>
+      )}
+
+      {previewUrls.length > 0 && !isMultiUpload && (
+        <div>
+          <img src={previewUrls[0]} alt="" className="w-80 h-80 object-cover mx-auto" />
+        </div>
+      )}
 
       <button
         onClick={handleUpload}

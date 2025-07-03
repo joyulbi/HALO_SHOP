@@ -19,6 +19,12 @@
         JOIN items i ON c.items_id = i.id
         WHERE c.account_id = #{accountId}
     </select>
+    
+    <select id="findCartItem" resultType="com.company.haloshop.dto.shop.Cart">
+    SELECT * FROM cart
+    WHERE account_id = #{accountId}
+      AND items_id = #{itemsId}
+	</select>
 
     <update id="updateCart">
         UPDATE cart

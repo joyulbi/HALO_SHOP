@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useRouter } from 'next/router';
-import { useCart } from '../../context/CartContext';
 import { CartButtonContext } from '../../context/CartButtonContext';
 import api from '../../utils/axios';
+import { useCart } from '../../context/CartContext';
+import ItemDetailTabs from '../../components/ItemDetailTabs';
 
 const ItemDetail = () => {
   const router = useRouter();
@@ -10,10 +11,10 @@ const ItemDetail = () => {
 
   const [item, setItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const [lensPosition, setLensPosition] = useState({ x: 0, y: 0 });
   const [showLens, setShowLens] = useState(false);
-  const { setCartCount } = useCart();
 
   const lensSize = 150;
   const zoom = 3;
@@ -24,9 +25,8 @@ const ItemDetail = () => {
   const [animationName, setAnimationName] = useState('');
 
   const productImageRef = useRef(null);
-
-  // 🔥 Context에서 cartButtonRef 가져오기
   const { cartButtonRef } = useContext(CartButtonContext);
+  const { fetchCartCount } = useCart();
 
   useEffect(() => {
     if (id) {
@@ -51,7 +51,19 @@ const ItemDetail = () => {
     setLensPosition({ x, y });
   };
 
-  const handleAddToCart = () => {
+  const handleNextImage = () => {
+    if (item && item.images.length > 0) {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % item.images.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (item && item.images.length > 0) {
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + item.images.length) % item.images.length);
+    }
+  };
+
+  const handleAddToCart = async () => {
     const productImage = item.images && item.images.length > 0 ? `http://localhost:8080${item.images[0].url}` : '/images/no-image.png';
 
     const productRect = productImageRef.current.getBoundingClientRect();
@@ -72,15 +84,9 @@ const ItemDetail = () => {
     const styleSheet = document.styleSheets[0];
     const keyframes =
       `@keyframes ${newAnimationName} {
-        0% {
-          transform: translate(${startX}px, ${startY}px) scale(1);
-        }
-        50% {
-          transform: translate(${centerX}px, ${centerY}px) scale(0.3);
-        }
-        100% {
-          transform: translate(${endX}px, ${endY}px) scale(0.1);
-        }
+        0% { transform: translate(${startX}px, ${startY}px) scale(1); }
+        50% { transform: translate(${centerX}px, ${centerY}px) scale(0.3); }
+        100% { transform: translate(${endX}px, ${endY}px) scale(0.1); }
       }`;
     styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
 
@@ -96,18 +102,18 @@ const ItemDetail = () => {
     });
     setIsFlying(true);
 
-    setTimeout(() => {
-      setIsFlying(false);
-      setCartCount(prev => prev + quantity);
-    }, 1200);
+  api.post('/api/cart', {
+    accountId: 8,
+    itemsId: item.id,
+    quantity: quantity
+  })
+    .catch(err => console.error('장바구니 담기 실패:', err));
 
-    api.post('/api/cart', {
-      accountId: 8,
-      itemsId: item.id,
-      quantity: quantity
-    })
-      .catch(err => console.error('장바구니 담기 실패:', err));
-  };
+  setTimeout(() => {
+    setIsFlying(false);
+    fetchCartCount();
+  }, 1200);
+};
 
   const handleBuyNow = () => {
     router.push(`/order?itemId=${item.id}&quantity=${quantity}`);
@@ -120,33 +126,80 @@ const ItemDetail = () => {
       <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>{item.name}</h1>
 
       <div style={{ display: 'flex', gap: '80px', alignItems: 'flex-start', justifyContent: 'center' }}>
-        {/* 상품 이미지 + 렌즈 */}
-        <div
-          style={{ position: 'relative', width: '400px', height: '400px', overflow: 'hidden', cursor: 'crosshair' }}
-          onMouseEnter={() => setShowLens(true)}
-          onMouseLeave={() => setShowLens(false)}
-          onMouseMove={handleMouseMove}
-        >
-          <img
-            ref={productImageRef}
-            src={item.images && item.images.length > 0 ? `http://localhost:8080${item.images[0].url}` : '/images/no-image.png'}
-            alt={item.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-          />
+        {/* 🔥 버튼 + 이미지: 가로 정렬 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {/* 이전 버튼 */}
+          {item.images.length > 1 && (
+            <button
+            onClick={handlePrevImage}
+            style={{
+              fontSize: '24px',
+              background: 'rgba(0,0,0,0.5)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ◀
+          </button>
+          )}
 
-          {showLens && (
-            <div
-              style={{
-                position: 'absolute',
-                width: `${lensSize}px`,
-                height: `${lensSize}px`,
-                top: `${lensPosition.y - lensSize / 2}px`,
-                left: `${lensPosition.x - lensSize / 2}px`,
-                border: '2px solid #000',
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                pointerEvents: 'none'
-              }}
+          {/* 이미지 + 렌즈 */}
+          <div
+            style={{ position: 'relative', width: '400px', height: '400px', overflow: 'hidden', cursor: 'crosshair' }}
+            onMouseEnter={() => setShowLens(true)}
+            onMouseLeave={() => setShowLens(false)}
+            onMouseMove={handleMouseMove}
+          >
+            <img
+              ref={productImageRef}
+              src={item.images && item.images.length > 0 ? `http://localhost:8080${item.images[currentIndex].url}` : '/images/no-image.png'}
+              alt={item.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
             />
+
+            {showLens && (
+              <div
+                style={{
+                  position: 'absolute',
+                  width: `${lensSize}px`,
+                  height: `${lensSize}px`,
+                  top: `${lensPosition.y - lensSize / 2}px`,
+                  left: `${lensPosition.x - lensSize / 2}px`,
+                  border: '2px solid #000',
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  pointerEvents: 'none'
+                }}
+              />
+            )}
+          </div>
+
+          {/* 다음 버튼 */}
+          {item.images.length > 1 && (
+          <button
+            onClick={handleNextImage}
+            style={{
+              fontSize: '24px',
+              background: 'rgba(0,0,0,0.5)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ▶
+          </button>
           )}
         </div>
 
@@ -216,7 +269,7 @@ const ItemDetail = () => {
             width: '400px',
             height: '400px',
             border: '1px solid #ccc',
-            backgroundImage: `url(${item.images[0] ? `http://localhost:8080${item.images[0].url}` : '/images/no-image.png'})`,
+            backgroundImage: `url(${item.images[currentIndex] ? `http://localhost:8080${item.images[currentIndex].url}` : '/images/no-image.png'})`,
             backgroundRepeat: 'no-repeat',
             backgroundSize: `${400 * zoom}px ${400 * zoom}px`,
             backgroundPosition: `-${(lensPosition.x * zoom - lensSize / 2)}px -${(lensPosition.y * zoom - lensSize / 2)}px`,
@@ -229,6 +282,7 @@ const ItemDetail = () => {
       {isFlying && (
         <img src={flyImage} style={flyStyle} />
       )}
+      <ItemDetailTabs item={item} />
     </div>
   );
 };

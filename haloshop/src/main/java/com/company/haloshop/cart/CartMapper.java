@@ -12,4 +12,5 @@ public interface CartMapper {
     List<Cart> getCartList(Long accountId);
     void updateCart(Cart cart);
     void deleteCart(Long id);
+    Cart findCartItem(Long accountId, Long itemsId);
 }
