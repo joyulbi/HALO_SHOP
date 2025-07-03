@@ -1,16 +1,23 @@
 package com.company.haloshop.member.controller;
 
-import com.company.haloshop.dto.member.AccountDto;
-import com.company.haloshop.dto.member.AdminDto;
-import com.company.haloshop.member.service.MemberAdminService;
-
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.company.haloshop.dto.member.AccountDto;
+import com.company.haloshop.dto.member.AdminDto;
+import com.company.haloshop.dto.member.AdminUpdateRequest;
+import com.company.haloshop.member.service.MemberAdminService;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -43,14 +50,12 @@ public class MemberAdminController {
         System.out.println("==================================");
 
         if (principalId == null) {
-            // 인증 정보 없음: 401
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
         try {
             AccountDto accountDto = adminService.getAccountById(principalId);
             if (accountDto == null) {
-                // DB에 없는 계정: 404
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "계정을 찾을 수 없습니다."));
             }
@@ -64,9 +69,23 @@ public class MemberAdminController {
                 "admin", adminDto
             ));
         } catch (Exception e) {
-            // 서버 내부 에러
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
     }
-}
+
+    /**
+     * 관리자 정보 수정 API
+     */
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/update")
+    public ResponseEntity<?> updateAdminInfo(@RequestBody AdminUpdateRequest request) {
+        try {
+            adminService.updateAdminAccount(request);
+            return ResponseEntity.ok(Map.of("message", "수정 완료"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "서버 오류: " + e.getMessage()));
+        }
+    }
+} 

@@ -50,19 +50,19 @@ public class AuthenticationController {
      * 로그인 API
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         try {
             LoginResponse response = authenticationService.login(request.getEmail(), request.getPassword());
 
             if (response.isAdmin()) {
-                // 👇 관리자 세션 인증객체 등록
+                //  관리자 세션 인증객체 등록
                 CustomUserDetails userDetails =
                     (CustomUserDetails) userDetailsService.loadUserByUsername(response.getAccount().getEmail());
                 UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-                // 👇 (선택) JSESSIONID 명시적으로 생성 (사실 이 줄은 없어도 됨)
+                //  (선택) JSESSIONID 명시적으로 생성 (사실 이 줄은 없어도 됨)
                 httpRequest.getSession(true);
                 
                 System.out.println("==== 로그인 직후 세션 체크 ====");
@@ -74,10 +74,23 @@ public class AuthenticationController {
                 return ResponseEntity.ok("관리자 로그인 성공");
                 
             } else {
+                // ✅ JWT 로그인 시 세션이 존재하면 제거 + 쿠키도 삭제
+                if (httpRequest.getSession(false) != null) {
+                    httpRequest.getSession(false).invalidate();
+                }
+
+                javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie("JSESSIONID", "");
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                cookie.setHttpOnly(true);
+                cookie.setSecure(false); // HTTPS면 true
+                httpResponse.addCookie(cookie);
+
                 return ResponseEntity.ok(new JwtLoginResponse(
                     response.getAccessToken(), response.getRefreshToken()
                 ));
             }
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -106,43 +119,52 @@ public class AuthenticationController {
             boolean isAdmin = false;
             Long accountId = null;
 
-            // 1. JWT 유저는 accessToken/refreshToken 사용
+            // 1. JWT 유저 로그아웃 처리
             if (request != null && request.getAccessToken() != null) {
                 if (!jwtTokenProvider.validateToken(request.getAccessToken())) {
                     return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
                 }
+
                 accountId = jwtTokenProvider.getAccountId(request.getAccessToken());
                 AccountDto account = accountMapper.selectById(accountId);
+
                 if (account == null) {
                     return ResponseEntity.badRequest().body("존재하지 않는 계정입니다.");
                 }
+
                 isAdmin = account.getIsAdmin();
                 authenticationService.logout(
                     accountId, request.getRefreshToken(), request.getAccessToken(),
                     isAdmin, httpRequest
                 );
-            } else {
-                // 2. 세션 어드민이면 현재 세션에서 바로 확인
+            } 
+            // 2. 세션 기반 어드민 로그아웃
+            else {
                 isAdmin = true;
-                // 혹시 계정 정보 필요하면 세션에서 Principal 조회
-                authenticationService.logout(
-                    null, null, null, true, httpRequest
-                );
+                authenticationService.logout(null, null, null, true, httpRequest);
             }
 
-            // ✅ 쿠키 완전 삭제
+            // ✅ JSESSIONID 쿠키 완전 삭제 (어드민일 경우)
             if (isAdmin) {
                 javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie("JSESSIONID", "");
                 cookie.setPath("/");
-                cookie.setMaxAge(0);
+                cookie.setMaxAge(0); // 즉시 만료
                 cookie.setHttpOnly(true);
+                cookie.setSecure(false); // 👉 HTTPS일 경우 true로 설정 필요
                 httpResponse.addCookie(cookie);
             }
+            javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie("JSESSIONID", "");
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false); // HTTPS 환경이면 true
+            httpResponse.addCookie(cookie);
 
             return ResponseEntity.ok("로그아웃 성공");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
 }
