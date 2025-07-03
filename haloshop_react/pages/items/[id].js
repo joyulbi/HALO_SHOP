@@ -28,9 +28,9 @@ const ItemDetail = () => {
   };
 
   // 구매하기 함수
-  const handleBuyNow = () => {
-    router.push(`/order?itemId=${item.id}&quantity=${quantity}`);
-  };
+const handleBuyNow = () => {
+  router.push(`/order/orderformpage?itemId=${item.id}&quantity=${quantity}`);
+};
 
   if (!item) return <div>로딩중...</div>;
 
