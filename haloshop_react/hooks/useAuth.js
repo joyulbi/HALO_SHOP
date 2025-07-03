@@ -16,6 +16,14 @@ export const AuthProvider = ({ children }) => {
    * 2. /user/me → 실패시 일반 유저 정보 반환
    */
   const fetchProfile = async () => {
+    // 💡 accessToken이 없으면 즉시 로그아웃 상태 처리
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setUser(null);
+      setIsLoggedIn(false);
+      setLoading(false);
+      return null;
+    }
     try {
       // (1) 세션 기반 관리자
       const resAdmin = await api.get('/admin/me');
@@ -95,12 +103,14 @@ export const AuthProvider = ({ children }) => {
         await api.post('/auth/logout', {}); // 세션 로그아웃
       }
     } catch {}
+    // 💡 토큰 먼저 삭제 (중복삭제 안전)
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     setUser(null);
     setIsLoggedIn(false);
     setLoading(false);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    router.push('/login');
+    // 완전 초기화: 뒤로가기도 막힘
+    window.location.replace('/login');
   };
 
   const authContextValue = {
