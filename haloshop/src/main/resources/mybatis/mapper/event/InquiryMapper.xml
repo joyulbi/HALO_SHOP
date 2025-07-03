@@ -65,6 +65,12 @@
 		<select id="countByStatus" parameterType="string" resultType="int">
 		    SELECT COUNT(*) FROM inquiry WHERE status = #{status}
 		</select>
+		
+		<select id="selectByAccountIdOrderByIdASC" parameterType="long" resultMap="InquiryResultMap">
+		    SELECT * FROM inquiry
+		    WHERE account_id = #{accountId}
+		    ORDER BY id ASC
+		</select> 
 
 
     <!-- findById -->

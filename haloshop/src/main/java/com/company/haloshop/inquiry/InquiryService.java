@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -73,6 +72,11 @@ public class InquiryService {
             throw new IllegalArgumentException("Inquiry not found with id: " + id);
         }
         return inquiry;
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Inquiry> getInquiriesByAccountId(Long accountId) {
+        return inquiryMapper.selectByAccountIdOrderByIdASC(accountId);
     }
 
     // 상태 변경

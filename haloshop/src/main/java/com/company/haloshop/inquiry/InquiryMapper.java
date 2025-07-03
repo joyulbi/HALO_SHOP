@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface InquiryMapper {
@@ -26,4 +27,7 @@ public interface InquiryMapper {
 	List<Inquiry> selectByStatusWithPaging(String status, int offset, int size);
 
 	int countByStatus(String status);
+	
+	// 본인 문의 조회
+	 List<Inquiry> selectByAccountIdOrderByIdASC(@Param("accountId") Long accountId);
 }
