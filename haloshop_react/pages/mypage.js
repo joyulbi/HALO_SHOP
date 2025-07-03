@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/axios';
 import { useAuth } from '../hooks/useAuth';
+import { useRouter } from 'next/router';
 
 const MyPage = () => {
   const { user, isLoggedIn } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -79,6 +81,14 @@ const MyPage = () => {
           <p>성별: <b>{userInfo.gender || '없음'}</b></p>
         </>
       )}
+      <div style={{ marginTop: 32, display: 'flex', gap: 12 }}>
+      <button onClick={() => router.push('/mypage/edit')}>
+        내 정보 수정
+      </button>
+      <button onClick={() => router.push('/mypage/password')}>
+        비밀번호 변경
+      </button>
+    </div>
     </div>
   );
 };

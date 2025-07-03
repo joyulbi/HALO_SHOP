@@ -1,6 +1,7 @@
 package com.company.haloshop.security.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -96,29 +97,52 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> logout(
+        @RequestBody(required = false) LogoutRequest request, // JWT 유저면 바디 필요, 세션 어드민이면 바디 없어도 됨
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse
+    ) {
         try {
-            String accessToken = request.getAccessToken();
-            if (!jwtTokenProvider.validateToken(accessToken)) {
-                return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
-            }
-            Long accountId = jwtTokenProvider.getAccountId(accessToken);
-            AccountDto account = accountMapper.selectById(accountId);
-            if (account == null) {
-                return ResponseEntity.badRequest().body("존재하지 않는 계정입니다.");
+            boolean isAdmin = false;
+            Long accountId = null;
+
+            // 1. JWT 유저는 accessToken/refreshToken 사용
+            if (request != null && request.getAccessToken() != null) {
+                if (!jwtTokenProvider.validateToken(request.getAccessToken())) {
+                    return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
+                }
+                accountId = jwtTokenProvider.getAccountId(request.getAccessToken());
+                AccountDto account = accountMapper.selectById(accountId);
+                if (account == null) {
+                    return ResponseEntity.badRequest().body("존재하지 않는 계정입니다.");
+                }
+                isAdmin = account.getIsAdmin();
+                authenticationService.logout(
+                    accountId, request.getRefreshToken(), request.getAccessToken(),
+                    isAdmin, httpRequest
+                );
+            } else {
+                // 2. 세션 어드민이면 현재 세션에서 바로 확인
+                isAdmin = true;
+                // 혹시 계정 정보 필요하면 세션에서 Principal 조회
+                authenticationService.logout(
+                    null, null, null, true, httpRequest
+                );
             }
 
-            authenticationService.logout(
-                accountId,
-                request.getRefreshToken(),
-                accessToken,
-                account.getIsAdmin(),
-                httpRequest
-            );
+            // ✅ 쿠키 완전 삭제
+            if (isAdmin) {
+                javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie("JSESSIONID", "");
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                cookie.setHttpOnly(true);
+                httpResponse.addCookie(cookie);
+            }
 
             return ResponseEntity.ok("로그아웃 성공");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }
