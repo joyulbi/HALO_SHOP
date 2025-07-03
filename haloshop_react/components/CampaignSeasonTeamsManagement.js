@@ -135,6 +135,11 @@ const CampaignSeasonTeamsManagement = () => {
                 {index + 1}. {name} - {value.toLocaleString()} 원
               </ListItem>
             ))}
+
+            <hr />
+            <ListItem style={{ fontWeight: 600, marginTop: "1rem" }}>
+              총 기부 금액: {totalSum.toLocaleString()} 원
+            </ListItem>
           </List>
         </Container>
       )}

@@ -3,6 +3,7 @@ package com.company.haloshop.inquiryanswer;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/inquiry-answers")
+@CrossOrigin(origins="http://localhost:3000")
 @RequiredArgsConstructor
 public class InquiryAnswerController {
 
