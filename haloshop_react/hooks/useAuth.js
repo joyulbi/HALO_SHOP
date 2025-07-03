@@ -16,46 +16,53 @@ export const AuthProvider = ({ children }) => {
    * 2. /user/me → 실패시 일반 유저 정보 반환
    */
   const fetchProfile = async () => {
-    // 💡 accessToken이 없으면 즉시 로그아웃 상태 처리
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setUser(null);
-      setIsLoggedIn(false);
+  try {
+    // (1) 세션 기반 관리자 먼저 시도
+    const resAdmin = await api.get('/admin/me');
+    if (resAdmin.status === 200 && resAdmin.data && resAdmin.data.admin) {
+      setUser({
+        ...resAdmin.data.account,
+        admin: resAdmin.data.admin,
+      });
+      setIsLoggedIn(true);
       setLoading(false);
-      return null;
+      return 'admin';
     }
-    try {
-      // (1) 세션 기반 관리자
-      const resAdmin = await api.get('/admin/me');
-      if (resAdmin.status === 200 && resAdmin.data && resAdmin.data.admin) {
-        setUser({
-          ...resAdmin.data.account,
-          admin: resAdmin.data.admin,
-        });
-        setIsLoggedIn(true);
-        setLoading(false);
-        return 'admin';
-      }
-    } catch {}
-    try {
-      // (2) JWT 기반 일반 유저
-      const resUser = await api.get('/user/me');
-      if (resUser.status === 200 && resUser.data) {
-        setUser({
-          ...(resUser.data.account || {}),
-          user: resUser.data.user || {},
-        });
-        setIsLoggedIn(true);
-        setLoading(false);
-        return 'user';
-      }
-    } catch {}
-    // (3) 둘 다 아님 → 로그아웃 상태
+  } catch (e) {
+    // 세션 인증 실패 -> JWT 로그인 시도
+  }
+
+  // (2) JWT 기반 일반 유저
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
     setUser(null);
     setIsLoggedIn(false);
     setLoading(false);
     return null;
-  };
+  }
+
+  try {
+    const resUser = await api.get('/user/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (resUser.status === 200 && resUser.data) {
+      setUser({
+        ...(resUser.data.account || {}),
+        user: resUser.data.user || {},
+      });
+      setIsLoggedIn(true);
+      setLoading(false);
+      return 'user';
+    }
+  } catch {}
+
+  // (3) 둘 다 실패
+  setUser(null);
+  setIsLoggedIn(false);
+  setLoading(false);
+  return null;
+};
+
 
   // 마운트/새로고침 시 프로필 자동 체크
   useEffect(() => {
