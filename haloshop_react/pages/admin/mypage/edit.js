@@ -44,7 +44,7 @@ const AdminMyPageEdit = () => {
     e.preventDefault();
     setMsg("");
     try {
-      await api.patch("/admin/me", {
+      await api.put("/admin/me", {
         nickname: form.nickname,
         email: form.email,
       });
