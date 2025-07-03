@@ -11,7 +11,7 @@ const ReviewPage = () => {
     content: '',
     rating: 0,
   });
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
 
   const handleChange = (e) => {
     setReview({ ...review, [e.target.name]: e.target.value });
@@ -22,36 +22,28 @@ const ReviewPage = () => {
   };
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
+    setImages([...e.target.files]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const reviewRes = await axios.post(`http://localhost:8080/api/reviews`, {
+      const formData = new FormData();
+      const reviewDto = {
         orderItemsId: id,
         content: review.content,
         rating: review.rating,
-        accountId: 1,
+        accountId: 1
+      };
+
+      // ✅ JSON을 Blob으로 처리
+      formData.append("reviewDto", new Blob([JSON.stringify(reviewDto)], { type: "application/json" }));
+      images.forEach((file) => {
+        formData.append("images", file);
       });
 
-      const reviewId = reviewRes.data.reviewId;
-
-      if (image && reviewId) {
-        const formData = new FormData();
-        formData.append('file', image);
-
-        await axios.post(
-          `http://localhost:8080/api/reviews/images/${reviewId}/upload`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-      }
+      await axios.post("http://localhost:8080/api/reviews", formData);
 
       alert('리뷰 작성 완료');
       router.push('/delivery');
@@ -68,7 +60,7 @@ const ReviewPage = () => {
   return (
     <div style={{ padding: '24px' }}>
       <h2>리뷰 작성</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div style={{ marginBottom: '12px' }}>
           <label style={{ marginRight: '8px' }}>별점:</label>
           <StarRating rating={review.rating} setRating={handleRatingChange} />
@@ -88,7 +80,7 @@ const ReviewPage = () => {
 
         <div style={{ marginBottom: '12px' }}>
           <label>이미지 첨부:</label><br />
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
         </div>
 
         <button type="submit">리뷰 등록</button>

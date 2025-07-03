@@ -118,13 +118,9 @@ const OrderFormPage = () => {
             <span>Subtotal </span>
             <span>{formatKRW(calculateTotalPrice())}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Shipping </span>
-            <span>{formatKRW(1000)}</span>
-          </div>
           <div className="flex justify-between font-bold">
             <span>Total </span>
-            <span>{formatKRW(calculateTotalPrice() + 1000 - point)}</span>
+            <span>{formatKRW(calculateTotalPrice() - point)}</span>
           </div>
         </div>
 
