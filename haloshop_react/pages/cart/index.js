@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../utils/axios';
 import { useRouter } from 'next/router';
-import { useCart } from '../../context/CartContext'; // 🔥 추가
+import { useCart } from '../../context/CartContext'; 
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
-  const { setCartCount } = useCart(); // 🔥 추가
+  const { setCartCount } = useCart(); 
 
-  // 장바구니 불러오기
+
   useEffect(() => {
     api.get('/api/cart')
       .then(res => setCartItems(res.data))
@@ -21,46 +21,46 @@ const CartPage = () => {
     api.put(`/api/cart/${item.id}`, updatedItem)
       .then(() => {
         setCartItems(cartItems.map(ci => ci.id === item.id ? updatedItem : ci));
-        setCartCount(prev => prev + 1); // 🔥 장바구니 개수 +1
+        setCartCount(prev => prev + 1); 
       })
       .catch(err => console.error('수량 증가 실패:', err));
   };
 
-  // 수량 감소
+
   const decreaseQuantity = (item) => {
     if (item.quantity <= 1) return;
     const updatedItem = { ...item, quantity: item.quantity - 1 };
     api.put(`/api/cart/${item.id}`, updatedItem)
       .then(() => {
         setCartItems(cartItems.map(ci => ci.id === item.id ? updatedItem : ci));
-        setCartCount(prev => prev - 1); // 🔥 장바구니 개수 -1
+        setCartCount(prev => prev - 1); 
       })
       .catch(err => console.error('수량 감소 실패:', err));
   };
 
-  // 장바구니 삭제
+
   const deleteItem = (id) => {
-    const targetItem = cartItems.find(item => item.id === id); // 🔥 삭제 전 수량
+    const targetItem = cartItems.find(item => item.id === id); 
     api.delete(`/api/cart/${id}`)
       .then(() => {
         setCartItems(cartItems.filter(item => item.id !== id));
-        setCartCount(prev => prev - targetItem.quantity); // 🔥 삭제한 수량만큼 차감
+        setCartCount(prev => prev - targetItem.quantity); 
       })
       .catch(err => console.error('삭제 실패:', err));
   };
 
-  // 결제하기 버튼 클릭
+
   const handleCheckout = () => {
     alert('결제 페이지로 이동 (구현 예정)');
-    // router.push('/order'); // 결제 페이지로 이동
+
   };
 
-  // 취소하기 버튼 클릭
+
   const handleCancel = () => {
     router.push('/');
   };
 
-  // 총 가격 계산
+
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = 3500;
 
@@ -114,7 +114,7 @@ const CartPage = () => {
             </div>
           ))}
 
-          {/* Summary */}
+  
           <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', marginTop: '40px' }}>
             <h3>Summary</h3>
             <p>총 가격: {totalPrice.toLocaleString()}원</p>
@@ -132,7 +132,7 @@ const CartPage = () => {
   );
 };
 
-// 버튼 스타일 유지
+
 const buttonStyle = {
   padding: '8px 12px',
   backgroundColor: '#c8102e',
