@@ -6,9 +6,11 @@ import { LOG_OUT_REQUEST } from '../reducers/user_YG';
 
 // 만약 JWT 커스텀 훅(예: useAuth) 있다면 import (없으면 해당 부분만 빼고 사용)
 import { useAuth } from '../hooks/useAuth'; // 실제 경로/이름에 맞게!
+import { useCart } from '../context/CartContext';
 
 const Header = () => {
   const dispatch = useDispatch();
+  const { setCartCount } = useCart();
 
   // JWT 로그인 상태 가져오기 (없으면 해당 부분은 생략 또는 주석)
   // useAuth 훅에서 { isLoggedIn, user, logout } 이런 식으로 반환된다고 가정
@@ -52,6 +54,7 @@ const Header = () => {
     } else if (sessionLoggedIn) {
       dispatch({ type: LOG_OUT_REQUEST });
     }
+    setCartCount(0);
   };
 
   return (
