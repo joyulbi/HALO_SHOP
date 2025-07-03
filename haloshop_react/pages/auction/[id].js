@@ -39,7 +39,7 @@ export default function AuctionRoomLayout() {
       // 반드시 시작가 세팅 이후에 logs fetch!
       api.get(`/api/auction-logs/auction/${AUCTION_ID}`).then(res2 => setLogs(res2.data));
     });
-    api.get(`/api/auction-images/${AUCTION_ID}`)
+    api.get(`/api/auction-images/auction/${AUCTION_ID}`)
       .then(res => {
         const result = Array.isArray(res.data) ? res.data : [res.data];
         setImages(result);
