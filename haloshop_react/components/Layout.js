@@ -1,10 +1,9 @@
-// components/Layout.js
-import React from 'react';
+import React, { useRef } from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import QuickMenu from './QuickMenu'; // ✅ 퀵 메뉴 추가
+import QuickMenu from './QuickMenu'; 
 
-const Layout = ({ children }) => {
+const Layout = ({ children, cartRef }) => { // 🔥 cartRef prop 받기
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
@@ -12,7 +11,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
       <Footer />
-      <QuickMenu /> {/* ✅ 퀵 메뉴를 여기 고정 */}
+      <QuickMenu cartRef={cartRef} /> {/* 🔥 cartRef 전달 */}
     </div>
   );
 };

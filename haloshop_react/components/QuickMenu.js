@@ -1,9 +1,8 @@
-// components/QuickMenu.js
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext'; // 🔥 추가
 
-const QuickMenu = () => {
+const QuickMenu = ({ cartRef }) => {
   const router = useRouter();
   const { cartCount } = useCart(); // 🔥 cartCount 상태 불러오기
 
@@ -38,6 +37,7 @@ const QuickMenu = () => {
       </button>
 
       <button
+      ref={cartRef}
         title="장바구니"
         onClick={goToCart}
         style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer', position: 'relative' }}
