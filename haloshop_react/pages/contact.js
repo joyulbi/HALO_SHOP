@@ -42,10 +42,8 @@ const TabButton = styled.button`
 
 const Main = styled.div`
   flex: 1;
-  padding: 3rem 4rem;  // 좌우 위아래 padding 넉넉히
   overflow-y: auto;
   min-height: 100vh;
-  background-color: #fff;
   box-sizing: border-box;
 `;
 

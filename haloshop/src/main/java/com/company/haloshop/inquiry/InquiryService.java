@@ -19,23 +19,52 @@ public class InquiryService {
 
     // 문의 등록
     @Transactional
-    public void createInquiry(Inquiry inquiry) {
-        inquiryMapper.insertInquiry(inquiry);
+    public Inquiry createInquiry(InquiryRequestDto dto) {
+        inquiryMapper.insertInquiry(dto); // 이 dto는 accountId, entityId 있음
+		return null;
     }
 
     // 전체 조회
-    public List<Inquiry> getInquiriesWithFilter(Long accountId, Long entityId, InquiryStatus status,
-            LocalDateTime startDate, LocalDateTime endDate) {
-	Map<String, Object> filters = new HashMap<>();
-	if (accountId != null) filters.put("accountId", accountId);
-	if (entityId != null) filters.put("entityId", entityId);
-	if (status != null) filters.put("status", status.name());
-	if (startDate != null) filters.put("startDate", startDate);
-	if (endDate != null) filters.put("endDate", endDate);
-	
-	return inquiryMapper.findAllInquiry(filters);
-	}
+    public List<Inquiry> getInquiriesWithFilter(
+            Long accountId,
+            Long entityId,
+            InquiryStatus status,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        Map<String, Object> filters = new HashMap<>();
 
+        if (accountId != null) {
+            filters.put("accountId", accountId);
+        }
+
+        if (entityId != null) {
+            filters.put("entityId", entityId);
+        }
+
+        if (status != null) {
+            // MyBatis <choose> 조건에 맞춰 문자열로 넘김
+            filters.put("status", status.name());
+        }
+
+        if (startDate != null) {
+            filters.put("startDate", startDate);
+        }
+
+        if (endDate != null) {
+            filters.put("endDate", endDate);
+        }
+
+        return inquiryMapper.findAllInquiry(filters);
+    }
+
+    public List<Inquiry> findByStatusWithPaging(String status, int offset, int size) {
+        return inquiryMapper.selectByStatusWithPaging(status, offset, size);
+    }
+
+    public int countByStatus(String status) {
+        return inquiryMapper.countByStatus(status);
+    }
 
     // 단일 조회
     public Inquiry getInquiryById(Long id) {

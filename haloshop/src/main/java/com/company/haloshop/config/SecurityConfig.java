@@ -121,8 +121,7 @@ public class SecurityConfig {
                 .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
                 .antMatchers("/api/items").permitAll() // 아이템도 예외
-                //.antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
-                .antMatchers("/api/**").permitAll()     // API는 인증된 사용자만
+                .antMatchers("/api/**").authenticated()     // API는 인증된 사용자만
                 .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
                 .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
                 .anyRequest().permitAll()                    // 나머지 요청 허용

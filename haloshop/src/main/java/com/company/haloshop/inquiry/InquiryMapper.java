@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface InquiryMapper {
 
     // 등록
-    void insertInquiry(Inquiry inquiry);
+    void insertInquiry(InquiryRequestDto dto);
 
     // 전체 조회
     List<Inquiry> findAllInquiry(Map<String, Object> filters);
@@ -22,4 +22,8 @@ public interface InquiryMapper {
 
     // 삭제
     int deleteInquiry(Long id);
+
+	List<Inquiry> selectByStatusWithPaging(String status, int offset, int size);
+
+	int countByStatus(String status);
 }
