@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../utils/axios';
 import { useRouter } from 'next/router';
-import { useCart } from '../../context/CartContext'; 
+import { useCart } from '../../context/CartContext';
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const router = useRouter();
-  const { setCartCount } = useCart(); 
-
+  const { setCartCount } = useCart();
 
   useEffect(() => {
     api.get('/api/cart')
@@ -21,45 +20,41 @@ const CartPage = () => {
     api.put(`/api/cart/${item.id}`, updatedItem)
       .then(() => {
         setCartItems(cartItems.map(ci => ci.id === item.id ? updatedItem : ci));
-        setCartCount(prev => prev + 1); 
+        // 종류 카운트는 그대로 유지 (건들지 않음)
       })
       .catch(err => console.error('수량 증가 실패:', err));
   };
 
-
+  // 수량 감소
   const decreaseQuantity = (item) => {
     if (item.quantity <= 1) return;
     const updatedItem = { ...item, quantity: item.quantity - 1 };
     api.put(`/api/cart/${item.id}`, updatedItem)
       .then(() => {
         setCartItems(cartItems.map(ci => ci.id === item.id ? updatedItem : ci));
-        setCartCount(prev => prev - 1); 
+        // 종류 카운트는 그대로 유지 (건들지 않음)
       })
       .catch(err => console.error('수량 감소 실패:', err));
   };
 
-
+  // 상품 삭제 (종류가 줄어드니 카운트 수정)
   const deleteItem = (id) => {
-    const targetItem = cartItems.find(item => item.id === id); 
+    const targetItem = cartItems.find(item => item.id === id);
     api.delete(`/api/cart/${id}`)
       .then(() => {
         setCartItems(cartItems.filter(item => item.id !== id));
-        setCartCount(prev => prev - targetItem.quantity); 
+        setCartCount(prev => prev - 1); // 종류 기준 카운트 감소
       })
       .catch(err => console.error('삭제 실패:', err));
   };
 
-
   const handleCheckout = () => {
     alert('결제 페이지로 이동 (구현 예정)');
-
   };
-
 
   const handleCancel = () => {
     router.push('/');
   };
-
 
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = 3500;
@@ -114,7 +109,6 @@ const CartPage = () => {
             </div>
           ))}
 
-  
           <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', marginTop: '40px' }}>
             <h3>Summary</h3>
             <p>총 가격: {totalPrice.toLocaleString()}원</p>
@@ -131,7 +125,6 @@ const CartPage = () => {
     </div>
   );
 };
-
 
 const buttonStyle = {
   padding: '8px 12px',
