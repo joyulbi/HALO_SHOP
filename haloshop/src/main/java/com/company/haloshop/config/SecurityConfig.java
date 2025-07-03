@@ -35,6 +35,10 @@ import com.company.haloshop.security.mapper.JwtBlacklistMapper;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
+
+import com.company.haloshop.dto.member.AccountDto;
 
 @Configuration
 public class SecurityConfig {
@@ -49,6 +53,22 @@ public class SecurityConfig {
         this.jwtBlacklistMapper = jwtBlacklistMapper;
     }
 
+    
+    @Component("adminCheck")
+    public class AdminCheck {
+
+        public boolean hasAdminAuthority(Authentication authentication) {
+            if (authentication == null || !authentication.isAuthenticated()) return false;
+
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof AccountDto) {
+                AccountDto account = (AccountDto) principal;
+                return Boolean.TRUE.equals(account.getIsAdmin());
+            }
+            return false;
+        }
+    }
+    
     @Bean
     public PasswordEncoder userPasswordEncoder() {
         // bcrypt 강도 12 (기본은 10, 12는 더 강력하지만 CPU 비용 증가)
@@ -123,7 +143,7 @@ public class SecurityConfig {
             )
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
-                .antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
+                //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
                 .antMatchers("/api/items").permitAll() // 아이템도 예외
                 .antMatchers("/api/**").permitAll()    // API는 인증된 사용자만
