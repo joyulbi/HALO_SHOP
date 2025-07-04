@@ -11,4 +11,5 @@ public interface AuctionImageMapper {
     void insert(AuctionImage auctionImage);
     void update(AuctionImage auctionImage);
     void delete(Long id);
+    void deleteByAuctionId(Long auctionId);
 }

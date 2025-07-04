@@ -21,13 +21,14 @@ export default function AuctionRoomLayout() {
   const [chat, setChat] = useState([]);
   const [inputBid, setInputBid] = useState("");
   const [inputMsg, setInputMsg] = useState("");
-  const [startPrice, setStartPrice] = useState(undefined); // undefined로!
+  const [startPrice, setStartPrice] = useState(undefined);
   const [status, setStatus] = useState("");
   const [accountMap, setAccountMap] = useState({});
+  const [errorMsg, setErrorMsg] = useState(""); // 입찰 에러 메시지
 
   const stompRef = useRef(null);
 
-  // REST 데이터 불러오기 (시작가 → logs 순서 보장!)
+  // REST 데이터 불러오기 (시작가 → logs 순서 보장)
   useEffect(() => {
     if (!AUCTION_ID) return;
     api.get(`/api/auctions/${AUCTION_ID}`).then(res => {
@@ -56,7 +57,15 @@ export default function AuctionRoomLayout() {
     return Math.max(startPrice, ...prices);
   }, [logs, startPrice]);
 
-  // 입찰로그 내 계정 닉네임 매핑 (그대로)
+  // 최소 입찰가 계산 (최고가의 10% 이상 + 100원 단위 반올림)
+  const minBid = React.useMemo(() => {
+    if (!logs || logs.length === 0) return startPrice;
+    const last = logs[logs.length - 1];
+    if (!last || typeof last.price !== "number") return startPrice;
+    return Math.ceil(last.price * 1.1 / 100) * 100;
+  }, [logs, startPrice]);
+
+  // 입찰로그 내 계정 닉네임 매핑
   useEffect(() => {
     const fetchAccounts = async () => {
       if (!logs || logs.length === 0) return;
@@ -71,7 +80,7 @@ export default function AuctionRoomLayout() {
     fetchAccounts();
   }, [logs]);
 
-  // WebSocket 연결 (실시간 입찰/채팅)
+  // WebSocket 연결 (실시간 입찰/채팅 + 에러 메시지 구독)
   useEffect(() => {
     if (!AUCTION_ID) return;
     const sock = new SockJS("http://localhost:8080/ws");
@@ -81,10 +90,17 @@ export default function AuctionRoomLayout() {
     });
 
     client.onConnect = () => {
+      // 실시간 입찰 로그
       client.subscribe(`/topic/auction/${AUCTION_ID}`, (msg) => {
         const log = JSON.parse(msg.body);
         setLogs(prev => [...prev, log]);
+        setErrorMsg(""); // 성공 시 에러 메시지 클리어
       });
+      // 입찰 실패 메시지
+      client.subscribe(`/topic/auction/${AUCTION_ID}/error`, (msg) => {
+        setErrorMsg(msg.body || "입찰 실패");
+      });
+      // 실시간 채팅
       client.subscribe(`/topic/chat/${AUCTION_ID}`, (msg) => {
         const chatMsg = JSON.parse(msg.body);
         setChat(prev => [...prev, chatMsg]);
@@ -94,14 +110,13 @@ export default function AuctionRoomLayout() {
     client.activate();
     stompRef.current = client;
     return () => client.deactivate();
-    // eslint-disable-next-line
   }, [AUCTION_ID]);
 
   // 입찰 전송
   const handleBid = () => {
     if (!inputBid || isNaN(Number(inputBid))) return;
     if (!user || !user.id) {
-      alert("로그인 후 이용 가능합니다!");
+      setErrorMsg("로그인 후 이용 가능합니다!");
       return;
     }
     if (stompRef.current && stompRef.current.connected && AUCTION_ID) {
@@ -116,6 +131,7 @@ export default function AuctionRoomLayout() {
         body: JSON.stringify(log),
       });
       setInputBid("");
+      // setErrorMsg(""); // 에러는 성공 시 서버에서 클리어
     }
   };
 
@@ -173,6 +189,8 @@ export default function AuctionRoomLayout() {
             handleBid={handleBid}
             isFinished={isFinished}
             accountMap={accountMap}
+            minBid={minBid}
+            errorMsg={errorMsg}
           />
         </div>
         {/* 오른쪽 전체: 채팅 */}
