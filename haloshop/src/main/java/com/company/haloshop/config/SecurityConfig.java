@@ -137,10 +137,12 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             // CSRF 설정
+            
             .csrf(csrf -> csrf
                 // 회원가입, 로그인 등 인증 없이 쓰는 API는 CSRF 무시
+            	.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringAntMatchers("/api/**","/auth/**","/user/me")
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                
             )
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz

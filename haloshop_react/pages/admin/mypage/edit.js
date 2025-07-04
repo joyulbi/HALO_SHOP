@@ -18,11 +18,6 @@ const AdminMyPageEdit = () => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(";").shift();
-    // X-XSRF-TOKEN이 없으면 XSRF-TOKEN도 체크
-    if (name === "X-XSRF-TOKEN") {
-      const altParts = value.split(`; XSRF-TOKEN=`);
-      if (altParts.length === 2) return altParts.pop().split(";").shift();
-    }
     return null;
   };
 
@@ -56,7 +51,7 @@ const AdminMyPageEdit = () => {
 
     try {
       // CSRF 토큰 가져오기
-      const csrfToken = getCookie("X-XSRF-TOKEN");
+      const csrfToken = getCookie("XSRF-TOKEN"); // 정확한 토큰 이름
       if (!csrfToken) {
         setMsg("CSRF 토큰을 찾을 수 없습니다.");
         return;
@@ -66,13 +61,13 @@ const AdminMyPageEdit = () => {
       console.log("CSRF Token:", csrfToken);
 
       const res = await api.post(
-        "/admin/update",
-        form,
+        "/admin/update", // 요청할 API 경로
+        form, // 보낼 폼 데이터
         {
-          withCredentials: true,
+          withCredentials: true, // 세션 쿠키를 포함하여 요청 보냄
           headers: {
-            "X-XSRF-TOKEN": csrfToken, // 서버에서 기대하는 헤더 이름 확인 필요
-            "Content-Type": "application/json",
+            "XSRF-TOKEN": csrfToken, // 정확한 헤더 이름으로 변경
+            "Content-Type": "application/json", // 요청 타입을 JSON으로 설정
           },
         }
       );
