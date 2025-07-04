@@ -51,6 +51,7 @@ const ItemDetail = () => {
     setLensPosition({ x, y });
   };
 
+
   const handleNextImage = () => {
     if (item && item.images.length > 0) {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % item.images.length);
@@ -118,6 +119,7 @@ const ItemDetail = () => {
   const handleBuyNow = () => {
     router.push(`/order?itemId=${item.id}&quantity=${quantity}`);
   };
+
 
   if (!item) return <div>로딩중...</div>;
 
