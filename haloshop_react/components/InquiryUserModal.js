@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
 const Overlay = styled.div`
   position: fixed;
@@ -115,22 +116,6 @@ const FileLink = styled.a`
   }
 `;
 
-const StatusSelect = styled.select`
-  padding: 0.3rem 0.6rem;
-  font-size: 0.98rem;
-  font-weight: 600;
-  border-radius: 6px;
-  border: 1.5px solid #ccc;
-  color: #222;
-  background: white;
-  cursor: pointer;
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: #eef2ff;
-  }
-`;
-
 const Label = styled.label`
   display: block;
   margin: 0 0 0.5rem 0;
@@ -139,23 +124,6 @@ const Label = styled.label`
   color: #6366f1;
 `;
 
-const TextArea = styled.textarea`
-  width: 100%;
-  min-height: 140px;
-  padding: 0.9rem 1rem;
-  font-size: 1.04rem;
-  border: 1.5px solid #e0e7ef;
-  border-radius: 10px;
-  background: #fff;
-  resize: vertical;
-  transition: border 0.2s, background 0.2s;
-  font-family: inherit;
-  &:focus {
-    outline: none;
-    border-color: #6366f1;
-    background: #eef2ff;
-  }
-`;
 
 const Button = styled.button`
   background: ${({primary}) => primary ? "linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)" : "#f3f4f6"};
@@ -182,23 +150,38 @@ const Button = styled.button`
   }
 `;
 
-const InquiryModal = ({
+// API 호출 주소
+const ApiCallUrl = "http://localhost:8080";
+
+const InquiryUserModal = ({
   inquiry,
-  reply,
-  onReplyChange,
   onClose,
-  onSubmit,
-  onStatusChange,
+  accountId,
+  onDelete
 }) => {
   if (!inquiry) return null;
 
-  const [localStatus, setLocalStatus] = useState(inquiry.status);
+  // 문의 삭제 API 불러오기
+  const handleDelete = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token || !accountId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
-  useEffect(() => {
-    setLocalStatus(inquiry.status);
-  }, [inquiry]);
-
-  const ApiCallUrl = "http://localhost:8080";
+    try {
+      await axios.delete(
+        `${ApiCallUrl}/api/inquiries/${inquiry.id}/my?accountId=${accountId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("문의가 삭제되었습니다.");
+      if (typeof onDelete === "function") onDelete(inquiry.id);
+      onClose();
+    } catch (e) {
+      alert("삭제에 실패했습니다.");
+    }
+  };
 
   return (
     <Overlay onClick={onClose}>
@@ -216,26 +199,21 @@ const InquiryModal = ({
             </InfoItem>
             <InfoItem>
               <strong>상태</strong>
-              <StatusSelect
-                value={localStatus}
-                onChange={e => {
-                  setLocalStatus(e.target.value);
-                  onStatusChange(e.target.value);
-                }}
-                disabled={localStatus === "ANSWERED"}
-              >
-                <option value="SUBMITTED">접수</option>
-                <option value="REVIEWING">검토중</option>
-                <option value="ANSWERED" disabled>답변완료</option>
-              </StatusSelect>
+              <InfoValue>
+                {inquiry.status === "ANSWERED"
+                  ? "답변완료"
+                  : inquiry.status === "REVIEWING"
+                  ? "검토중"
+                  : "접수됨"}
+              </InfoValue>
             </InfoItem>
           </Row>
           <Title>{inquiry.title}</Title>
           <Label>내용</Label>
           <ReadOnlyTextArea value={inquiry.content} readOnly />
           {inquiry.file && (
-            <div style={{marginTop: "0.7rem"}}>
-              <strong style={{color:"#7b7b7b", fontWeight:600, fontSize:"0.98rem", marginRight:"0.3rem"}}>첨부파일:</strong>
+            <div style={{ marginTop: "0.7rem" }}>
+              <strong style={{ color: "#7b7b7b", fontWeight: 600, fontSize: "0.98rem", marginRight: "0.3rem" }}>첨부파일:</strong>
               <FileLink
                 href={`${ApiCallUrl}/api/files/${encodeURIComponent(inquiry.file)}`}
                 target="_blank"
@@ -248,39 +226,31 @@ const InquiryModal = ({
           )}
         </MainPanel>
 
-        {/* 오른쪽: 답변영역 */}
-        <AnswerPanel>
-          <div>
-            <Label htmlFor="reply">
-              {localStatus === "ANSWERED" ? "답변 확인" : "답변 작성"}
-            </Label>
-            {localStatus === "ANSWERED" ? (
-              // 답변완료 시: 읽기 전용 textarea에 답변 표시
+        {/* 오른쪽: 답변영역 - 상태가 ANSWERED일 때만 표시 */}
+        {inquiry.status === "ANSWERED" && (
+          <AnswerPanel>
+            <div>
+              <Label htmlFor="reply">답변 확인</Label>
               <ReadOnlyTextArea value={inquiry.answer || ""} readOnly />
-            ) : (
-              // 답변 작성 가능 시: 입력 textarea와 전송 버튼
-              <>
-                <TextArea
-                  id="reply"
-                  placeholder="답변을 입력하세요"
-                  value={reply}
-                  onChange={e => onReplyChange(e.target.value)}
-                />
-                <Button
-                  primary
-                  onClick={() => onSubmit(localStatus, inquiry)}
-                  disabled={!reply.trim()}
-                >
-                  답변 전송
-                </Button>
-              </>
-            )}
+            </div>
+            <Button onClick={onClose}>닫기</Button>
+          </AnswerPanel>
+        )}
+
+        {/* "제출됨" 상태일 때만 삭제 버튼 표시 */}
+        {inquiry.status === "SUBMITTED" && (
+          <div style={{ padding: "2rem", textAlign: "right" }}>
+            <Button
+              style={{ background: "#ef4444", color: "#fff", width: "auto" }}
+              onClick={handleDelete}
+            >
+              문의 삭제
+            </Button>
           </div>
-          <Button onClick={onClose}>닫기</Button>
-        </AnswerPanel>
+        )}
       </ModalContainer>
     </Overlay>
   );
 };
 
-export default InquiryModal;
+export default InquiryUserModal;

@@ -94,4 +94,14 @@ public class InquiryController {
         inquiryService.deleteInquiry(id);
         return ResponseEntity.noContent().build(); // 204
     }
+    
+    // "제출됨"인 내 문의 삭제
+    @DeleteMapping("/{id}/my")
+    public ResponseEntity<Void> deleteMyInquiry(
+            @PathVariable Long id,
+            @RequestParam Long accountId
+    ) {
+        inquiryService.deleteMySubmittedInquiry(id, accountId);
+        return ResponseEntity.noContent().build();
+    }
 }

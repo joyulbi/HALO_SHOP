@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import InquiryUserModal from "./InquiryUserModal";
 
 const Container = styled.div`
   width: 50vw;
@@ -91,10 +92,52 @@ const EmptyMessage = styled.div`
   font-size: 1.1rem;
 `;
 
+const FilterBar = styled.div`
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+`;
+
+const StatusButton = styled.button`
+  background: ${({ active }) => (active ? "#6366f1" : "#f3f4f6")};
+  color: ${({ active }) => (active ? "#fff" : "#22223b")};
+  border: none;
+  border-radius: 6px;
+  padding: 0.38rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+`;
+
+// 날짜 표시 포맷팅
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  const pad = n => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// 상태 필터링 옵션
+const STATUS_OPTIONS = [
+  { value: "", label: "전체" },
+  { value: "SUBMITTED", label: "접수됨" },
+  { value: "REVIEWING", label: "검토중" },
+  { value: "ANSWERED", label: "답변완료" },
+];
+
 const InquiryHistory = () => {
+  const ApiCallUrl = "http://localhost:8080";
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedInquiry, setSelectedInquiry] = useState(null);
+  const [accountId, setAccountId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -104,44 +147,55 @@ const InquiryHistory = () => {
       return;
     }
 
-    axios.get("http://localhost:8080/user/me", {
+    axios.get(`${ApiCallUrl}/user/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
-        const accountId = res.data?.account?.id;
-        if (!accountId) {
-          setError("유저 정보가 올바르지 않습니다.");
-          setLoading(false);
-          return;
-        }
-        axios.get(`http://localhost:8080/api/inquiries/my?accountId=${accountId}`, {
+        const userId = res.data?.account?.id;
+        if (!userId) throw new Error();
+        setAccountId(userId);
+        return axios.get(`${ApiCallUrl}/api/inquiries/my?accountId=${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
-        })
-          .then(res2 => {
-            setInquiries(res2.data);
-            setLoading(false);
-          })
-          .catch(() => {
-            setError("문의 내역을 불러오지 못했습니다.");
-            setLoading(false);
-          });
+        });
       })
-      .catch(() => {
-        setError("유저 정보가 올바르지 않습니다.");
-        setLoading(false);
-      });
+      .then(res2 => setInquiries(res2?.data || []))
+      .catch(() => setError("데이터를 불러오는 중 오류가 발생했습니다."))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Container><Title>나의 문의 내역</Title><div>로딩중...</div></Container>;
   if (error) return <Container><Title>나의 문의 내역</Title><EmptyMessage>{error}</EmptyMessage></Container>;
-  if (inquiries.length === 0) return <Container><Title>나의 문의 내역</Title><EmptyMessage>문의 내역이 없습니다.</EmptyMessage></Container>;
+  if (!inquiries.length) return <Container><Title>나의 문의 내역</Title><EmptyMessage>문의 내역이 없습니다.</EmptyMessage></Container>;
+
+  // 상태 필터 및 정렬 축약
+  const sortedInquiries = [...inquiries]
+    .filter(i => !statusFilter || i.status === statusFilter)
+    .sort((a, b) => b.id - a.id);
 
   return (
     <Container>
       <Title>나의 문의 내역</Title>
+      <FilterBar>
+        <span style={{ fontWeight: 700, fontSize: "1.05rem" }}>문의 상태 :</span>
+        {STATUS_OPTIONS.map(opt => (
+          <StatusButton
+            key={opt.value}
+            active={statusFilter === opt.value}
+            onClick={() => setStatusFilter(opt.value)}
+            type="button"
+          >
+            {opt.label}
+          </StatusButton>
+        ))}
+      </FilterBar>
       <CardList>
-        {inquiries.map(inquiry => (
-          <Card key={inquiry.id} status={inquiry.status}>
+        {sortedInquiries.map(inquiry => (
+          <Card
+            key={inquiry.id}
+            status={inquiry.status}
+            onClick={() => setSelectedInquiry(inquiry)}
+            style={{ cursor: "pointer" }}
+          >
             <CardHeader>
               <CardTitle>{inquiry.title}</CardTitle>
               <CardStatus status={inquiry.status}>
@@ -154,7 +208,7 @@ const InquiryHistory = () => {
             </CardHeader>
             <CardInfo>
               <span>카테고리: {inquiry.entity?.name || "-"}</span>
-              <span>작성일: {new Date(inquiry.createdAt).toLocaleDateString()}</span>
+              <span>작성일: {formatDateTime(inquiry.createdAt)}</span>
               <AnswerBadge answered={inquiry.status === "ANSWERED"}>
                 {inquiry.status === "ANSWERED" ? "답변 있음" : "답변 대기"}
               </AnswerBadge>
@@ -165,6 +219,14 @@ const InquiryHistory = () => {
           </Card>
         ))}
       </CardList>
+      {selectedInquiry && (
+        <InquiryUserModal
+          inquiry={selectedInquiry}
+          onClose={() => setSelectedInquiry(null)}
+          fromHistory
+          accountId={accountId}
+        />
+      )}
     </Container>
   );
 };

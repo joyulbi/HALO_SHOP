@@ -23,6 +23,10 @@ public interface InquiryMapper {
 
     // 삭제
     int deleteInquiry(Long id);
+    
+    // "제출됨"인 내 문의 삭제
+    int deleteMySubmittedInquiry(@Param("id") Long id, @Param("accountId") Long accountId);
+
 
 	List<Inquiry> selectByStatusWithPaging(String status, int offset, int size);
 

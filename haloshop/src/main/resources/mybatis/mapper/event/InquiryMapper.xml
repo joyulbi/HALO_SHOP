@@ -89,5 +89,13 @@
 	<delete id="deleteInquiry" parameterType="long">
 	    DELETE FROM inquiry WHERE id = #{id}
 	</delete>
+	
+	<!-- "제출됨"인 내 문의 삭제 -->
+	<delete id="deleteMySubmittedInquiry" parameterType="map">
+    DELETE FROM inquiry
+    WHERE id = #{id}
+      AND account_id = #{accountId}
+      AND status = 'SUBMITTED'
+	</delete>
 
 </mapper>
