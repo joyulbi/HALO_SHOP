@@ -38,9 +38,26 @@ public class UserPointService {
     }
 
     // 수정
+    @Transactional
     public void update(UserPointDto userPoint) {
+        UserPointDto existing = userPointMapper.findByAccountId(userPoint.getAccountId());
+        if (existing == null) {
+            throw new IllegalArgumentException("UserPoint not found for accountId=" + userPoint.getAccountId());
+        }
+
+        if (userPoint.getTotalPoint() == null) {
+            userPoint.setTotalPoint(existing.getTotalPoint());
+        }
+        if (userPoint.getTotalPayment() == null) {
+            userPoint.setTotalPayment(existing.getTotalPayment());
+        }
+        if (userPoint.getGrade() == null) {
+            userPoint.setGrade(existing.getGrade());
+        }
+
         userPointMapper.update(userPoint);
     }
+
 
     // 삭제 (회원 탈퇴 시)
     public void deleteByAccountId(Long accountId) {
@@ -115,30 +132,44 @@ public class UserPointService {
     }
     
     @Transactional
-    public void adjustPointManually(Long accountId, int adjustAmount, String adjustType) {
+    public void adjustPointManually(Long accountId, int adjustToAmount) {
         UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
         if (userPoint == null) {
             userPoint = new UserPointDto();
             userPoint.setAccountId(accountId);
-            userPoint.setTotalPoint((long) adjustAmount);
+            userPoint.setTotalPoint((long) adjustToAmount);
             userPoint.setTotalPayment(0L);
             userPoint.setGrade("BASIC");
-            
             userPoint.setUpdatedAt(LocalDateTime.now());
             userPointMapper.insert(userPoint);
+
+            // 최초 생성 시 로그
+            PointLogDto pointLogDto = new PointLogDto();
+            pointLogDto.setAccountId(accountId);
+            pointLogDto.setAmount(adjustToAmount);
+            pointLogDto.setType("수동입력");
+            pointLogDto.setCreatedAt(LocalDateTime.now());
+            pointLogService.insert(pointLogDto);
         } else {
-            userPoint.setTotalPoint(userPoint.getTotalPoint() + adjustAmount);
+            long beforePoint = userPoint.getTotalPoint();
+            long diff = adjustToAmount - beforePoint; // 변동량
+
+            userPoint.setTotalPoint((long) adjustToAmount);
             userPoint.setUpdatedAt(LocalDateTime.now());
             userPointMapper.update(userPoint);
-        }
 
-        PointLogDto pointLogDto = new PointLogDto();
-        pointLogDto.setAccountId(accountId);
-        pointLogDto.setAmount(adjustAmount);
-        pointLogDto.setType(adjustType);  // "MANUAL_ADJUST" or "MANUAL_ADD_이벤트" 등
-        pointLogDto.setCreatedAt(LocalDateTime.now());
-        pointLogService.insert(pointLogDto);
+            // 변동량 기준으로 로그 기록
+            if (diff != 0) {
+                PointLogDto pointLogDto = new PointLogDto();
+                pointLogDto.setAccountId(accountId);
+                pointLogDto.setAmount((int) diff);
+                pointLogDto.setType("수동입력");
+                pointLogDto.setCreatedAt(LocalDateTime.now());
+                pointLogService.insert(pointLogDto);
+            }
+        }
     }
+
 
 
 

@@ -32,8 +32,13 @@
 		resultType="com.company.haloshop.dto.shop.OrderItemDto">
 		SELECT oi.*
 		FROM order_items oi
-		JOIN items i ON oi.item_id = i.id
+		JOIN items i ON oi.item_id =
+		i.id
 		WHERE i.category_id = #{categoryId}
+	</select>
+	<select id="findByOrderId" parameterType="long"
+		resultType="com.company.haloshop.dto.shop.OrderItemDto">
+		SELECT * FROM order_items WHERE orders_id = #{ordersId}
 	</select>
 
 

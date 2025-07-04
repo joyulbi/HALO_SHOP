@@ -21,4 +21,5 @@ public interface OrderItemMapper {
     void delete(Long id);
     
     List<OrderItemDto> findAllByCategoryId(Long categoryId);
+    List<OrderItemDto> findByOrderId(Long ordersId);
 }
