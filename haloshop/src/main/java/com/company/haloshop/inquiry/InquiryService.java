@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,28 +32,11 @@ public class InquiryService {
             LocalDateTime endDate
     ) {
         Map<String, Object> filters = new HashMap<>();
-
-        if (accountId != null) {
-            filters.put("accountId", accountId);
-        }
-
-        if (entityId != null) {
-            filters.put("entityId", entityId);
-        }
-
-        if (status != null) {
-            // MyBatis <choose> 조건에 맞춰 문자열로 넘김
-            filters.put("status", status.name());
-        }
-
-        if (startDate != null) {
-            filters.put("startDate", startDate);
-        }
-
-        if (endDate != null) {
-            filters.put("endDate", endDate);
-        }
-
+        if (accountId != null) { filters.put("accountId", accountId); }
+        if (entityId != null) { filters.put("entityId", entityId); }
+        if (status != null) { filters.put("status", status.name()); }
+        if (startDate != null) { filters.put("startDate", startDate); }
+        if (endDate != null) { filters.put("endDate", endDate); }
         return inquiryMapper.findAllInquiry(filters);
     }
 
@@ -73,6 +55,11 @@ public class InquiryService {
             throw new IllegalArgumentException("Inquiry not found with id: " + id);
         }
         return inquiry;
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Inquiry> getInquiriesByAccountId(Long accountId) {
+        return inquiryMapper.selectByAccountIdOrderByIdASC(accountId);
     }
 
     // 상태 변경
@@ -93,6 +80,14 @@ public class InquiryService {
         int deleted = inquiryMapper.deleteInquiry(id);
         if (deleted == 0) {
             throw new IllegalArgumentException("Inquiry not found with id: " + id);
+        }
+    }
+    
+    // "제춛됨"인 내 문의 삭제
+    public void deleteMySubmittedInquiry(Long id, Long accountId) {
+        int deleted = inquiryMapper.deleteMySubmittedInquiry(id, accountId);
+        if (deleted == 0) {
+            throw new IllegalStateException("삭제할 수 없는 문의입니다. 상태가 SUBMITTED가 아니거나 작성자가 아닙니다.");
         }
     }
 }

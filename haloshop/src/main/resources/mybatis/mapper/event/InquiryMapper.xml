@@ -65,6 +65,12 @@
 		<select id="countByStatus" parameterType="string" resultType="int">
 		    SELECT COUNT(*) FROM inquiry WHERE status = #{status}
 		</select>
+		
+		<select id="selectByAccountIdOrderByIdASC" parameterType="long" resultMap="InquiryResultMap">
+		    SELECT * FROM inquiry
+		    WHERE account_id = #{accountId}
+		    ORDER BY id ASC
+		</select> 
 
 
     <!-- findById -->
@@ -82,6 +88,14 @@
 	<!-- delete -->
 	<delete id="deleteInquiry" parameterType="long">
 	    DELETE FROM inquiry WHERE id = #{id}
+	</delete>
+	
+	<!-- "제출됨"인 내 문의 삭제 -->
+	<delete id="deleteMySubmittedInquiry" parameterType="map">
+    DELETE FROM inquiry
+    WHERE id = #{id}
+      AND account_id = #{accountId}
+      AND status = 'SUBMITTED'
 	</delete>
 
 </mapper>

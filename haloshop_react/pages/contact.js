@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import InquiryForm from "../components/InquiryForm"; // 기존 ContactForm → InquiryForm
 import InquiryList from "../components/InquiryList";
+import InquiryHistory from "../components/InquiryHistory";
 
 // 예시 사용자 정보
 const mockUser = {
@@ -68,7 +69,7 @@ const contact = ({ user = mockUser }) => {
       </Sidebar>
       <Main>
         {selectedTab === "write" && <InquiryForm user={user} />}
-        {selectedTab === "list" && <InquiryList user={user} />}
+        {selectedTab === "list" && <InquiryHistory user={user} />}
       </Main>
     </Wrapper>
   );
