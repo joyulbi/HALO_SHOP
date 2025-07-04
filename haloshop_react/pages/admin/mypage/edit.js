@@ -1,36 +1,47 @@
 import React, { useEffect, useState } from "react";
 import api from "../../../utils/axios";
+import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/router";
 
 const AdminMyPageEdit = () => {
+  const { user, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({
     nickname: "",
     email: "",
     phone: "",
   });
-  const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
-  // 관리자 내정보 불러오기
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get("/admin/me");
-        setForm({
-          nickname: res.data?.account?.nickname ?? "",
-          email: res.data?.account?.email ?? "",
-          phone: res.data?.account?.phone ?? "",
-        });
-      } catch {
-        setMsg("관리자 정보를 불러올 수 없습니다.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  // 쿠키에서 CSRF 토큰 가져오는 함수
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    // X-XSRF-TOKEN이 없으면 XSRF-TOKEN도 체크
+    if (name === "X-XSRF-TOKEN") {
+      const altParts = value.split(`; XSRF-TOKEN=`);
+      if (altParts.length === 2) return altParts.pop().split(";").shift();
+    }
+    return null;
+  };
 
-  // 폼 변경 핸들러
+  // 관리자 권한 체크
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    if (!user.isAdmin) {
+      router.replace("/mypage");
+      return;
+    }
+    setForm({
+      nickname: user.nickname || "",
+      email: user.email || "",
+      phone: user.phone || "",
+    });
+  }, [user, router]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -39,20 +50,42 @@ const AdminMyPageEdit = () => {
     }));
   };
 
-  // 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("");
+
     try {
-      await api.put("/admin/me", {
-        ...form,
-      });
+      // CSRF 토큰 가져오기
+      const csrfToken = getCookie("X-XSRF-TOKEN");
+      if (!csrfToken) {
+        setMsg("CSRF 토큰을 찾을 수 없습니다.");
+        return;
+      }
+
+      console.log("Sending form data:", form);
+      console.log("CSRF Token:", csrfToken);
+
+      const res = await api.post(
+        "/admin/update",
+        form,
+        {
+          withCredentials: true,
+          headers: {
+            "X-XSRF-TOKEN": csrfToken, // 서버에서 기대하는 헤더 이름 확인 필요
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setMsg("수정 완료!");
       setTimeout(() => {
         router.push("/mypage");
       }, 1000);
     } catch (err) {
-      setMsg("수정 실패: " + (err?.response?.data?.error || "오류"));
+      console.error("Error:", err);
+      setMsg(
+        "수정 실패: " +
+          (err?.response?.data?.error || err.message || "알 수 없는 오류")
+      );
     }
   };
 
@@ -92,7 +125,9 @@ const AdminMyPageEdit = () => {
         </button>
       </form>
       {msg && (
-        <p style={{ color: msg.includes("실패") ? "crimson" : "green" }}>{msg}</p>
+        <p style={{ color: msg.includes("실패") ? "crimson" : "green" }}>
+          {msg}
+        </p>
       )}
     </div>
   );
