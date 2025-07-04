@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") 
 public class ReviewImageController {
-
     private final ReviewImageMapper reviewImageMapper;
 
     // 저장 경로: 프로젝트 내부 정적 리소스

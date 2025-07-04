@@ -12,7 +12,6 @@ import java.util.List;
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
-
     private final ReviewService reviewService;
     
     // ✅ 리뷰 등록 (텍스트 + 이미지 한 번에 처리)

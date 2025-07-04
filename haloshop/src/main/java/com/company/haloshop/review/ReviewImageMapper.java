@@ -13,7 +13,5 @@ public interface ReviewImageMapper {
     					   @Param("uploadedAt") LocalDateTime uploadedAt);
     
     List<String> findUrlsByReviewId(@Param("reviewId") Long reviewId);
-    
     void deleteByReviewId(Long reviewId);
 }
-

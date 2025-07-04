@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-
     private final ReviewMapper reviewMapper;
     private final ReviewImageMapper reviewImageMapper;
 
