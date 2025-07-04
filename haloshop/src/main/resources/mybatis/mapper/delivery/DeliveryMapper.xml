@@ -12,17 +12,27 @@
         <result property="addressDetail" column="address_detail" />
         <result property="zipcode" column="zipcode" />
         <result property="recipientName" column="recipient_name" />
+        <result property="productName" column="product_name" />
+        <result property="imageUrl" column="image_url" />
+        <result property="deliveryStatus" column="delivery_status" />
+        <result property="orderItemId" column="order_item_id" />
+        <result property="trackingNumber" column="tracking_number" />
+        <result property="carrier" column="carrier" />
+        <result property="updatedAt" column="updated_at" />
     </resultMap>
 
+    <!-- ✅ 사용자용: 특정 계정의 배송 조회 -->
     <select id="findByAccountId" resultMap="DeliveryResultMap">
         SELECT * FROM delivery WHERE account_id = #{accountId}
     </select>
 
+    <!-- ✅ 신규 배송 등록 -->
     <insert id="insertDelivery" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
         INSERT INTO delivery (account_id, address, address_detail, zipcode, recipient_name)
         VALUES (#{accountId}, #{address}, #{addressDetail}, #{zipcode}, #{recipientName})
     </insert>
 
+    <!-- ✅ 배송 수정 -->
     <update id="updateDelivery" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
         UPDATE delivery
         SET address = #{address},
@@ -32,25 +42,51 @@
         WHERE id = #{id}
     </update>
 
+    <!-- ✅ 배송 삭제 -->
     <delete id="deleteDelivery">
         DELETE FROM delivery WHERE id = #{id}
     </delete>
-    
-	<select id="findAll" resultType="com.company.haloshop.dto.shop.DeliveryDTO">
-	  SELECT
-	    d.id,
-	    d.account_id,
-	    d.address,
-	    d.address_detail,
-	    d.zipcode,
-	    d.recipient_name,
-	    p.name AS productName,
-	    p.image_url AS imageUrl,
-	    dt.status AS deliveryStatus
-	  FROM delivery d
-	  JOIN order_items oi ON d.order_items_id = oi.id
-	  JOIN product p ON oi.product_id = p.id
-	  JOIN delivery_tracking dt ON d.id = dt.delivery_id
-	</select>
 
+    <!-- ✅ 사용자/관리자 공용 전체 배송 목록 -->
+    <select id="findAll" resultType="com.company.haloshop.dto.shop.DeliveryDTO">
+      SELECT
+        d.id,
+        d.account_id,
+        d.address,
+        d.address_detail,
+        d.zipcode,
+        d.recipient_name,
+        i.name AS productName,
+        ii.url AS imageUrl,
+        dt.status AS deliveryStatus
+      FROM delivery d
+      JOIN order_items oi ON d.order_items_id = oi.id
+      JOIN items i ON oi.item_id = i.id
+      LEFT JOIN items_image ii ON ii.items_id = i.id
+      JOIN delivery_tracking dt ON d.id = dt.delivery_id
+    </select>
+
+    <!-- ✅ 관리자용 전체 배송 + 주문 정보 -->
+    <select id="findAllDeliveriesWithOrderInfo" resultType="com.company.haloshop.dto.shop.DeliveryDTO">
+        SELECT
+            dt.id AS id,
+            dt.order_item_id AS orderItemId,
+            dt.status AS deliveryStatus,
+            dt.tracking_number AS trackingNumber,
+            dt.carrier AS carrier,
+            dt.updated_at AS updatedAt,
+            oi.item_name AS productName,
+            o.account_id AS accountId,
+            o.created_at AS orderDate
+        FROM delivery_tracking dt
+        JOIN order_items oi ON dt.order_item_id = oi.id
+        JOIN orders o ON oi.orders_id = o.id
+        ORDER BY dt.updated_at DESC
+    </select>
+    
+    <update id="updateDeliveryStatus">
+	    UPDATE delivery_tracking
+	    SET status = #{status}
+	    WHERE order_item_id = #{orderItemId}
+	</update>
 </mapper>

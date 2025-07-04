@@ -27,4 +27,7 @@ public class ReviewDTO {
     
     @JsonIgnore
     private List<String> images;
+    
+    private String authorName;
+    private String productName;
 }

@@ -20,4 +20,9 @@ public interface ReviewMapper {
 	
 	// 리뷰 삭제
 	void deleteReview(Long id);
+	
+	List<ReviewDTO> findByItemId(Long itemId);
+	
+	// 관리자용 리뷰 전체 조회
+	List<ReviewDTO> findAllWithProduct();
 }
