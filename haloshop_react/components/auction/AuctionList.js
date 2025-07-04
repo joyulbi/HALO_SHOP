@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 
-export default function AuctionList({ auction, imageUrl }) {
+export default function AuctionList({ auction, imageUrl, onDelete }) {
   return (
     <tr style={{ borderBottom: "1px solid #eee" }}>
       <td style={{ textAlign: "center", padding: 8 }}>
@@ -22,11 +22,20 @@ export default function AuctionList({ auction, imageUrl }) {
                 : auction.status}
       </td>
       <td style={{ padding: 8 }}>{auction.startPrice?.toLocaleString() || "-"}</td>
-      <td style={{ padding: 8 }}>
+      <td style={{ padding: 8, display: "flex", gap: 8 }}>
         <Link href={`/auction/${auction.id}`}>
-          <button style={{ background: "#377be6", color: "#fff", border: "none", borderRadius: 5, padding: "5px 13px", fontWeight: "bold" }}>상세</button>
+          <button style={buttonStyle("#377be6")}>상세</button>
         </Link>
+        <Link href={`/auction/regist?id=${auction.id}`}>
+          <button style={buttonStyle("#ffaa00")}>수정</button>
+        </Link>
+        <button style={buttonStyle("#e64444")} onClick={() => onDelete(auction.id)}>삭제</button>
       </td>
     </tr>
   );
 }
+
+const buttonStyle = (bg) => ({
+  background: bg, color: "#fff", border: "none",
+  borderRadius: 5, padding: "5px 10px", fontWeight: "bold"
+});
