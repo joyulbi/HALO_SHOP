@@ -13,6 +13,7 @@ public interface OrderMapper {
     void insert(OrderRequestDto orderRequestDto);
 
     List<OrderDto> findAll();
+    List<OrderDto> findByAccountId(@Param("accountId") Long accountId);
 
     OrderDto findById(Long id);
 

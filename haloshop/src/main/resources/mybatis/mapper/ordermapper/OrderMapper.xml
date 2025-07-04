@@ -24,17 +24,17 @@
 	</resultMap>
 
 	<!-- OrderRequestDto 기반 insert -->
-<insert id="insertOrderWithItems"
-        parameterType="com.company.haloshop.dto.shop.OrderRequestDto"
-        useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO orders (
-        account_id, delivery_id, total_price, used,
-        payment_status, amount, pay_amount, tid, created_at, updated_at
-    ) VALUES (
-        #{accountId}, #{deliveryId}, #{totalPrice}, #{used},
-        #{paymentStatus}, #{amount}, #{payAmount}, #{tid}, NOW(), NOW()
-    )
-</insert>
+	<insert id="insertOrderWithItems"
+		parameterType="com.company.haloshop.dto.shop.OrderRequestDto"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO orders (
+		account_id, delivery_id, total_price, used,
+		payment_status, amount, pay_amount, tid, created_at, updated_at
+		) VALUES (
+		#{accountId}, #{deliveryId}, #{totalPrice}, #{used},
+		#{paymentStatus}, #{amount}, #{payAmount}, #{tid}, NOW(), NOW()
+		)
+	</insert>
 
 
 
@@ -51,21 +51,31 @@
 	<select id="findLatestPendingByAccountId" parameterType="long"
 		resultType="com.company.haloshop.dto.shop.OrderDto">
 		SELECT * FROM orders
-		WHERE account_id = #{accountId} AND payment_status = 'PENDING'
+		WHERE account_id = #{accountId} AND
+		payment_status = 'PENDING'
 		ORDER BY created_at DESC
 		LIMIT 1
 	</select>
 
+	<select id="findByAccountId" parameterType="long"
+		resultMap="orderResultMap">
+		SELECT * FROM orders WHERE account_id = #{accountId} ORDER BY created_at
+		DESC
+	</select>
 
 	<insert id="insert"
 		parameterType="com.company.haloshop.dto.shop.OrderDto"
 		useGeneratedKeys="true" keyProperty="id">
 		INSERT INTO orders (
-		account_id, delivery_id, total_price, used,
-		payment_status, amount, pay_amount, tid, created_at, updated_at
+		account_id,
+		delivery_id, total_price, used,
+		payment_status, amount, pay_amount,
+		tid, created_at, updated_at
 		) VALUES (
-		#{accountId}, #{deliveryId}, #{totalPrice}, #{used},
-		#{paymentStatus}, #{amount}, #{payAmount}, #{tid}, NOW(), NOW()
+		#{accountId}, #{deliveryId},
+		#{totalPrice}, #{used},
+		#{paymentStatus}, #{amount}, #{payAmount},
+		#{tid}, NOW(), NOW()
 		)
 	</insert>
 
@@ -74,7 +84,8 @@
 		UPDATE orders
 		SET
 		account_id = #{accountId},
-		delivery_id = #{deliveryId},
+		delivery_id =
+		#{deliveryId},
 		total_price = #{totalPrice},
 		used = #{used},
 		payment_status = #{paymentStatus},
@@ -83,7 +94,8 @@
 	</update>
 
 	<delete id="delete" parameterType="long">
-		DELETE FROM orders WHERE id = #{id}
+		DELETE FROM orders WHERE id =
+		#{id}
 	</delete>
 
 	<!-- 카카오페이 연동용 TID 업데이트 -->

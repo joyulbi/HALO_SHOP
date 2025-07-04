@@ -70,6 +70,12 @@ public class InquiryController {
 
         return inquiryService.createInquiry(dto);
     }
+    
+    @GetMapping("/my")
+    public ResponseEntity<List<Inquiry>> getMyInquiries(@RequestParam Long accountId) {
+        List<Inquiry> result = inquiryService.getInquiriesByAccountId(accountId);
+        return ResponseEntity.ok(result);
+    }
 
 
     // 문의 상태 수정
@@ -87,5 +93,15 @@ public class InquiryController {
     public ResponseEntity<Void> deleteInquiry(@PathVariable Long id) {
         inquiryService.deleteInquiry(id);
         return ResponseEntity.noContent().build(); // 204
+    }
+    
+    // "제출됨"인 내 문의 삭제
+    @DeleteMapping("/{id}/my")
+    public ResponseEntity<Void> deleteMyInquiry(
+            @PathVariable Long id,
+            @RequestParam Long accountId
+    ) {
+        inquiryService.deleteMySubmittedInquiry(id, accountId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,115 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { Form, Input, Button, Select, Upload, Typography, Row, Col, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-
-  padding: 3rem 3rem 4rem 3rem;
-  background: #fff;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-`;
-
-const Row = styled.div`
-  display: flex;
-  gap: 3rem;
-  margin-bottom: 1rem;
-  align-items: center;
-`;
-
-const Label = styled.label`
-  font-weight: 600;
-  width: 120px;
-  min-width: 120px;
-  color: #444;
-`; 
-
-const Select = styled.select`
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: white;
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-    background: #f0f8ff;
-  }
-`;
-
-const Input = styled.input`
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: ${({ disabled }) => (disabled ? "#eee" : "white")};
-  color: ${({ disabled }) => (disabled ? "#555" : "inherit")};
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-    background: ${({ disabled }) => (disabled ? "#eee" : "#f0f8ff")};
-  }
-`;
-
-const FullWidthInput = styled(Input)`
-  width: 100%;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  min-height: 240px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  &:focus {
-    outline: none;
-    background: #ddd;
-  }
-`;
-
-const FileInput = styled.input`
-  border: none;
-  padding: 0;
-`;
-
-
-const FieldGroup = styled.div`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
-`;
-
-const Button = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 0.7rem 1.8rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  &:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  &:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
-`;
+const { Title } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
 
 const CATEGORY_LIST = [
   { id: 1, label: "상품 문의" },
@@ -118,166 +15,188 @@ const CATEGORY_LIST = [
   { id: 4, label: "기타" },
 ];
 
+const PageBackground = styled.div`
+  min-height: 100vh;
+  background: #f4f6fa;
+  padding: 0;
+`;
+
+const PageContainer = styled.div`
+  width: 50vw;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2.5rem 1.5rem;
+`;
+
+const StyledFormWrapper = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  padding: 2.5rem 2rem 2rem 2rem;
+  box-shadow: 0 2px 12px rgba(30, 41, 59, 0.06);
+`;
+
+const StyledTitle = styled(Title)`
+  && {
+    font-weight: 800;
+    margin-bottom: 32px;
+    letter-spacing: -1px;
+    color: #22223b;
+  }
+`;
+
+const FileName = styled.div`
+  margin-top: 8px;
+  color: #2563eb;
+  font-weight: 500;
+`;
+
+const StyledButton = styled(Button)`
+  min-width: 100px;
+  padding: 0 24px;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 8px;
+  margin-top: 10px;
+`;
+
 const InquiryForm = () => {
-  const [categoryId, setCategoryId] = useState(1);
-  const [userName] = useState("홍길동"); // 하드코딩된 유저 이름 (수정불가)
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [file, setFile] = useState(null);
+  const [form] = Form.useForm();
+  const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-
-    // 1. 용량 제한
-    if (file && file.size > 5 * 1024 * 1024) {
-      alert("파일은 5MB 이하만 가능합니다.");
+  useEffect(() => {
+    // 토큰이 있어야 호출 가능
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      message.error("로그인이 필요합니다.");
       return;
     }
 
-    // 2. 타입 제한
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-    if (file && !allowedTypes.includes(file.type)) {
-      alert("jpg, png, pdf만 업로드할 수 있습니다.");
+    axios.get("http://localhost:8080/user/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setUser(res.data))
+    .catch(() => message.error("사용자 정보를 불러올 수 없습니다."));
+  }, []);
+
+  const handleFinish = async (values) => {
+    if (!user?.account?.id) {
+      message.error("사용자 정보를 불러올 수 없습니다.");
       return;
     }
 
-    setFile(file);
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      const inquiryData = {
+        accountId: user.account.id,
+        entityId: values.category,
+        title: values.title,
+        content: values.content,
+        status: "SUBMITTED",
+        createdAt: new Date().toISOString(),
+        file: null,
+      };
+      formData.append(
+        "inquiry",
+        new Blob([JSON.stringify(inquiryData)], { type: "application/json" })
+      );
+      if (fileList.length > 0 && fileList[0].originFileObj) {
+        formData.append("file", fileList[0].originFileObj);
+      }
+      await axios.post("http://localhost:8080/api/inquiries", formData, {
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      message.success("문의가 성공적으로 등록되었습니다.");
+      form.resetFields();
+      setFileList([]);
+    } catch (error) {
+      message.error("문의 등록 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formData = new FormData();
-  formData.append("accountId", 1);
-  formData.append("entityId", 1);
-  formData.append("title", title);
-  formData.append("content", content);
-  formData.append("status", "SUBMITTED");
-  formData.append("createdAt", new Date().toISOString());
-
-  if (file) { formData.append("file", file); }
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!title.trim() || !content.trim()) {
-    alert("제목과 내용을 입력해주세요.");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const formData = new FormData();
-
-    // inquiry 파트에 JSON Blob으로 넣기
-    const inquiryData = {
-      accountId: 1,       // 예시 하드코딩 or 상태값
-      entityId: categoryId,  // 카테고리 id를 entityId로 사용한다고 가정
-      title,
-      content,
-      status: "SUBMITTED",
-      createdAt: new Date().toISOString(),
-      file: null // 서버에서 파일명은 파일 업로드 후 처리하므로 null로 둠
-    };
-
-    formData.append(
-      "inquiry",
-      new Blob([JSON.stringify(inquiryData)], { type: "application/json" })
-    );
-
-    if (file) {
-      formData.append("file", file);
-    }
-
-    await axios.post("http://localhost:8080/api/inquiries", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    alert("문의가 성공적으로 등록되었습니다.");
-    setTitle("");
-    setContent("");
-    setCategoryId(1);
-    setFile(null);
-
-  } catch (error) {
-    console.error("문의 등록 실패", error);
-    alert("문의 등록 중 오류가 발생했습니다.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+    const handleFileChange = ({ fileList }) => {
+    setFileList(fileList.slice(-1));
+  };
 
   return (
-    <Container>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-<Row>
-  <FieldGroup>
-    <Label htmlFor="category">카테고리</Label>
-    <Select
-      id="category"
-      value={categoryId}
-      onChange={(e) => setCategoryId(Number(e.target.value))}
-      disabled={loading}
-    >
-      {CATEGORY_LIST.map((cat) => (
-        <option key={cat.id} value={cat.id}>
-          {cat.label}
-        </option>
-      ))}
-    </Select>
-  </FieldGroup>
+    <PageBackground>
+      <PageContainer>
+        <StyledTitle level={2}>문의 등록</StyledTitle>
+        <StyledFormWrapper>
+          <Form form={form} layout="vertical" onFinish={handleFinish}>
+            <Row gutter={24}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="카테고리"
+                  name="category"
+                  initialValue={CATEGORY_LIST[0].id}
+                  rules={[{ required: true, message: "카테고리를 선택하세요." }]}
+                >
+                  <Select disabled={loading}>
+                    {CATEGORY_LIST.map((cat) => (
+                      <Option key={cat.id} value={cat.id}>{cat.label}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="유저 이름">
+                  <Input value={user?.account?.nickname || ""} disabled />
+                </Form.Item>
+              </Col>
+            </Row>
 
-  <FieldGroup>
-    <Label>유저 이름</Label>
-    <Input type="text" value={userName} disabled />
-  </FieldGroup>
-</Row>
+            <Form.Item
+              label="문의 제목"
+              name="title"
+              rules={[{ required: true, message: "제목을 입력하세요." }]}
+            >
+              <Input placeholder="문의 제목을 입력하세요" disabled={loading} />
+            </Form.Item>
 
-        <Row>
+            <Form.Item
+              label="문의 내용"
+              name="content"
+              rules={[{ required: true, message: "내용을 입력하세요." }]}
+            >
+              <TextArea rows={6} placeholder="문의 내용을 입력하세요" disabled={loading} />
+            </Form.Item>
 
-        </Row>
+            <Form.Item label="파일 첨부 (선택)">
+              <Upload
+                beforeUpload={() => false}
+                fileList={fileList}
+                onChange={handleFileChange}
+                disabled={loading}
+                maxCount={1}
+                accept=".jpg,.jpeg,.png,.pdf"
+              >
+                <Button icon={<UploadOutlined />}>파일 업로드</Button>
+              </Upload>
+              {fileList.length > 0 && (
+                <FileName>{fileList[0].name}</FileName>
+              )}
+            </Form.Item>
 
-        <Row>
-          <Label htmlFor="title">문의 제목</Label>
-          <FullWidthInput
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="문의 제목을 입력하세요"
-            disabled={loading}
-          />
-        </Row>
-
-        <Row>
-          <Label htmlFor="content">문의 내용</Label>
-          <TextArea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="문의 내용을 입력하세요"
-            disabled={loading}
-          />
-        </Row>
-
-        <Row>
-          <Label htmlFor="file">파일 선택</Label>
-          <FileInput
-            id="file"
-            type="file"
-            onChange={handleFileChange}
-            disabled={loading}
-          />
-          {file && <span>{file.name}</span>}
-        </Row>
-
-        <ButtonWrapper>
-          <Button type="submit" disabled={loading}>
-            {loading ? "전송 중..." : "보내기"}
-          </Button>
-        </ButtonWrapper>
-      </form>
-    </Container>
+            <Form.Item style={{ textAlign: "right" }}>
+              <StyledButton
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+              >
+                보내기
+              </StyledButton>
+            </Form.Item>
+          </Form>
+        </StyledFormWrapper>
+      </PageContainer>
+    </PageBackground>
   );
 };
 
