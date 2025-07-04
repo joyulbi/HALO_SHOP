@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from 'styled-components';
 import CampaignRank from "../components/CampaignRank";
+import DonationModal from "../components/DonationModal";
 import axios from 'axios';
 
 import { Dropdown, Button, Space, Menu, message } from "antd";
@@ -77,6 +78,11 @@ const TeamCard = styled.div`
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+
+    img {
+      filter: brightness(1.05) saturate(1.1);
+      transition: filter 0.3s ease;
+    }
   }
 `;
 
@@ -87,7 +93,7 @@ const TeamImage = styled.img`
   border-radius: 50%;
   background-color: #f9f9f9;
   padding: 0.5rem;
-  
+  transition: filter 0.3s ease;
 `;
 
 const TeamName = styled.p`
@@ -111,62 +117,64 @@ const CampaignTitle = styled.p`
   color: ${({ color }) => color || "#000"};
 `;
 
+const ApiCallUrl = "http://localhost:8080";
+
 const campaign = () => {
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(null);
   const [campaignImage, setCampaignImage] = useState({});
   const [rankList, setRankList] = useState([]);
+  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/seasons")
+    axios.get(`${ApiCallUrl}/api/seasons`)
       .then(res => {
         const seasonList = res.data;
         setSeasons(seasonList);
         if (seasonList.length > 0) {
           // id가 가장 큰 시즌 선택
-          const latest = seasonList.reduce((max, curr) => (curr.id > max.id ? curr : max), seasonList[0]);
-          setSelectedSeason(latest);
+          setSelectedSeason(seasonList.reduce((max, curr) => (curr.id > max.id ? curr : max), seasonList[0]));
         }
       })
-      .catch(err => console.error(err));
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
     if (!selectedSeason) return;
 
     // 시즌 상세정보
-    axios.get(`http://localhost:8080/api/seasons/${selectedSeason.id}`)
+    axios.get(`${ApiCallUrl}/api/seasons/${selectedSeason.id}`)
       .then(res => setSelectedSeason(prev => ({ ...prev, ...res.data })))
-      .catch(err => console.error(err));
+      .catch(console.error);
 
     // 시즌 이미지
-    axios.get(`http://localhost:8080/api/campaign-images/${selectedSeason.id}`)
+    axios.get(`${ApiCallUrl}/api/campaign-images/${selectedSeason.id}`)
       .then(res => setCampaignImage(res.data))
-      .catch(err => console.error(err));
+      .catch(console.error);
 
     // 시즌 캠페인
-    axios.get(`http://localhost:8080/api/donation-campaigns/season/${selectedSeason.id}`)
+    axios.get(`${ApiCallUrl}/api/donation-campaigns/season/${selectedSeason.id}`)
       .then(res => setRankList(res.data))
-      .catch(err => console.error(err));
+      .catch(console.error);
   }, [selectedSeason?.id]);
 
-  // 이미지 선별
-  const imgURL = 'http://localhost:8080/uploads/campaign/';
-  
+  const imgURL = `${ApiCallUrl}/image/campaign/`;
+  const defaultImg = `${ApiCallUrl}/image/`;
+
   const getImageByTotal = (total) => {
-    if (!selectedSeason || !campaignImage) return imgURL + "default.jpg";
+    if (!selectedSeason || !campaignImage) return defaultImg + 'default.jpg';
 
     const { level_1: lvl1, level_2: lvl2, level_3: lvl3 } = selectedSeason;
-    let img = null;
 
-    if (total >= lvl3) img = campaignImage.level_3;
-    else if (total >= lvl2) img = campaignImage.level_2;
-    else if (total >= lvl1) img = campaignImage.level_1;
+    if (typeof total !== 'number') return defaultImg + 'default.jpg';
 
-    if (!img) {
-      return imgURL + "default.jpg";
-    }
-    return imgURL + img;
+    if (total >= lvl3) { return campaignImage.level_3 ? imgURL + campaignImage.level_3 : defaultImg + 'level3.png'; }
+    if (total >= lvl2) { return campaignImage.level_2 ? imgURL + campaignImage.level_2 : defaultImg + 'level2.png'; }
+    if (total >= lvl1) { return campaignImage.level_1 ? imgURL + campaignImage.level_1 : defaultImg + 'level1.png'; }
+
+    return defaultImg + 'default.jpg';
   };
 
   const seasonMenu = (
@@ -175,23 +183,46 @@ const campaign = () => {
         const season = seasons.find(s => s.id === Number(key));
         if (season) setSelectedSeason(season);
       }}
-    >
-      {[...seasons]
-        .sort((a, b) => b.id - a.id) // 최신순 정렬
-        .map(season => (
-          <Menu.Item key={season.id}>
-            시즌 {season.id} : {season.name}
-          </Menu.Item>
-        ))}
-    </Menu>
+      items={[...seasons]
+        .sort((a, b) => b.id - a.id)
+        .map(season => ({
+          key: season.id,
+          label: `시즌 ${season.id} : ${season.name}`,
+        }))}
+    />
   );
 
-  const top3 = rankList.slice(0, 3);
-  const top3WithImage = top3.map(item => ({
-  ...item,
-  image: getImageByTotal(item.total),
+  const top3WithImage = rankList.slice(0, 3).map(item => ({
+    ...item,
+    image: getImageByTotal(item.total),
   }));
-  const others = rankList.slice(3);
+
+  // 모달 열기 함수
+  const openModal = (team) => {
+    setSelectedTeam(team);
+    setModalOpen(true);
+  };
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedTeam(null);
+  };
+
+  if (!selectedSeason) {
+    return (
+      <div style={{
+        minHeight: "60vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "1.3rem",
+        color: "#888"
+      }}>
+        아직 캠페인이 준비중입니다
+      </div>
+    );
+  }
 
   return (
     <>
@@ -200,19 +231,24 @@ const campaign = () => {
           <Dropdown overlay={seasonMenu}>
             <Button>
               <Space>
-                {selectedSeason?.name && `시즌 ${selectedSeason.id} : ${selectedSeason.name}` || "시즌 선택" }
+                {selectedSeason?.name
+                  ? `시즌 ${selectedSeason.id} : ${selectedSeason.name}`
+                  : "시즌 선택"}
                 <DownOutlined />
               </Space>
             </Button>
           </Dropdown>
         </ButtonWrapper>
-
         <TextGroup>
           <CampaignTitle fontSize="24px" color="#222">
-            {selectedSeason?.name && `시즌 ${selectedSeason.id} : ${selectedSeason.name}` || "시즌명을 선택하세요"}
+            {selectedSeason?.name
+              ? `시즌 ${selectedSeason.id} : ${selectedSeason.name}`
+              : "시즌명을 선택하세요"}
           </CampaignTitle>
           <CampaignTitle fontSize="18px" color="#888">
-            {selectedSeason?.start_date?.slice(0, 10)} - {selectedSeason?.end_date?.slice(0, 10)}
+            {selectedSeason?.startDate
+              ? `${selectedSeason.startDate.slice(0, 10).replace(/-/g, '.')} - ${selectedSeason.endDate?.slice(0, 10).replace(/-/g, '.')}`
+              : ""}
           </CampaignTitle>
         </TextGroup>
       </Header>
@@ -221,10 +257,13 @@ const campaign = () => {
         <CampaignRank top3={top3WithImage} />
       </ListTop>
 
-      {/* 카드형 컨테이너 */}
       <CardContainer>
-        {others.map((campaign) => (
-          <TeamCard key={campaign.id}>
+        {rankList.slice(3).map(campaign => (
+          <TeamCard 
+            key={campaign.id} 
+            onClick={() => openModal(campaign.team)} // 클릭 시 모달 오픈
+            style={{ cursor: "pointer" }}           // 클릭 가능 커서 추가 (선택)
+          >
             <TeamImage
               src={getImageByTotal(campaign.total)}
               alt={campaign.team?.name || "팀 이미지"}
@@ -234,8 +273,14 @@ const campaign = () => {
           </TeamCard>
         ))}
       </CardContainer>
+      {modalOpen && selectedTeam && (
+        <DonationModal
+          team={selectedTeam}
+          onClose={closeModal}
+        />
+      )}
     </>
   );
-}
+};
 
 export default campaign;

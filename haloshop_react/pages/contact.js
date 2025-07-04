@@ -1,59 +1,56 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import InquiryForm from "../components/InquiryForm"; // 기존 ContactForm → InquiryForm
-import InquiryList from "../components/InquiryList";
+import InquiryForm from "../components/InquiryForm";
 import InquiryHistory from "../components/InquiryHistory";
 
-// 예시 사용자 정보
-const mockUser = {
-  id: 1,
-  name: "홍길동",
-  email: "gildong@example.com",
-};
-
 const Wrapper = styled.div`
-  display: flex;
-  min-height: 100vh;  // 화면 전체 높이 유지
+  width: 60vw;
+  margin: 0 auto;
+  min-height: 100vh;
   background: #fafafa;
+  padding: 2.5rem 1.5rem 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
 `;
 
-const Sidebar = styled.div`
-  width: 220px;  // 약간 넓게
-  background-color: #f0f0f0;
-  padding: 2rem 1.5rem;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+const TabBar = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2.2rem;
 `;
 
 const TabButton = styled.button`
-  width: 100%;
-  background: ${({ active }) => (active ? "#007bff" : "transparent")};
-  color: ${({ active }) => (active ? "#fff" : "#333")};
+  flex: 1;
+  background: ${({ active }) => (active ? "#6366f1" : "#f3f4f6")};
+  color: ${({ active }) => (active ? "#fff" : "#22223b")};
   border: none;
-  padding: 1rem;
-  text-align: left;
-  font-size: 1rem;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
+  border-radius: 8px 8px 0 0;
+  padding: 1.1rem 0;
+  font-size: 1.13rem;
+  font-weight: 700;
   cursor: pointer;
-
+  transition: background 0.15s, color 0.15s;
+  box-shadow: ${({ active }) => (active ? "0 2px 8px rgba(99,102,241,0.08)" : "none")};
   &:hover {
-    background: ${({ active }) => (active ? "#0056b3" : "#e2e6ea")};
+    background: #6366f1;
+    color: #fff;
   }
 `;
 
-const Main = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  min-height: 100vh;
-  box-sizing: border-box;
+const MainPanel = styled.div`
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.07);
+  padding: 2.5rem 2rem 2.5rem 2rem;
+  min-height: 500px;
 `;
 
-const contact = ({ user = mockUser }) => {
+const contact = () => {
   const [selectedTab, setSelectedTab] = useState("write");
 
   return (
     <Wrapper>
-      <Sidebar>
+      <TabBar>
         <TabButton
           active={selectedTab === "write"}
           onClick={() => setSelectedTab("write")}
@@ -66,11 +63,11 @@ const contact = ({ user = mockUser }) => {
         >
           문의 내역
         </TabButton>
-      </Sidebar>
-      <Main>
-        {selectedTab === "write" && <InquiryForm user={user} />}
-        {selectedTab === "list" && <InquiryHistory user={user} />}
-      </Main>
+      </TabBar>
+      <MainPanel>
+        {selectedTab === "write" && <InquiryForm />}
+        {selectedTab === "list" && <InquiryHistory />}
+      </MainPanel>
     </Wrapper>
   );
 };

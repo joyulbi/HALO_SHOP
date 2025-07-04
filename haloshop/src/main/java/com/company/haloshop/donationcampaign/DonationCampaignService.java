@@ -60,11 +60,6 @@ public class DonationCampaignService {
         DonationCampaign existingCampaign = Optional.ofNullable(donationCampaignMapper.findById(requestDto.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 캠페인 ID입니다."));
 
-        // image 업데이트
-        if (requestDto.getImage() != null) {
-            existingCampaign.setImage(requestDto.getImage());
-        }
-
         // total 업데이트 (0도 유효한 값이라면 null 체크만 하면 됨)
         if (requestDto.getTotal() != null) {
             existingCampaign.setTotal(requestDto.getTotal());
