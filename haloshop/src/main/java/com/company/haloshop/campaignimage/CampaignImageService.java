@@ -1,5 +1,7 @@
 package com.company.haloshop.campaignimage;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +39,20 @@ public class CampaignImageService {
                 .level_3(campaignImage.getLevel_3())
                 .build();
     }
+    
+    // 전체 캠페인 이미지 조회
+    public List<CampaignImage> getAllCampaignImages() {
+        return campaignImageMapper.selectAllCampaignImages();
+    }
 
     // ✅ 캠페인 이미지 수정 (입력된 필드만)
     @Transactional
     public void updateCampaignImage(CampaignImageRequestDto dto) {
+    	
+    	if (dto.getLevel_1() == null && dto.getLevel_2() == null && dto.getLevel_3() == null) {
+    	    throw new IllegalArgumentException("수정할 필드가 없습니다.");
+    	}
+    	
         CampaignImage campaignImage = CampaignImage.builder()
                 .seasonId(dto.getSeasonId())
                 .level_1(dto.getLevel_1())

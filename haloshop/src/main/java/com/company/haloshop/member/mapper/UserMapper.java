@@ -48,4 +48,6 @@ public interface UserMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteByAccountId(@Param("accountId") Long accountId);
+    
+    
 }

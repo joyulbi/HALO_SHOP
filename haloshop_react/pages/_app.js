@@ -1,19 +1,29 @@
-// pages/_app.js
 import { wrapper } from '../store/configureStore';
 import { AuthProvider } from '../hooks/useAuth';
+import { CartProvider } from '../context/CartContext';
+import { CartButtonContext } from '../context/CartButtonContext'; 
 import Layout from '../components/Layout';
 import '../styles/globals.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import 'antd/dist/antd.css';
 
+import { useRef } from 'react';
+
 function MyApp({ Component, pageProps }) {
+  const cartButtonRef = useRef(null); 
+
   return (
     <AuthProvider>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <CartProvider>
+        <CartButtonContext.Provider value={{ cartButtonRef }}>
+          <Layout cartRef={cartButtonRef}> 
+            <Component {...pageProps} />
+          </Layout>
+        </CartButtonContext.Provider>
+      </CartProvider>
     </AuthProvider>
   );
 }
+
 export default wrapper.withRedux(MyApp);

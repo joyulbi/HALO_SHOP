@@ -48,4 +48,10 @@ public interface AdminMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteByAccountId(@Param("accountId") Long accountId);
+    
+    /**
+     * updated_at만 갱신
+     */
+    int updateAdminTimestamp(@Param("accountId") Long accountId, @Param("updatedAt") java.util.Date updatedAt);
+
 }
