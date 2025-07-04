@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -54,20 +55,20 @@ public class SecurityConfig {
     }
 
     
-    @Component("adminCheck")
-    public class AdminCheck {
-
-        public boolean hasAdminAuthority(Authentication authentication) {
-            if (authentication == null || !authentication.isAuthenticated()) return false;
-
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof AccountDto) {
-                AccountDto account = (AccountDto) principal;
-                return Boolean.TRUE.equals(account.getIsAdmin());
-            }
-            return false;
-        }
-    }
+//    @Component("adminCheck")
+//    public class AdminCheck {
+//
+//        public boolean hasAdminAuthority(Authentication authentication) {
+//            if (authentication == null || !authentication.isAuthenticated()) return false;
+//
+//            Object principal = authentication.getPrincipal();
+//            if (principal instanceof AccountDto) {
+//                AccountDto account = (AccountDto) principal;
+//                return Boolean.TRUE.equals(account.getIsAdmin());
+//            }
+//            return false;
+//        }
+//    }
     
     @Bean
     public PasswordEncoder userPasswordEncoder() {
@@ -136,14 +137,16 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             // CSRF 설정
+            
             .csrf(csrf -> csrf
                 // 회원가입, 로그인 등 인증 없이 쓰는 API는 CSRF 무시
+            	.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringAntMatchers("/api/**","/auth/**","/user/me")
-                .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
+                
             )
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
-                //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
+            	.antMatchers("/admin/**").hasRole("ADMIN")  // is_admin 체크
                 .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
                 .antMatchers("/api/items").permitAll() // 아이템도 예외
                 .antMatchers("/api/**").permitAll()    // API는 인증된 사용자만
@@ -172,7 +175,8 @@ public class SecurityConfig {
                 headers.cacheControl();
                 headers.contentTypeOptions();
             })
-            .cors(Customizer.withDefaults())
+            .cors()
+            .and()
             
             // JWT 인증 필터는 UsernamePasswordAuthenticationFilter 앞에 배치
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

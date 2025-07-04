@@ -28,6 +28,17 @@ api.interceptors.request.use(
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
+    // CSRF 토큰을 쿠키에서 가져옵니다.
+    const csrfToken = document.cookie
+      .split(';')
+      .find(cookie => cookie.trim().startsWith('XSRF-TOKEN='))
+      ?.split('=')[1];  // XSRF-TOKEN 값을 가져옵니다.
+    
+    if (csrfToken) {
+      config.headers['X-CSRF-TOKEN'] = csrfToken;  // CSRF 토큰을 헤더에 추가
+    }
+
     // 수정된 요청 설정을 반환하여 다음 단계로 진행합니다.
     return config;
   },
