@@ -24,6 +24,8 @@ haloshop/.apt_generated
 haloshop/.factorypath
 haloshop/*.iml
 haloshop/bin/
+# API키
+**/application-secret.properties
 
 ######################################
 # ⚛️ React (haloshop_react - CRA 기준)

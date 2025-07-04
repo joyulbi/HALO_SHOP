@@ -16,7 +16,7 @@ export default function AuctionListPage() {
   useEffect(() => {
     if (auctions.length > 0) {
       auctions.forEach(auction => {
-        api.get(`/api/auction-images/${auction.id}`)
+        api.get(`/api/auction-images/auction/${auction.id}`)
           .then(res => {
             const arr = Array.isArray(res.data) ? res.data : [res.data];
             setImages(prev => ({ ...prev, [auction.id]: arr[0]?.url }));

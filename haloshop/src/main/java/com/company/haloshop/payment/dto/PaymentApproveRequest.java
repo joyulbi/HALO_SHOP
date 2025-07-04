@@ -5,12 +5,6 @@ import lombok.Data;
 
 @Data
 public class PaymentApproveRequest {
-	private String tempOrderId;
-	private Integer usedPoint;
-	private Long totalPrice;
-	private Long payAmount;
-	private Long accountId;
-	private String tid;
-	private String pgToken;
-
+    private Long accountId;   // ✅ 어떤 유저의 결제인지
+    private String pgToken;   // ✅ 카카오에서 redirect 시 전달해주는 pg_token
 }

@@ -1,5 +1,7 @@
 package com.company.haloshop.campaignimage;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -8,6 +10,9 @@ public interface CampaignImageMapper {
 
     // 캠페인 이미지 등록
     int insertCampaignImage(CampaignImage campaignImage);
+    
+    // 전체 조회
+    List<CampaignImage> selectAllCampaignImages();
 
     // 시즌 ID로 캠페인 이미지 조회
     CampaignImage selectCampaignImageBySeasonId(@Param("seasonId") Long seasonId);

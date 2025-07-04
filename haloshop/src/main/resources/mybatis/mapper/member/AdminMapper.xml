@@ -44,4 +44,10 @@
     DELETE FROM admin WHERE account_id = #{accountId}
   </delete>
 
+<update id="updateAdminTimestamp">
+  UPDATE admin
+  SET updated_at = #{updatedAt}
+  WHERE account_id = #{accountId}
+</update>
+
 </mapper>

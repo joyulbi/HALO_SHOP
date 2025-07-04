@@ -58,4 +58,5 @@ public interface AccountMapper {
     int deleteById(@Param("id") Long id);
     
     int updateAccountLastActive(Long accountId, Date lastActive);
+    int updateAccountFields(AccountDto accountDto);
 }

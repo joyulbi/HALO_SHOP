@@ -10,4 +10,6 @@ public class PaymentReadyRequest {
     private String used;
     private Long accountId;        // ✅ 추가
     private Long payAmount;
+    private Long totalPrice;
+
 }

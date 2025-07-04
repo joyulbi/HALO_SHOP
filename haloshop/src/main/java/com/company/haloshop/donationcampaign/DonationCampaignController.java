@@ -66,4 +66,11 @@ public class DonationCampaignController {
         donationCampaignService.deleteDonationCampaign(id);
         return ResponseEntity.noContent().build();
     }
+    
+    // 시즌 아이디 삭제
+    @DeleteMapping("/seasond/{id}")
+    public ResponseEntity<Void> deleteDOnationCampaignBySeasonId(@PathVariable Long id) {
+    	donationCampaignService.deleteDonationCampaignBySeasonId(id);
+    	return ResponseEntity.noContent().build();
+    }
 }
