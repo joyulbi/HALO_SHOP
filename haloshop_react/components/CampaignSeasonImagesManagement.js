@@ -100,8 +100,8 @@ const CampaignSeasonImagesManagement = () => {
   const [previewData, setPreviewData] = useState({});
   const [fileData, setFileData] = useState({});
 
-  const imgURL = "http://localhost:8080/uploads/campaign/";
-  const defaultImg = "default.jpg";
+  const imgURL = "http://localhost:8080/image/campaign/";
+  const defaultImg = "http://localhost:8080/image/";
 
   useEffect(() => {
     axios
@@ -110,18 +110,26 @@ const CampaignSeasonImagesManagement = () => {
       .catch((err) => console.error(err));
   }, []);
 
-  const getImageSrc = (seasonId, levelField, originalLevel) => {
-    if (previewData[seasonId]?.[levelField]) {
-      return previewData[seasonId][levelField];
-    }
-    if (editData[seasonId]?.[levelField]) {
-      return imgURL + editData[seasonId][levelField] + "?t=" + new Date().getTime();
-    }
-    if (originalLevel && originalLevel.trim() !== "") {
-      return imgURL + originalLevel;
-    }
-    return imgURL + defaultImg;
+const getImageSrc = (seasonId, levelField, originalLevel) => {
+  if (previewData[seasonId]?.[levelField]) {
+    return previewData[seasonId][levelField];
+  }
+  if (editData[seasonId]?.[levelField]) {
+    return imgURL + editData[seasonId][levelField] + "?t=" + new Date().getTime();
+  }
+  if (originalLevel && originalLevel.trim() !== "") {
+    return imgURL + originalLevel;
+  }
+
+  // 기본 이미지 파일명 레벨별로 다르게 처리
+  const defaultLevelImages = {
+    level_1: "level1.png",
+    level_2: "level2.png",
+    level_3: "level3.png",
   };
+
+  return defaultImg + (defaultLevelImages[levelField] || "default.png");
+};
 
   const handleEditClick = (item) => {
     setEditingId(item.seasonId);

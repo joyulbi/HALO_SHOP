@@ -21,8 +21,6 @@ public class DonationCampaign {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String image;
-
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long total = 0L;
 
@@ -36,7 +34,6 @@ public class DonationCampaign {
 
     @Builder
     public DonationCampaign(String image, Long total, Season season, Team team) {
-        this.image = image;
         this.total = total;
         this.season = season;
         this.team = team;

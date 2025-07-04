@@ -7,7 +7,6 @@
 
   <resultMap id="DonationCampaignResultMap" type="com.company.haloshop.donationcampaign.DonationCampaign">
     <id property="id" column="id" />
-    <result property="image" column="image" />
     <result property="total" column="total" />
     <association property="season" column="season_id" javaType="com.company.haloshop.season.Season"
                  select="com.company.haloshop.season.SeasonMapper.findById"/>
@@ -16,8 +15,8 @@
   </resultMap>
 
   <insert id="insertDonationCampaign" parameterType="com.company.haloshop.donationcampaign.DonationCampaign" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO donation_campaign (image, total, season_id, team_id)
-    VALUES (#{image}, #{total}, #{season.id}, #{team.id})
+    INSERT INTO donation_campaign (total, season_id, team_id)
+    VALUES (#{total}, #{season.id}, #{team.id})
   </insert>
   
   <select id="findAll" resultMap="DonationCampaignResultMap">
@@ -36,9 +35,6 @@
 	<update id="updateDonationCampaign" parameterType="com.company.haloshop.donationcampaign.DonationCampaign">
 	  UPDATE donation_campaign
 	  <set>
-	    <if test="image != null">
-	      image = #{image},
-	    </if>
 	    <if test="total != null">
 	      total = #{total},
 	    </if>
