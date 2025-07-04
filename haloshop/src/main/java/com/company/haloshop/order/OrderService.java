@@ -29,7 +29,10 @@ public class OrderService {
     }
 
     public OrderDto findById(Long id) {
-        return orderMapper.findById(id);
+        OrderDto order = orderMapper.findById(id);
+        List<OrderItemDto> items = orderItemMapper.findByOrderId(id);
+        order.setOrderItems(items);
+        return order;
     }
 
     public void insert(OrderDto orderDto) {
