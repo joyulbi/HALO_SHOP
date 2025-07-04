@@ -84,3 +84,4 @@ uploads/
 *.db
 *.sqlite
 **/application-oauth.properties
+/src/main/webapp/image/campaign
