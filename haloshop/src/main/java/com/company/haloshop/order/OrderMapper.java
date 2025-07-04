@@ -30,4 +30,7 @@ public interface OrderMapper {
 
     // ✅ 카카오페이 연동용 결제 상태 업데이트
     void updateStatus(@Param("id") Long id, @Param("paymentStatus") String paymentStatus);
+    
+    OrderDto findLatestPendingByAccountId(@Param("accountId") Long accountId);
+
 }

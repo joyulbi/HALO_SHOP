@@ -2,7 +2,10 @@ package com.company.haloshop.team;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/teams")
 public class TeamController {
 
@@ -23,7 +27,7 @@ public class TeamController {
 
     // 팀 생성
     @PostMapping
-    public ResponseEntity<Team> createTeam(@RequestBody TeamRequestDto request) {
+    public ResponseEntity<Team> createTeam(@RequestBody @Valid TeamRequestDto request) {
         Team created = teamService.createTeam(request.getName());
         return ResponseEntity.ok(created);
     }

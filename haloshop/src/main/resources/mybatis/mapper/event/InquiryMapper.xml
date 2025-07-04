@@ -16,36 +16,55 @@
 	    <result property="status" column="status"/>
 	</resultMap>
 	
-	<insert id="insertInquiry" parameterType="com.company.haloshop.inquiry.Inquiry" useGeneratedKeys="true" keyProperty="id">
-	    INSERT INTO inquiry (account_id, entity_id, title, content, file, created_at, status)
-	    VALUES (#{account.id}, #{entity.id}, #{title}, #{content}, #{file}, #{createdAt}, #{status})
+	<insert id="insertInquiry" parameterType="com.company.haloshop.inquiry.InquiryRequestDto" useGeneratedKeys="true" keyProperty="id">
+	    INSERT INTO inquiry (account_id, entity_id, title, content, file, created_at)
+	    VALUES (#{accountId}, #{entityId}, #{title}, #{content}, #{file}, #{createdAt})
 	</insert>
 	
-	<select id="findAllInquiry" parameterType="map" resultMap="InquiryResultMap">
-	    SELECT * FROM inquiry
-	    <where>
-	        <if test="account != null and account.id != null">
-	            AND account_id = #{account.id}
-	        </if>
-	        <if test="entity != null and entity.id != null">
-	            AND entity_id = #{entity.id}
-	        </if>
-	        <if test="status != null">
-	            AND status = #{status}
-	        </if>
-	        <if test="startDate != null and endDate != null">
-	            AND created_at BETWEEN #{startDate} AND #{endDate}
-	        </if>
-	        <if test="startDate != null and endDate == null">
-	            AND created_at &gt;= #{startDate}
-	        </if>
-	        <if test="endDate != null and startDate == null">
-	            AND created_at &lt;= #{endDate}
-	        </if>
-	    </where>
-	    ORDER BY created_at DESC
+		<select id="findAllInquiry" parameterType="map" resultMap="InquiryResultMap">
+		    SELECT * FROM inquiry
+		    <where>
+		<if test="accountId != null">
+		    AND account_id = #{accountId}
+		</if>
+		<if test="entityId != null">
+		    AND entity_id = #{entityId}
+		</if>
+        <choose>
+            <when test="status == 'SUBMITTED'">
+                AND status = 'SUBMITTED'
+            </when>
+            <when test="status == 'REVIEWING'">
+                AND status = 'REVIEWING'
+            </when>
+            <when test="status == 'ANSWERED'">
+                AND status = 'ANSWERED'
+            </when>
+        </choose>
+        <if test="startDate != null and endDate != null">
+            AND created_at BETWEEN #{startDate} AND #{endDate}
+        </if>
+        <if test="startDate != null and endDate == null">
+            AND created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null and startDate == null">
+            AND created_at &lt;= #{endDate}
+        </if>
+    </where>
+    ORDER BY id ASC
 	</select>
 
+
+		<select id="selectByStatusWithPaging" parameterType="map" resultType="com.company.haloshop.inquiry.Inquiry">
+		    SELECT * FROM inquiry
+		    WHERE status = #{status}
+		    ORDER BY id ASC
+		    LIMIT #{size} OFFSET #{offset}
+		</select>
+		
+		<select id="countByStatus" parameterType="string" resultType="int">
+		    SELECT COUNT(*) FROM inquiry WHERE status = #{status}
+		</select>
 
 
     <!-- findById -->
