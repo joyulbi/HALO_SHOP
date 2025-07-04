@@ -6,7 +6,7 @@ const KakaoDraggableMap = ({ address = '인천광역시 미추홀구 매소홀�
   useEffect(() => {
     const script = document.createElement('script');
     script.src =
-      '//dapi.kakao.com/v2/maps/sdk.js?appkey=발급받은 API키&autoload=false&libraries=services';
+      '//dapi.kakao.com/v2/maps/sdk.js?appkey=fd0dad7884ce6e58e2c56e734da2c8c8&autoload=false&libraries=services';
     script.async = true;
 
     script.onload = () => {

@@ -49,7 +49,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    alert('결제 페이지로 이동 (구현 예정)');
+    router.push('/orderformpage');
   };
 
   const handleCancel = () => {
