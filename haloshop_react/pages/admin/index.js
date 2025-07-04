@@ -31,7 +31,7 @@ const AdminMainPage = () => {
       title: '리뷰 및 배송 관리',
       buttons: [
         { label: '리뷰 관리 페이지', path: '/admin/reviews' },
-        { label: '배달 관리 페이지', path: '/admin/delivery' },
+        { label: '배송 관리 페이지', path: '/admin/delivery' },
       ]
     },
     {
