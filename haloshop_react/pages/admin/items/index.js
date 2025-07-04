@@ -14,7 +14,9 @@ const AdminItemPage = () => {
   const [categoryId, setCategoryId] = useState('');
   const [imageUrls, setImageUrls] = useState([]);
   const [isMultiUpload, setIsMultiUpload] = useState(false);
-  
+  const [aiSuggestion, setAiSuggestion] = useState('');
+  const [useSuggestedTitle, setUseSuggestedTitle] = useState(false);
+
   const [items, setItems] = useState([]);
   const [teams, setTeams] = useState([]);
 
@@ -26,6 +28,23 @@ const AdminItemPage = () => {
       console.error(error);
     }
   };
+
+  const handleNameChange = async (e) => {
+  const value = e.target.value;
+  setName(value);
+
+  if (value.length > 1) { // 2글자 이상일 때만 요청
+    try {
+      const res = await axios.get(`http://localhost:8080/api/ai-suggest?name=${value}`);
+      setAiSuggestion(res.data); // 추천 문구 저장
+    } catch (error) {
+      console.error('AI 추천 실패:', error);
+      setAiSuggestion('추천 문구를 가져오지 못했습니다.');
+    }
+  } else {
+    setAiSuggestion('');
+  }
+};
 
   const fetchTeams = async () => {
     try {
@@ -52,7 +71,7 @@ const AdminItemPage = () => {
     try {
       await axios.post('http://localhost:8080/api/items/admin', {
         item: {
-          name,
+          name: useSuggestedTitle ? `${aiSuggestion} ${name}` : name, // ✅ 요기만 수정
           description,
           price: parseInt(price),
           teamId: parseInt(teamId),
@@ -105,7 +124,7 @@ const AdminItemPage = () => {
         </label>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: '2px solid #f9a8d4', padding: '16px', width: '400px', marginBottom: '40px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: '2px solid #f9a8d4', padding: '16px', width: '800px', marginBottom: '40px' }}>
         <div>
           <label>상품 이미지: </label>
           <ImageUpload
@@ -118,11 +137,37 @@ const AdminItemPage = () => {
               }
             }}
           />
+          {/* 🔥 업로드한 이미지 미리보기 */}
         </div>
+
         <div>
           <label>상품명: </label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
+          <input 
+            type="text" 
+            value={name} 
+            onChange={handleNameChange} 
+            style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} 
+            required 
+          />
         </div>
+
+          {aiSuggestion && (
+          <div style={{ marginTop: '8px', backgroundColor: '#f3f4f6', padding: '8px', borderRadius: '4px' }}>
+            <strong>추천 제목: </strong> {aiSuggestion}
+            <div style={{ marginTop: '4px' }}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={useSuggestedTitle}
+                  onChange={() => setUseSuggestedTitle(!useSuggestedTitle)}
+                  style={{ marginRight: '4px' }}
+                />
+                제안 제목 사용하기
+              </label>
+            </div>
+          </div>
+        )}
+
         <div>
           <label>상품 금액: </label>
           <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }} required />
@@ -172,7 +217,7 @@ const AdminItemPage = () => {
 
       {/* ✅ 화면 가득 확장 시작 */}
       <div style={{ width: '100vw', position: 'relative', left: '50%', transform: 'translateX(-50%)', padding: '0 40px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' , textAlign: 'center' }}>상품 목록</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', textAlign: 'center' }}>상품 목록</h2>
 
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
@@ -198,6 +243,7 @@ const AdminItemPage = () => {
                     src={item.images[0] ? `http://localhost:8080${item.images[0].url}` : ''}
                     alt={item.name}
                     style={{ width: '128px', height: '128px', objectFit: 'cover', marginBottom: '8px' }}
+                    fetchpriority="high"
                   />
                   <p style={{ fontWeight: 'bold' }}>{item.name}</p>
                   <p>{item.price}원</p>

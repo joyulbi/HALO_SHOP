@@ -9,20 +9,23 @@ const EditItemPage = () => {
   const categories = useCategories();
   const [item, setItem] = useState(null);
   const [teams, setTeams] = useState([]);
-  const [imagePreview, setImagePreview] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const fetchItem = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/items/${id}`);
       console.log('불러온 상품 데이터 👉', res.data);
       setItem(res.data);
-      setImagePreview(res.data.images[0] ? `http://localhost:8080${res.data.images[0].url}` : '');
+      const previews = res.data.images.map(img => `http://localhost:8080${img.url}`);
+      setImagePreviews(previews);
     } catch (error) {
       console.error(error);
     }
   };
 
-    const fetchTeams = async () => {
+  const fetchTeams = async () => {
     try {
       const res = await axios.get('http://localhost:8080/api/teams');
       setTeams(res.data);
@@ -33,7 +36,7 @@ const EditItemPage = () => {
 
   useEffect(() => {
     if (id) fetchItem();
-    fetchTeams(); 
+    fetchTeams();
   }, [id]);
 
   const handleUpdate = async (e) => {
@@ -41,24 +44,24 @@ const EditItemPage = () => {
 
     const formData = new FormData();
     formData.append('item', new Blob([JSON.stringify({
-    name: item.name,
-    description: item.description,
-    price: item.price,
-    teamId: item.teamId,
-    categoryId: item.categoryId
-  })], { type: "application/json" }));
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      teamId: item.teamId,
+      categoryId: item.categoryId
+    })], { type: "application/json" }));
 
-    if (item.newImage) {
-      formData.append('image', item.newImage);
-    }
+    selectedFiles.forEach((file) => {
+      formData.append('images', file);
+    });
 
     console.log('🔥 최종 요청 데이터:', {
-    name: item.name,
-    description: item.description,
-    price: item.price,
-    teamId: item.teamId,
-    categoryId: item.categoryId
-  });
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      teamId: item.teamId,
+      categoryId: item.categoryId
+    });
 
     try {
       await axios.put(`http://localhost:8080/api/items/admin/${id}`, formData, {
@@ -93,36 +96,51 @@ const EditItemPage = () => {
         관리자 상품 수정 페이지
       </h1>
 
-      {/* 🔥 flex 구조 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '48px', justifyContent: 'center' }}>
-        {/* 왼쪽: 상품 이미지 */}
-        <div style={{ width: '300px', height: '300px', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {imagePreview ? (
-            <img src={imagePreview} alt="상품 이미지" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-          ) : (
-            <span>이미지 없음</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {imagePreviews.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((prev) => (prev - 1 + imagePreviews.length) % imagePreviews.length)}
+              style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '24px' }}
+            >
+              ◀
+            </button>
+          )}
+
+          <div style={{ width: '300px', height: '300px', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {imagePreviews.length > 0 ? (
+              <img src={imagePreviews[currentIndex]} alt="상품 이미지" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            ) : (
+              <span>이미지 없음</span>
+            )}
+          </div>
+
+          {imagePreviews.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((prev) => (prev + 1) % imagePreviews.length)}
+              style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: 'white', fontSize: '24px' }}
+            >
+              ▶
+            </button>
           )}
         </div>
 
-        {/* 오른쪽: 수정 박스 (상품 등록 박스랑 비슷하게) */}
         <form
           onSubmit={handleUpdate}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            border: '2px solid #f9a8d4',
-            padding: '16px',
-            width: '400px'
-          }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '16px', border: '2px solid #f9a8d4', padding: '16px', width: '400px' }}
         >
           <div>
             <label>상품 이미지: </label>
             <input
               type="file"
+              multiple
               onChange={(e) => {
-                setItem({ ...item, newImage: e.target.files[0] });
-                setImagePreview(URL.createObjectURL(e.target.files[0]));
+                const files = Array.from(e.target.files);
+                setSelectedFiles(files);
+                const newPreviews = files.map(file => URL.createObjectURL(file));
+                setImagePreviews((prev) => [...prev, ...newPreviews]);
               }}
             />
           </div>
@@ -158,8 +176,8 @@ const EditItemPage = () => {
           <div>
             <label>카테고리: </label>
             <select
-              value={String(item.categoryId)} // ✅ 무조건 문자열로
-              onChange={(e) => setItem({ ...item, categoryId: parseInt(e.target.value) })} // ✅ 숫자로 저장
+              value={String(item.categoryId)}
+              onChange={(e) => setItem({ ...item, categoryId: parseInt(e.target.value) })}
               style={{ border: '1px solid #ddd', width: '100%', padding: '4px' }}
               required
             >

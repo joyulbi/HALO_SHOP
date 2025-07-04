@@ -4,10 +4,12 @@ import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import { LOG_IN_REQUEST } from '../reducers/user_YG';
 import { useAuth } from '../hooks/useAuth';
+import { useCart } from '../context/CartContext';
 
 export default function Login() {
   const dispatch = useDispatch();
   const router = useRouter();
+  
 
   // 리덕스 세션 로그인 상태 (관리자용)
   const { logInLoading, logInError, logInDone, isLogin } = useSelector((state) => state.user_YG);
@@ -20,6 +22,8 @@ export default function Login() {
   // 상태 메시지
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  const { fetchCartCount } = useCart();
 
   // 로그인 성공 시 홈으로 이동
   useEffect(() => {
@@ -52,6 +56,7 @@ export default function Login() {
     const result = await jwtLogin(email, password);
     if (result.success) {
       setMessage('JWT 로그인 성공!');
+      fetchCartCount();
       // 이동은 useAuth 내부에서 처리됨
       return;
     }

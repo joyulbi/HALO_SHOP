@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
 import ProductCard from '../components/ProductCard';
 import api from '../utils/axios';
+import { useRouter } from 'next/router';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const router = useRouter();
 
   const bannerImages = [
     '/images/slide1.png',
@@ -32,6 +34,29 @@ const Home = () => {
       });
   }, []);
 
+  // 🔥 로그인 여부 체크 및 이동 함수 (JWT 토큰 key: accessToken)
+  const goToCart = () => {
+    const token = localStorage.getItem('accessToken'); // ✅ key 정확히 수정
+
+    if (!token) {
+      alert('로그인 후 이용 가능합니다.');
+      return; // 로그인 안 했으면 이동 차단
+    }
+
+    router.push('/cart'); // 로그인 했으면 장바구니 이동
+  };
+
+  const goToCheckout = () => {
+    const token = localStorage.getItem('accessToken'); // ✅ key 정확히 수정
+
+    if (!token) {
+      alert('로그인 후 이용 가능합니다.');
+      return; // 로그인 안 했으면 이동 차단
+    }
+
+    router.push('/checkout'); // 결제 페이지 이동
+  };
+
   return (
     <>
       {/* 메인 슬라이드 */}
@@ -50,19 +75,11 @@ const Home = () => {
         추천 상품
       </h2>
 
-      {/* 메인 상품 목록 */}
       <section className="product-list" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', marginBottom: '50px' }}>
         {products.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
       </section>
-
-      {/* 사이드 퀵 메뉴 (고정) */}
-      <div className="quick-menu" style={{ position: 'fixed', right: '20px', top: '200px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <button title="결제" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>💳</button>
-        <button title="장바구니" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>🛒</button>
-        <button title="마이페이지" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>👤</button>
-      </div>
     </>
   );
 };

@@ -12,4 +12,9 @@ public class Cart {
     private int quantity;      // 수량
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // 🔥 여기 추가: 조회 전용 필드
+    private String name;       // 상품명
+    private int price;         // 상품 가격
+    private String imageUrl;   // 상품 이미지 URL
 }
