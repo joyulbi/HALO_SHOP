@@ -34,9 +34,19 @@
         )
     </insert>
 
-    <!-- 입찰 로그 삭제 -->
-    <delete id="delete" parameterType="long">
-        DELETE FROM auction_log
-        WHERE id = #{id}
-    </delete>
+    <!-- 경매 삭제 입찰 로그 삭제 -->
+	<delete id="deleteByAuctionId" parameterType="long">
+	    DELETE 
+	    FROM auction_log 
+	    WHERE auction_id = #{auctionId}
+	</delete>
+    
+    <!-- 최신 입찰 로그 내림차순 조회 (최고가/가장 최근 row 확인용) -->
+	<select id="selectByAuctionIdOrderByCreatedAtDesc" resultType="com.company.haloshop.auction.dto.AuctionLog">
+	    SELECT *
+	    FROM auction_log
+	    WHERE auction_id = #{auctionId}
+	    ORDER BY created_at DESC
+	</select>
+	
 </mapper>

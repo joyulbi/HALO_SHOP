@@ -9,6 +9,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface AuctionLogMapper {
     AuctionLog selectById(Long id);
     List<AuctionLog> selectByAuctionId(Long auctionId);
+    List<AuctionLog> selectByAuctionIdOrderByCreatedAtDesc(Long auctionId);
     void insert(AuctionLog auctionLog);
     void delete(Long id);
+    void deleteByAuctionId(Long auctionId);
 }
