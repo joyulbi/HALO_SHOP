@@ -1,5 +1,6 @@
 package com.company.haloshop.pointlog;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class PointLogService {
         log.setAccountId(userId);
         log.setType(type);
         log.setAmount(amount);
+        log.setCreatedAt(LocalDateTime.now());
         pointLogMapper.insert(log);
     }
 

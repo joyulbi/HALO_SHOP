@@ -81,33 +81,35 @@ const OrderFormPage = () => {
         return;
       }
 
-      if (order.used === 'KAKAOPAY') {
-        const res = await axios.post('/api/payment/ready', {
-          accountId: Number(order.accountId),
-          used: order.used,
-          totalPrice,
-          payAmount,
-          amount: point
-        });
-        window.location.href = res.data.next_redirect_pc_url;
-      } else {
-        const payload = {
-          ...order,
-          accountId: Number(order.accountId),
-          totalPrice,
-          payAmount,
-          amount: point,
-          orderItems: items.map(item => ({
-            itemId: Number(item.itemId),
-            itemName: item.itemName,
-            productPrice: Number(item.productPrice),
-            quantity: Number(item.quantity)
-          }))
-        };
-        await axios.post('/api/orders', payload);
-        alert('주문이 완료되었습니다!');
-        router.push('/order/complete');
-      }
+if (order.used === 'KAKAOPAY') {
+  const res = await axios.post('/api/payment/ready', {
+    accountId: Number(order.accountId),
+    used: order.used,
+    totalPrice,
+    payAmount,
+    amount: point
+  });
+  window.location.href = res.data.next_redirect_pc_url;
+} else {
+  const payload = {
+    ...order,
+    accountId: Number(order.accountId),
+    totalPrice,
+    payAmount,
+    amount: point,
+    orderItems: items.map(item => ({
+      itemId: Number(item.itemId),
+      itemName: item.itemName,
+      productPrice: Number(item.productPrice),
+      quantity: Number(item.quantity)
+    }))
+  };
+
+  const res = await axios.post('/api/orders', payload);
+  alert('주문이 완료되었습니다!');
+  router.push(`/order/${res.data.orderId}`);
+}
+
     } catch (error) {
       console.error(error);
       alert('주문 처리 중 오류가 발생했습니다.');

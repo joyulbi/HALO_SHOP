@@ -1,12 +1,10 @@
-// pages/order/OrderListPage.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import api from '../../utils/axios';
-import Layout from '../../components/Layout';
-import { useAuth } from '../../hooks/useAuth';
+import api from '../../../utils/axios';
+import Layout from '../../../components/Layout';
+import { useAuth } from '../../../hooks/useAuth';
 
-const OrderListPage = () => {
+const MyOrderListPage = () => {
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
 
@@ -16,13 +14,8 @@ const OrderListPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await api.get('/api/orders');
-      console.log('🚩 주문 목록:', res.data);
-
-      const userOrders = res.data.filter(order =>
-        Number(order.accountId) === Number(user.id)
-      );
-      setOrders(userOrders);
+      const res = await api.get('/api/orders/my'); // ✅ 본인 주문 내역 API 호출
+      setOrders(res.data);
     } catch (err) {
       console.error(err);
       setError('주문 목록 조회 실패');
@@ -73,7 +66,7 @@ const OrderListPage = () => {
               <li
                 key={order.id}
                 className="p-4 border rounded cursor-pointer hover:bg-gray-50"
-                onClick={() => router.push(`/order/${order.id}`)}
+                onClick={() => router.push(`/mypage/orders/${order.id}`)}
               >
                 <div className="font-semibold">주문 번호: {order.id}</div>
                 <div>결제 상태: {order.paymentStatus}</div>
@@ -90,4 +83,4 @@ const OrderListPage = () => {
   );
 };
 
-export default OrderListPage;
+export default MyOrderListPage;

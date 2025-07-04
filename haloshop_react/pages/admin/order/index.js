@@ -1,12 +1,10 @@
-// pages/order/[id].jsx
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import api from '../../utils/axios';
-import Layout from '../../components/Layout';
-import { useAuth } from '../../hooks/useAuth';
+import api from '../../../utils/axios';
+import Layout from '../../../components/Layout';
+import { useAuth } from '../../../hooks/useAuth';
 
-const OrderDetailPage = () => {
+const MyOrderDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const { user, isLoggedIn, loading: authLoading } = useAuth();
@@ -17,19 +15,15 @@ const OrderDetailPage = () => {
   const fetchOrder = async () => {
     try {
       const res = await api.get(`/api/orders/${id}`);
-      console.log('🚩 주문 상세 데이터:', res.data);
-
-      if (user && Number(res.data.accountId) !== Number(user.id)) {
-        alert('본인의 주문만 조회할 수 있습니다.');
-        router.back();
-        return;
-      }
-
       setOrder(res.data);
     } catch (err) {
-      console.error('🚩 주문 상세 조회 오류:', err);
-      alert('주문 상세 조회 실패');
-      router.back();
+      console.error(err);
+      if (err.response?.status === 403) {
+        alert('본인 주문만 조회할 수 있습니다.');
+      } else {
+        alert('주문 상세 조회 실패');
+      }
+      router.replace('/mypage/orders');
     } finally {
       setLoadingOrder(false);
     }
@@ -63,7 +57,6 @@ const OrderDetailPage = () => {
         <h1 className="text-2xl font-bold mb-4 text-center">주문 상세</h1>
         <div className="border p-4 rounded shadow space-y-2">
           <div className="font-semibold">주문 번호: {order.id}</div>
-          <div>계정 ID: {order.accountId}</div>
           <div>결제 상태: {order.paymentStatus}</div>
           <div>총 결제 금액: {order.payAmount?.toLocaleString()}원</div>
           <div className="text-sm text-gray-600">
@@ -93,4 +86,4 @@ const OrderDetailPage = () => {
   );
 };
 
-export default OrderDetailPage;
+export default MyOrderDetailPage;
