@@ -198,6 +198,8 @@ const InquiryModal = ({
     setLocalStatus(inquiry.status);
   }, [inquiry]);
 
+  const ApiCallUrl = "http://localhost:8080";
+
   return (
     <Overlay onClick={onClose}>
       <ModalContainer onClick={e => e.stopPropagation()}>
@@ -235,7 +237,7 @@ const InquiryModal = ({
             <div style={{marginTop: "0.7rem"}}>
               <strong style={{color:"#7b7b7b", fontWeight:600, fontSize:"0.98rem", marginRight:"0.3rem"}}>첨부파일:</strong>
               <FileLink
-                href={`http://localhost:8080/files/${encodeURIComponent(inquiry.file)}`}
+                href={`${ApiCallUrl}/api/files/${encodeURIComponent(inquiry.file)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 download

@@ -17,6 +17,13 @@ import java.io.IOException;
 public class PaymentController {
 
     private final KakaoPayService kakaoPayService;
+    private final CardPayService cardPayService;
+
+    @PostMapping("/mock/approve")
+    public ResponseEntity<?> approveMockPayment(@RequestParam Long orderId) {
+        cardPayService.approve(orderId);
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/ready")
     public ResponseEntity<?> readyPayment(@RequestBody PaymentReadyRequest request) {
@@ -51,4 +58,11 @@ public class PaymentController {
 
         response.sendRedirect("http://localhost:3000/payment/success?success=true");
     }
+    
+    @PostMapping("/mock/cancel")
+    public ResponseEntity<?> cancelMockPayment(@RequestParam Long orderId) {
+        cardPayService.cancel(orderId);
+        return ResponseEntity.ok().build();
+    }
+
 }

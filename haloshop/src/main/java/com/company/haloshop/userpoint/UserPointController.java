@@ -74,7 +74,7 @@ public class UserPointController {
             @RequestParam int adjustAmount,
             @RequestParam String adjustType) {
 
-        userPointService.adjustPointManually(accountId, adjustAmount, adjustType);
+    	userPointService.adjustPointManually(accountId, adjustAmount);
         return ResponseEntity.ok().build();
     }
 }

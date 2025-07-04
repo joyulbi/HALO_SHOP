@@ -84,3 +84,4 @@ uploads/
 *.db
 *.sqlite
 **/application-oauth.properties
+haloshop/src/main/webapp/image/campaign

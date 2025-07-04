@@ -16,5 +16,6 @@ public class OrderRequestDto {
     private String paymentStatus;   // PENDING, PAID, FAILED
     private Integer amount;
     private Long payAmount;
+    private String tid;
     private List<OrderItemDto> orderItems; // 주문 아이템 리스트
 }

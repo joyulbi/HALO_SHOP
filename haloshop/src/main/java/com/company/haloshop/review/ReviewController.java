@@ -70,4 +70,10 @@ public class ReviewController {
             return ResponseEntity.badRequest().body("리뷰 삭제 실패: " + e.getMessage());
         }
     }
+    
+    // ✅ 상품별 리뷰 전체 조회
+    @GetMapping("/item/{itemId}")
+    public List<ReviewDTO> getReviewsByItem(@PathVariable Long itemId) {
+        return reviewService.getReviewsByItem(itemId);
+    }
 }

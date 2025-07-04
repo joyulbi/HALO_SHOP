@@ -78,5 +78,36 @@
 	<delete id="deleteReview">
 	    DELETE FROM review WHERE id = #{id}
 	</delete>
-
+	
+	<select id="findByItemId" parameterType="long" resultType="com.company.haloshop.dto.shop.ReviewDTO">
+	    SELECT r.id, r.content, r.rating, r.created_at, r.account_id, a.nickname AS authorName
+	    FROM review r
+	    JOIN account a ON r.account_id = a.id
+	    JOIN order_items oi ON r.order_item_id = oi.id
+	    WHERE oi.item_id = #{itemId}
+	    ORDER BY r.created_at DESC
+	</select>
+	
+	<!-- 관리자용 유저 리뷰 -->
+	<select id="findAllWithProduct" resultType="com.company.haloshop.dto.shop.ReviewDTO">
+	    SELECT 
+	        r.id,
+	        r.content,
+	        r.rating,
+	        r.created_at,
+	        r.account_id,
+	        a.nickname AS authorName,
+	        i.name AS productName,
+	        (
+	            SELECT url
+	            FROM review_image
+	            WHERE review_id = r.id
+	            LIMIT 1
+	        ) AS imageUrl
+	    FROM review r
+	    JOIN account a ON r.account_id = a.id
+	    JOIN order_items oi ON r.order_item_id = oi.id
+	    JOIN items i ON oi.item_id = i.id
+	    ORDER BY r.created_at DESC
+	</select>
 </mapper>

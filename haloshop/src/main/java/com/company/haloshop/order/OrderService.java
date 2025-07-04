@@ -27,9 +27,16 @@ public class OrderService {
     public List<OrderDto> findAll() {
         return orderMapper.findAll();
     }
+    public List<OrderDto> findByAccountId(Long accountId) {
+        return orderMapper.findByAccountId(accountId);
+    }
+
 
     public OrderDto findById(Long id) {
-        return orderMapper.findById(id);
+        OrderDto order = orderMapper.findById(id);
+        List<OrderItemDto> items = orderItemMapper.findByOrderId(id);
+        order.setOrderItems(items);
+        return order;
     }
 
     public void insert(OrderDto orderDto) {
@@ -40,10 +47,14 @@ public class OrderService {
         orderMapper.update(orderDto);
     }
 
-    public void delete(Long id) {
+    @Transactional
+    public void delete(Long id, Long accountId) {
         OrderDto order = orderMapper.findById(id);
         if (order == null) {
             throw new IllegalArgumentException("주문이 존재하지 않습니다.");
+        }
+        if (!order.getAccountId().equals(accountId)) {
+            throw new SecurityException("본인 주문만 삭제할 수 있습니다.");
         }
         if ("PAID".equals(order.getPaymentStatus())) {
             throw new IllegalStateException("이미 결제 완료된 주문은 삭제할 수 없습니다.");
@@ -52,8 +63,9 @@ public class OrderService {
     }
 
 
+
     @Transactional
-    public void insertOrderWithItems(OrderRequestDto orderRequestDto) {
+    public Long insertOrderWithItems(OrderRequestDto orderRequestDto) {
 
         // ✅ 1) payAmount 계산 (결제금액 = 총 주문금액 - 사용포인트)
         long payAmount = orderRequestDto.getTotalPrice() -
@@ -89,6 +101,7 @@ public class OrderService {
         if (savePoint > 0) {
             pointLogService.saveLog(accountId, "SAVE", savePoint);
         }
+        return orderId;
     }
     
     @Transactional

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ItemReviews from './ItemReviews';
 
 const ItemDetailTabs = ({ item }) => {
   const [activeTab, setActiveTab] = useState('detail');
@@ -114,8 +115,7 @@ const ItemDetailTabs = ({ item }) => {
 
         {activeTab === 'review' && (
           <div>
-            <h3>리뷰</h3>
-            <p>리뷰 데이터 연동 예정</p>
+            <ItemReviews itemId={item.id} />
           </div>
         )}
       </div>

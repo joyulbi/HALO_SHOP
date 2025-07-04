@@ -7,10 +7,14 @@ export default function AuctionListPage() {
   const [auctions, setAuctions] = useState([]);
   const [images, setImages] = useState({});
 
-  useEffect(() => {
+  const loadAuctions = () => {
     api.get("/api/auctions")
       .then(res => setAuctions(res.data))
       .catch(() => setAuctions([]));
+  };
+
+  useEffect(() => {
+    loadAuctions();
   }, []);
 
   useEffect(() => {
@@ -24,6 +28,17 @@ export default function AuctionListPage() {
       });
     }
   }, [auctions]);
+
+  const handleDelete = async (id) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      await api.delete(`/api/auctions/${id}`);
+      alert("삭제되었습니다.");
+      loadAuctions();
+    } catch (e) {
+      alert("삭제 실패: " + (e?.response?.data?.message || e.message));
+    }
+  };
 
   return (
     <div style={{
@@ -40,17 +55,22 @@ export default function AuctionListPage() {
       <table style={{ width: "100%", marginTop: 14, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ background: "#dde6fb" }}>
-            <th style={{ padding: 8, borderBottom: "1px solid #bbb" }}>이미지</th>
-            <th style={{ padding: 8, borderBottom: "1px solid #bbb" }}>제목</th>
-            <th style={{ padding: 8, borderBottom: "1px solid #bbb" }}>상태</th>
-            <th style={{ padding: 8, borderBottom: "1px solid #bbb" }}>시작가</th>
-            <th style={{ padding: 8, borderBottom: "1px solid #bbb" }}>상세보기</th>
+            <th style={{ padding: 8 }}>이미지</th>
+            <th style={{ padding: 8 }}>제목</th>
+            <th style={{ padding: 8 }}>상태</th>
+            <th style={{ padding: 8 }}>시작가</th>
+            <th style={{ padding: 8 }}>동작</th>
           </tr>
         </thead>
         <tbody>
           {auctions.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#888" }}>경매가 없습니다.</td></tr>}
           {auctions.map(auction => (
-            <AuctionList key={auction.id} auction={auction} imageUrl={images[auction.id]} />
+            <AuctionList
+              key={auction.id}
+              auction={auction}
+              imageUrl={images[auction.id]}
+              onDelete={handleDelete}
+            />
           ))}
         </tbody>
       </table>

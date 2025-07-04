@@ -23,15 +23,15 @@ const AdminMainPage = () => {
       title: '회원 및 주문 관리',
       buttons: [
         { label: '멤버십 생성 페이지', path: '/admin/membership' },
-        { label: '주문 내역 페이지', path: '/admin/orders' },
-        { label: '포인트 로그 조회 페이지', path: '/admin/points' },
+        { label: '주문 내역 페이지', path: '/admin/order/OrderListPage' },
+        { label: '포인트 로그 조회 페이지', path: '/admin/point/pointlog' },
       ]
     },
     {
       title: '리뷰 및 배송 관리',
       buttons: [
         { label: '리뷰 관리 페이지', path: '/admin/reviews' },
-        { label: '배달 관리 페이지', path: '/admin/delivery' },
+        { label: '배송 관리 페이지', path: '/admin/delivery' },
       ]
     },
     {

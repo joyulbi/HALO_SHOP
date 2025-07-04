@@ -111,7 +111,7 @@ public class ReviewService {
         reviewMapper.updateReview(original);
     }
 
-    // ✅ 리뷰 삭제
+    // ✅ 리뷰 삭제 (유저/관리자 공용)
     @Transactional
     public void deleteReview(Long id) {
         ReviewDTO review = reviewMapper.findById(id);
@@ -120,5 +120,20 @@ public class ReviewService {
         }
         reviewMapper.deleteReview(id);
         reviewImageMapper.deleteByReviewId(id);
+    }
+    
+    // ✅ 특정 상품의 리뷰 목록 조회
+    public List<ReviewDTO> getReviewsByItem(Long itemId) {
+        List<ReviewDTO> reviews = reviewMapper.findByItemId(itemId);
+        for (ReviewDTO review : reviews) {
+            List<String> urls = reviewImageMapper.findUrlsByReviewId(review.getId());
+            review.setImages(urls);
+        }
+        return reviews;
+    }
+    
+    // ✅ 관리자 리뷰 전체 조회
+    public List<ReviewDTO> getAllReviewsForAdmin() {
+        return reviewMapper.findAllWithProduct();
     }
 }
