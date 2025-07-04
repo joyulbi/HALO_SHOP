@@ -4,42 +4,37 @@ import { useState } from "react";
 export default function ReviewFormWithImage({ orderItemsId, accountId }) {
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(5);
-  const [file, setFile] = useState(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [images, setImages] = useState([]);
+
+  const SERVER_URL = 'http://localhost:8080';
+
+  const handleFileChange = (e) => {
+    setImages([...e.target.files]);
+  };
 
   const handleReviewSubmit = async () => {
     try {
-      const reviewRes = await axios.post("http://localhost:8080/api/reviews", {
+      const formData = new FormData();
+      const reviewDto = {
         orderItemsId,
         accountId,
         content,
-        rating,
+        rating
+      };
+
+      // ✅ JSON을 Blob 처리
+      formData.append("reviewDto", new Blob([JSON.stringify(reviewDto)], { type: "application/json" }));
+      images.forEach((file) => {
+        formData.append("images", file);
       });
 
-      const reviewId = reviewRes.data.reviewId || reviewRes.data.id;
+      await axios.post(`${SERVER_URL}/api/reviews`, formData);
 
-      if (file && reviewId) {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const uploadRes = await axios.post(
-          `http://localhost:8080/api/reviews/images/${reviewId}/upload`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-
-        setUploadedImageUrl(`http://localhost:8080/${uploadRes.data.url}`);
-        alert("리뷰 및 이미지 등록 성공");
-      } else {
-        alert("리뷰 등록 성공 (이미지 없음)");
-      }
-
+      alert("리뷰 및 이미지 등록 성공");
       setContent("");
-      setFile(null);
+      setImages([]);
     } catch (err) {
-      console.error("등록 실패", err);
+      console.error("리뷰 등록 실패", err);
       alert("리뷰 등록 실패: " + err.message);
     }
   };
@@ -52,28 +47,27 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="리뷰 내용을 입력하세요"
-        style={{ width: "100%", padding: "8px" }}
+        style={{ width: "100%", padding: "8px", marginBottom: "12px" }}
       />
-      <div>
+      <div style={{ marginBottom: "12px" }}>
         <label>별점:</label>
-        <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+        <select
+          value={rating}
+          onChange={(e) => setRating(Number(e.target.value))}
+        >
           {[5, 4, 3, 2, 1].map((v) => (
             <option key={v} value={v}>{v}점</option>
           ))}
         </select>
       </div>
-      <div>
+      <div style={{ marginBottom: "12px" }}>
         <label>이미지 첨부:</label>
-        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} />
+        <input type="file" accept="image/*" multiple onChange={handleFileChange} />
       </div>
-      <button onClick={handleReviewSubmit}>등록</button>
-
-      {uploadedImageUrl && (
-        <div style={{ marginTop: "10px" }}>
-          <p>업로드된 이미지:</p>
-          <img src={uploadedImageUrl} alt="리뷰 이미지" width={200} />
-        </div>
-      )}
+      <button onClick={handleReviewSubmit} style={{ marginTop: "8px" }}>
+        리뷰 등록
+      </button>
     </div>
   );
 }
+

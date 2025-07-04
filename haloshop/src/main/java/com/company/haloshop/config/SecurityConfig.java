@@ -53,8 +53,21 @@ public class SecurityConfig {
         this.jwtBlacklistMapper = jwtBlacklistMapper;
     }
 
+    
+    @Component("adminCheck")
+    public class AdminCheck {
 
+        public boolean hasAdminAuthority(Authentication authentication) {
+            if (authentication == null || !authentication.isAuthenticated()) return false;
 
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof AccountDto) {
+                AccountDto account = (AccountDto) principal;
+                return Boolean.TRUE.equals(account.getIsAdmin());
+            }
+            return false;
+        }
+    }
     
     @Bean
     public PasswordEncoder userPasswordEncoder() {
@@ -130,23 +143,14 @@ public class SecurityConfig {
             )
             // 권한 및 접근 제어
             .authorizeRequests(authz -> authz
-                   // 관리자 경로(어드민 페이지, 어드민 API 등)
-                   .antMatchers("/admin/**").access("@adminCheck.hasAdminAuthority(authentication)")
-
-                   // (추가) 관리자가 아닌 유저가 접근하면 403 에러
-                   // (추가로 특정 권한(예: role 기반 분기) 추가할 땐 아래에 커스텀 access 더 붙이면 됨)
-
-                   // 인증만 되면 되는 유저 API
-                   .antMatchers("/user/**").authenticated()
-                   
-                   // 이하 공개 API
-                   .antMatchers("/api/pay/kakao/**").permitAll()
-                   .antMatchers("/api/items").permitAll()
-                   .antMatchers("/api/**").permitAll()
-                   .antMatchers("/auth/**").permitAll()
-                   .anyRequest().permitAll()
-               )
-
+                //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
+                .antMatchers("/api/pay/kakao/**").permitAll()// ✅ 카카오페이 연동용 예외 허용
+                .antMatchers("/api/items").permitAll() // 아이템도 예외
+                .antMatchers("/api/**").permitAll()    // API는 인증된 사용자만
+                .antMatchers("/user/**").authenticated()    // 마이페이지 등 인증 필요
+                .antMatchers("/auth/**").permitAll()        // 회원가입, 로그인 등 인증 없이 허용
+                .anyRequest().permitAll()                    // 나머지 요청 허용
+            )
             // formLogin() 제거 (JWT 인증은 API 기반, 로그인폼 필요시 별도 설정)
             // .formLogin(...) 
 
