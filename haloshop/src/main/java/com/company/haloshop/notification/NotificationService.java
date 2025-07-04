@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.company.haloshop.entity.member.Account;
@@ -16,7 +17,7 @@ public class NotificationService {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
+    private SimpMessagingTemplate messagingTemplate;
     private final NotificationMapper notificationMapper;
 
     public NotificationService(NotificationMapper notificationMapper) {

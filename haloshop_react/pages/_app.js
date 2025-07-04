@@ -7,6 +7,7 @@ import '../styles/globals.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import 'antd/dist/antd.css';
+import WebSocketClient from '../components/WebSocketClient';
 
 import { useRef } from 'react';
 
@@ -18,6 +19,7 @@ function MyApp({ Component, pageProps }) {
       <CartProvider>
         <CartButtonContext.Provider value={{ cartButtonRef }}>
           <Layout cartRef={cartButtonRef}> 
+            <WebSocketClient />
             <Component {...pageProps} />
           </Layout>
         </CartButtonContext.Provider>
