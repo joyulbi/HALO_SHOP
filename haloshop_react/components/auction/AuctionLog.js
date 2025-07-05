@@ -22,6 +22,7 @@ export default function AuctionLog({
           </div>
         )) : <div>입찰 로그 없음</div>}
       </div>
+
       {/* 입찰폼 */}
       <div style={{
         flex: 1, background: "#fff", border: "2px solid #111",
