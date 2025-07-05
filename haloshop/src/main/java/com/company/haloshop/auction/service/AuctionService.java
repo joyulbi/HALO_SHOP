@@ -47,4 +47,19 @@ public class AuctionService {
         auctionLogMapper.deleteByAuctionId(auctionId);
         auctionMapper.delete(auctionId);
     }
+    
+    // [스케줄러] 시작 시간 도달한 경매 → ONGOING
+    public void updateToOngoingIfNeeded() {
+        auctionMapper.updateStatusToOngoingIfStartTimePassed();
+    }
+
+    // [스케줄러] 종료 시간 도달한 경매 → FINISHED
+    public void updateToFinishedIfNeeded() {
+        auctionMapper.updateStatusToFinishedIfEndTimePassed();
+    }
+
+    // [타이머] 단일 경매 종료 처리 (WebSocket용)
+    public void finishAuction(Long auctionId) {
+        auctionMapper.updateStatusToFinished(auctionId);
+    }
 }
