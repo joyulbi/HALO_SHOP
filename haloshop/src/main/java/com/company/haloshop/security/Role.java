@@ -1,63 +1,77 @@
 package com.company.haloshop.security;
 
+/**
+ * 관리자 역할(Role) 정의 enum
+ * - 각 역할을 고유한 단일 ID(roleId)로 관리
+ * - 필요한 경우 matches(), fromId()로 조회 가능
+ */
 public enum Role {
-    // 최상위 관리자 (시스템 관리자를 포함한 모든 권한)
-    MASTER_ADMIN(0, 99, "마스터 관리자"), // 마스터관리자 == 시스템관리자 
 
-    // 상품 관리 카테고리 (200번대)
-    PRODUCT_MANAGER(200, 299, "상품 관리자"),
-    STOCK_MANAGER(201, 299, "상품 재고 관리자"),
+    // 최상위 관리자 (모든 권한 포함)
+    MASTER_ADMIN            (   0, "마스터 관리자"),
 
-    // 회원 및 주문 관리 카테고리 (300번대)
-    MEMBERSHIP_MANAGER(300, 399, "멤버십 관리자"),
-    ORDER_MANAGER(301, 399, "주문 관리자"),
-    POINT_MANAGER(302, 399, "포인트 관리자"),
+    // 상품 관리
+    PRODUCT_MANAGER         ( 200, "상품 관리자"),
+    STOCK_MANAGER           ( 201, "상품 재고 관리자"),
 
-    // 리뷰 및 배송 관리 카테고리 (400번대)
-    REVIEW_MANAGER(400, 499, "리뷰 관리자"),
-    DELIVERY_MANAGER(401, 499, "배달 관리자"),
+    // 회원 및 주문 관리
+    MEMBERSHIP_MANAGER      ( 300, "멤버십 관리자"),
+    ORDER_MANAGER           ( 301, "주문 관리자"),
+    POINT_MANAGER           ( 302, "포인트 관리자"),
 
-    // 기타 관리자 카테고리 (500번대)
-    SECURITY_ADMIN(500, 599, "보안 관리자"),
-    USER_ADMIN(501, 599, "유저 관리자"),
-    INQUIRY_MANAGER(502, 599, "문의 관리자"),
-    TEAM_SETTING_MANAGER(503, 599, "야구팀 설정 관리자"),
-    SEASON_SETTING_MANAGER(504, 599, "시즌 설정 관리자"),
-    DONATION_CAMPAIGN_MANAGER(505, 599, "캠페인 관리자"),
+    // 리뷰 및 배송 관리
+    REVIEW_MANAGER          ( 400, "리뷰 관리자"),
+    DELIVERY_MANAGER        ( 401, "배송 관리자"),
 
-    // 일반 사용자 (모든 관리자 번호대와 겹치지 않는 별도 범위)
-    GENERAL_USER(1000, 19999, "일반 사용자");
+    // 기타 관리자
+    SECURITY_ADMIN          ( 500, "보안 관리자"),
+    USER_ADMIN              ( 501, "유저 관리자"),
+    INQUIRY_MANAGER         ( 502, "문의 관리자"),
+    TEAM_SETTING_MANAGER    ( 503, "야구팀 설정 관리자"),
+    SEASON_SETTING_MANAGER  ( 504, "시즌 설정 관리자"),
+    DONATION_CAMPAIGN_MANAGER(505, "기부 캠페인 관리자"),
 
-    private final int startId;
-    private final int endId;
+    // 일반 유저
+    GENERAL_USER            (1000, "일반 사용자");
+
+    /** 역할 고유 ID */
+    private final int roleId;
+    /** 역할 설명 */
     private final String description;
 
-    Role(int startId, int endId, String description) {
-        this.startId = startId;
-        this.endId = endId;
+    Role(int roleId, String description) {
+        this.roleId     = roleId;
         this.description = description;
     }
 
-    public int getStartId() {
-        return startId;
+    /**
+     * 이 역할의 고유 ID 반환
+     */
+    public int getRoleId() {
+        return roleId;
     }
 
-    public int getEndId() {
-        return endId;
-    }
-
+    /**
+     * 이 역할의 설명 반환
+     */
     public String getDescription() {
         return description;
     }
 
-    public boolean contains(int roleId) {
-        return roleId >= this.startId && roleId <= this.endId;
+    /**
+     * 주어진 roleId와 일치하는지 확인
+     */
+    public boolean matches(int roleId) {
+        return this.roleId == roleId;
     }
 
+    /**
+     * roleId에 해당하는 Role enum 반환
+     */
     public static Role fromId(int roleId) {
-        for (Role role : Role.values()) {
-            if (role.contains(roleId)) {
-                return role;
+        for (Role r : Role.values()) {
+            if (r.matches(roleId)) {
+                return r;
             }
         }
         return null;

@@ -11,112 +11,109 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   /**
-   * 공통 프로필 패칭 함수
-   * 1. /admin/me → 성공시 관리자 정보 반환
-   * 2. /user/me → 실패시 일반 유저 정보 반환
+   * 공통 프로필 페칭
+   * 1) 세션 기반 관리자
+   * 2) JWT 기반 일반 유저
    */
   const fetchProfile = async () => {
-  try {
-    // (1) 세션 기반 관리자 먼저 시도
-    const resAdmin = await api.get('/admin/me');
-    if (resAdmin.status === 200 && resAdmin.data && resAdmin.data.admin) {
-      setUser({
-        ...resAdmin.data.account,
-        admin: resAdmin.data.admin,
-      });
-      setIsLoggedIn(true);
-      setLoading(false);
-      return 'admin';
+    // 1) 세션 기반 관리자 시도
+    try {
+      const resAdmin = await api.get('/admin/me');
+      if (resAdmin.status === 200 && resAdmin.data?.account) {
+        setUser({ ...resAdmin.data.account, admin: true });
+        setIsLoggedIn(true);
+        setLoading(false);
+        return 'admin';
+      }
+    } catch {
+      // 관리자 세션 없으면 JWT 유저로 분기
     }
-  } catch (e) {
-    // 세션 인증 실패 -> JWT 로그인 시도
-  }
 
-  // (2) JWT 기반 일반 유저
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
+    // 2) JWT 토큰 검사
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setUser(null);
+      setIsLoggedIn(false);
+      setLoading(false);
+      return null;
+    }
+
+    try {
+      // axios 인터셉터가 Authorization 헤더 처리
+      const resUser = await api.get('/user/me');
+      if (resUser.status === 200 && resUser.data?.account) {
+        setUser({ ...resUser.data.account, user: resUser.data.user });
+        setIsLoggedIn(true);
+        setLoading(false);
+        return 'user';
+      }
+    } catch {
+      // JWT 유저 인증 실패
+    }
+
+    // 3) 미인증
     setUser(null);
     setIsLoggedIn(false);
     setLoading(false);
     return null;
-  }
+  };
 
-  try {
-    const resUser = await api.get('/user/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (resUser.status === 200 && resUser.data) {
-      setUser({
-        ...(resUser.data.account || {}),
-        user: resUser.data.user || {},
-      });
-      setIsLoggedIn(true);
-      setLoading(false);
-      return 'user';
-    }
-  } catch {}
-
-  // (3) 둘 다 실패
-  setUser(null);
-  setIsLoggedIn(false);
-  setLoading(false);
-  return null;
-};
-
-
-  // 마운트/새로고침 시 프로필 자동 체크
+  // 마운트 시 프로필 체크
   useEffect(() => {
     fetchProfile();
-    // eslint-disable-next-line
   }, []);
 
-  // ===== 로그인 =====
+  /**
+   * 로그인 요청
+   */
   const login = async (email, password) => {
     try {
+      // api.post uses withCredentials=true
       const res = await api.post('/auth/login', { email, password });
       const data = res.data;
-      // (1) 세션 관리자
+
+      // 1) 관리자 세션 로그인
       if (typeof data === 'string' && data.includes('관리자 로그인 성공')) {
         await fetchProfile();
         router.push('/');
         return { success: true };
       }
-      // (2) JWT 유저
-      else if (data && data.accessToken && data.refreshToken) {
+
+      // 2) JWT 일반 유저
+      if (data.accessToken && data.refreshToken) {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
         await fetchProfile();
         router.push('/');
         return { success: true };
-      } else {
-        return { success: false, message: '로그인 응답이 올바르지 않습니다.' };
       }
+
+      return { success: false, message: '로그인 응답이 올바르지 않습니다.' };
     } catch (err) {
-      return {
-        success: false,
-        message: err?.response?.data || "네트워크 오류 또는 서버 응답 없음."
-      };
+      return { success: false, message: err.response?.data || '네트워크 오류' };
     }
   };
 
-  // ===== 로그아웃 =====
-  const logoutUser = async () => {
+  /**
+   * 로그아웃 요청
+   */
+  const logout = async () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const refreshToken = localStorage.getItem('refreshToken');
       if (accessToken && refreshToken) {
+        // JWT 로그아웃
         await api.post('/auth/logout', { accessToken, refreshToken });
       } else {
-        await api.post('/auth/logout', {}); // 세션 로그아웃
+        // 세션 로그아웃
+        await api.post('/auth/logout', {});
       }
     } catch {}
-    // 💡 토큰 먼저 삭제 (중복삭제 안전)
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     setUser(null);
     setIsLoggedIn(false);
     setLoading(false);
-    // 완전 초기화: 뒤로가기도 막힘
     window.location.replace('/login');
   };
 
@@ -125,7 +122,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
-    logout: logoutUser,
+    logout,
     refreshProfile: fetchProfile,
   };
 
@@ -138,6 +135,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

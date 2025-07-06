@@ -45,10 +45,19 @@ public class AuthenticationController {
 
     
     
-    
     /**
-     * 로그인 API
+     * 회원가입 API
      */
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody SignupRequest request, HttpServletRequest httpRequest) {
+        try {
+            authenticationService.signup(request, httpRequest);
+            return ResponseEntity.ok("회원가입 성공");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
     /**
      * 로그인 API
      */
