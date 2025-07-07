@@ -8,20 +8,20 @@ const ItemDetailTabs = ({ item }) => {
 
   // 🔥 AI alt 자동 호출
   useEffect(() => {
-    if (item.id === 2 && imageAlt.trim() === '') { // alt 비어있을 때만 호출
+    if ((item.id === 2 || item.id === 6) && imageAlt.trim() === '') { // 🔥 id 6 추가
       const fetchAlt = async () => {
         try {
           const res = await axios.get(`http://localhost:8080/api/ai-image-alt`, {
             params: {
-              filename: 'LG_uniform_detail.jpg',
-              name: item.name || 'LG 유니폼',
-              team: item.team || 'LG 트윈스'
+              filename: item.id === 2 ? 'LG_uniform_detail.jpg' : 'KiaTowerDetail.jpg',
+              name: item.name || (item.id === 2 ? 'LG 유니폼' : 'KIA 타워'),
+              team: item.team || (item.id === 2 ? 'LG 트윈스' : 'KIA 타이거즈')
             }
           });
           setImageAlt(res.data);
         } catch (error) {
           console.error('AI alt 생성 실패:', error);
-          setImageAlt('LG 유니폼 상세 이미지'); // 실패 시 기본 alt
+          setImageAlt(item.id === 2 ? 'LG 유니폼 상세 이미지' : 'KIA 타워 상세 이미지'); // 실패 시 기본 alt
         }
       };
 
@@ -87,12 +87,21 @@ const ItemDetailTabs = ({ item }) => {
             {item.id === 2 && (
               <img
                 src="/images/LG_uniform_detail.jpg"
-                alt={imageAlt} // 🔥 AI 생성 alt 적용
+                alt={imageAlt}
                 style={{ width: '100%', marginBottom: '20px' }}
               />
             )}
+
+            {item.id === 6 && (
+              <img
+                src="/images/KiaTowerDetail.jpg"
+                alt={imageAlt}
+                style={{ width: '100%', marginBottom: '20px' }}
+              />
+            )}
+
             {/* 필요하면 계속 추가 가능 */}
-            {!([1, 2, 3].includes(item.id)) && (
+            {!([1, 2, 3, 6].includes(item.id)) && (
               <p>상세 이미지 준비 중입니다.</p>
             )}
           </div>

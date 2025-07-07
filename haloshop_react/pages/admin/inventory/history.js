@@ -29,7 +29,7 @@ const InventoryHistoryPage = () => {
               <th>상품명</th>
               <th>상품 ID</th>
               <th>입고량</th>
-              <th>총 재고량</th>
+              <th>입고 합 량</th>
               <th>입고 날짜</th>
             </tr>
           </thead>
