@@ -1,11 +1,19 @@
 package com.company.haloshop.inventory;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.company.haloshop.order.OrderService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InventoryService {
@@ -46,4 +54,16 @@ public class InventoryService {
     public void deleteInventory(Long id) {
         inventoryMapper.deleteInventory(id);
     }
+    @Transactional
+    public void decreaseInventory(Long itemsId, int quantity) {
+        System.out.println("🚩 Inventory 차감 실행: itemsId=" + itemsId + ", quantity=" + quantity);
+        inventoryMapper.decreaseInventoryVolume(itemsId, quantity);
+    }
+    public boolean checkInventoryEnough(Long itemsId, int quantity) {
+        int currentVolume = inventoryMapper.getCurrentInventoryVolume(itemsId);
+        return currentVolume >= quantity;
+    }
+
+
+
 }

@@ -1,19 +1,17 @@
-// pages/order/OrderFormPage/index.js
-
 import React, { useEffect, useState } from 'react';
-import api from '../utils/axios';
+import api from '../../../utils/axios';
 import { useRouter } from 'next/router';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 
-const OrderFormPage = () => {
+const CartOrderFormPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [point, setPoint] = useState('');
   const [appliedPoint, setAppliedPoint] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const router = useRouter();
-
   const { user, isLoggedIn, loading: authLoading } = useAuth();
 
+  // 로그인 여부 확인
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
       alert('로그인이 필요합니다.');
@@ -21,12 +19,21 @@ const OrderFormPage = () => {
     }
   }, [authLoading, isLoggedIn, router]);
 
-  useEffect(() => {
-    api.get('/api/cart')
-      .then(res => setCartItems(res.data))
-      .catch(err => console.error('장바구니 불러오기 실패:', err));
-  }, []);
+  // 장바구니 데이터 불러오기
+useEffect(() => {
+  api.get('/api/cart')
+    .then(res => {
+      const mappedItems = res.data.map(item => ({
+        ...item,
+        itemId: item.items_id, // ✅ 강제 매핑
+      }));
+      setCartItems(mappedItems);
+    })
+    .catch(err => console.error('장바구니 불러오기 실패:', err));
+}, []);
 
+
+  // 결제하기 버튼 클릭 시
   const handlePayNow = async () => {
     if (!user?.id) {
       alert('로그인 후 이용해 주세요.');
@@ -45,7 +52,13 @@ const OrderFormPage = () => {
           amount: appliedPoint,
           used: paymentMethod,
           paymentStatus: "PENDING",
-          accountId: user.id
+          accountId: user.id,
+          orderItems: cartItems.map(item => ({
+            itemId: item.itemId ?? item.items_id ?? item.id, // 가능한 모든 id 시도
+            itemName: item.name,
+            productPrice: item.price,
+            quantity: item.quantity
+          }))
         });
         console.log('카카오페이 응답:', res.data);
         if (res.data.next_redirect_pc_url) {
@@ -68,6 +81,7 @@ const OrderFormPage = () => {
             quantity: item.quantity
           }))
         };
+        console.log(JSON.stringify(payload, null, 2)); // ✅ 이 한 줄 추가
 
         console.log('결제 payload:', payload);
 
@@ -82,8 +96,11 @@ const OrderFormPage = () => {
     }
   };
 
+  // 포인트 적용 버튼 클릭 시
   const handleApplyPoint = () => {
     const pointValue = parseInt(point, 10) || 0;
+    const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
     if (pointValue < 0) {
       alert('0 이상의 값을 입력하세요.');
       return;
@@ -103,15 +120,15 @@ const OrderFormPage = () => {
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
-        주문서 작성
+        장바구니 결제
       </h1>
 
       {cartItems.length === 0 ? (
-        <p style={{ textAlign: 'center' }}>주문할 상품이 없습니다.</p>
+        <p style={{ textAlign: 'center' }}>장바구니에 상품이 없습니다.</p>
       ) : (
         <div>
-          {cartItems.map(item => (
-            <div key={item.id} style={{
+          {cartItems.map((item, index) => (
+            <div key={index} style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -168,7 +185,7 @@ const OrderFormPage = () => {
             </div>
 
             <div style={{ marginTop: '30px', display: 'flex', gap: '10px' }}>
-              <button onClick={() => router.push('/cart')} style={cancelButtonStyle}>취소</button>
+              <button onClick={() => router.push('/cart')} style={cancelButtonStyle}>장바구니로 돌아가기</button>
               <button onClick={handlePayNow} style={checkoutButtonStyle}>결제하기</button>
             </div>
           </div>
@@ -205,4 +222,4 @@ const checkoutButtonStyle = {
   cursor: 'pointer'
 };
 
-export default OrderFormPage;
+export default CartOrderFormPage;

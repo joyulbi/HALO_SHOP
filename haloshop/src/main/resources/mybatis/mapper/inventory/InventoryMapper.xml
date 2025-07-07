@@ -3,54 +3,64 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.company.haloshop.inventory.InventoryMapper">
+<mapper
+	namespace="com.company.haloshop.inventory.InventoryMapper">
 
-    <!-- 입고 등록 -->
-    <insert id="insertInventory">
-        INSERT INTO inventory (items_id, stock_volume, inventory_volume, created_at)
-        VALUES (#{itemsId}, #{stockVolume}, #{inventoryVolume}, NOW())
-    </insert>
+	<!-- 입고 등록 -->
+	<insert id="insertInventory">
+		INSERT INTO inventory (items_id, stock_volume, inventory_volume, created_at)
+		VALUES (#{itemsId}, #{stockVolume}, #{inventoryVolume}, NOW())
+	</insert>
 
-    <!-- 입고 내역 전체 조회 (상품명 조인) -->
-    <select id="getInventoryList" resultType="map">
-        SELECT i.id,
-               i.items_id,
-               it.name AS itemName,
-               i.stock_volume,
-               i.inventory_volume,
-               i.created_at
-        FROM inventory i
-        JOIN items it ON i.items_id = it.id
-        ORDER BY i.created_at DESC
-    </select>
+	<!-- 입고 내역 전체 조회 (상품명 조인) -->
+	<select id="getInventoryList" resultType="map">
+		SELECT i.id,
+		i.items_id,
+		it.name AS itemName,
+		i.stock_volume,
+		i.inventory_volume,
+		i.created_at
+		FROM inventory i
+		JOIN items it ON i.items_id = it.id
+		ORDER BY i.created_at DESC
+	</select>
 
-    <!-- 🔥 현재 총 재고량 조회 -->
-    <select id="getCurrentInventoryVolume" resultType="int">
-        SELECT IFNULL(SUM(inventory_volume), 0)
-        FROM inventory
-        WHERE items_id = #{itemsId}
-    </select>
+	<!-- 🔥 현재 총 재고량 조회 -->
+	<select id="getCurrentInventoryVolume" resultType="int">
+		SELECT IFNULL(SUM(inventory_volume), 0)
+		FROM inventory
+		WHERE items_id = #{itemsId}
+	</select>
 
-    <!-- 🔥 입고 내역 단건 조회 -->
-    <select id="findInventoryById" parameterType="long" resultType="map">
-        SELECT stock_volume, inventory_volume
-        FROM inventory
-        WHERE id = #{id}
-    </select>
+	<!-- 🔥 입고 내역 단건 조회 -->
+	<select id="findInventoryById" parameterType="long"
+		resultType="map">
+		SELECT stock_volume, inventory_volume
+		FROM inventory
+		WHERE id = #{id}
+	</select>
 
-    <!-- 입고 내역 수정 -->
-    <update id="updateInventory">
-        UPDATE inventory
-        SET stock_volume = #{stockVolume}, 
-            inventory_volume = #{inventoryVolume}, 
-            created_at = NOW()
-        WHERE id = #{id}
-    </update>
+	<!-- 입고 내역 수정 -->
+	<update id="updateInventory">
+		UPDATE inventory
+		SET stock_volume = #{stockVolume},
+		inventory_volume = #{inventoryVolume},
+		created_at = NOW()
+		WHERE id = #{id}
+	</update>
 
-    <!-- 입고 내역 삭제 -->
-    <delete id="deleteInventory">
-        DELETE FROM inventory
-        WHERE id = #{id}
-    </delete>
+
+	<update id="decreaseInventoryVolume">
+	    UPDATE inventory
+	    SET inventory_volume = inventory_volume - #{quantity}
+	    WHERE items_id = #{itemsId}
+	</update>
+
+
+	<!-- 입고 내역 삭제 -->
+	<delete id="deleteInventory">
+		DELETE FROM inventory
+		WHERE id = #{id}
+	</delete>
 
 </mapper>
