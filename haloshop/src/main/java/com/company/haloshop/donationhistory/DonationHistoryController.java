@@ -3,22 +3,31 @@ package com.company.haloshop.donationhistory;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/donation-histories")
+@RequestMapping("/api/donations")
 @RequiredArgsConstructor
 public class DonationHistoryController {
 
     private final DonationHistoryService donationHistoryService;
 
-    // 기부내역 등록
-    @PostMapping
-    public ResponseEntity<Void> createDonationHistory(@RequestBody DonationHistory donationHistory) {
-        donationHistoryService.createDonationHistory(donationHistory);
-        return ResponseEntity.ok().build();
+    @PostMapping("/{accountId}")
+    public ResponseEntity<String> donate(
+        @PathVariable Long accountId,
+        @RequestBody DonationHistoryRequestDto request
+    ) {
+        donationHistoryService.donate(accountId, request.getCampaignId(), request.getAmount());
+        return ResponseEntity.ok("기부가 성공적으로 처리되었습니다.");
     }
 
     // 단일 기부내역 조회

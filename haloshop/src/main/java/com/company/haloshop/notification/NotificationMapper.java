@@ -1,17 +1,23 @@
 package com.company.haloshop.notification;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-
 @Mapper
 public interface NotificationMapper {
 
-    int createNotification(NotificationDto notificationDto);
+    // 1. 알림 생성
+    int insert(Notification notification);
 
-    List<NotificationDto> findByReceiverId(@Param("receiverId") Long receiverId);
+    // 2. 본인 알림 조회
+    List<Notification> findByReceiverId(@Param("receiverId") Long receiverId);
 
-    void updateReadStatus(@Param("id") Long id, @Param("isRead") Boolean read);
+    // 3. 알림 읽음 상태 업데이트
+    int updateById(Map<String, Object> params);
+
+    // 4. 알림 삭제
+    int deleteById(@Param("id") Long id);
 }

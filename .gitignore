@@ -84,3 +84,4 @@ uploads/
 *.db
 *.sqlite
 haloshop/src/main/webapp/image/campaign
+haloshop/src/main/webapp/image/inquiry

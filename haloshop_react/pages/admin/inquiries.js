@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import InquiriesManagement from "../../components/InquiriesManagement";
 
@@ -32,6 +32,12 @@ const Select = styled.select`
 
 const Inquiries = () => {
   const [status, setStatus] = useState("SUBMITTED");
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    setToken(savedToken);
+  }, []);
 
   return (
     <Container>
@@ -44,7 +50,7 @@ const Inquiries = () => {
         </Select>
       </Header>
 
-      <InquiriesManagement status={status} />
+      <InquiriesManagement status={status} token={token} />
     </Container>
   );
 };

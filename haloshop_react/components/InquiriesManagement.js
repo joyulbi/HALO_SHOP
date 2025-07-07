@@ -35,33 +35,38 @@ const PageButton = styled.button`
 
 const PAGE_SIZE = 10; // 한 페이지당 10개
 
-const InquiriesManagement = ({ status }) => {
+const InquiriesManagement = ({ status, token }) => {
   const [inquiries, setInquiries] = useState([]);
   const [selected, setSelected] = useState(null);
   const [reply, setReply] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  // status가 바뀌면 페이지를 1로 초기화
   useEffect(() => {
-    setCurrentPage(1); // status 변경시 페이지 초기화
+    setCurrentPage(1);
   }, [status]);
 
+  // token, status, currentPage가 바뀌면 문의 목록 재조회
   useEffect(() => {
-    fetchInquiries();
-  }, [status, currentPage]);
+    if (token) {
+      fetchInquiries();
+    } else {
+      setInquiries([]);
+      setTotalCount(0);
+    }
+  }, [status, currentPage, token]);
 
   const fetchInquiries = async () => {
+    if (!token) return;
+
     try {
-      // 서버가 page, size 파라미터로 페이징 처리한다고 가정
       const res = await axios.get(`http://localhost:8080/api/inquiries/status/${status}`, {
-        params: {
-          page: currentPage,
-          size: PAGE_SIZE,
-        },
+        params: { page: currentPage, size: PAGE_SIZE },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 서버 응답 형태가 { data: [...], totalCount: n } 이라고 가정
-      setInquiries(res.data.data || res.data); // 만약 data 구조가 다르면 조정 필요
+      setInquiries(res.data.data || res.data);
       setTotalCount(res.data.totalCount || 0);
     } catch (error) {
       console.error("목록 불러오기 실패", error);
@@ -70,57 +75,84 @@ const InquiriesManagement = ({ status }) => {
     }
   };
 
-const handleSubmit = async (status, inquiry) => {
-  try {
-    await axios.post("http://localhost:8080/api/inquiry-answers", {
-      inquiryId: inquiry.id,
-      answer: reply,
-      status, // 필요하다면 status도 함께 전송
-    });
-
-    alert("답변이 전송되었습니다.");
-    setReply("");
-    setSelected(null);
-    fetchInquiries();
-  } catch (error) {
-    console.error("답변 전송 실패", error);
-    if (error.response) console.error("서버 응답:", error.response.data);
-    alert("답변 전송에 실패했습니다.");
-  }
-};
-
-const handleStatusChange = async (newStatus) => {
-  try {
-    await axios.patch(
-      `http://localhost:8080/api/inquiries/${selected.id}/status`,
-      null, // body 없음
-      { params: { status: newStatus } }
-    );
-    alert("상태가 저장되었습니다.");
-    fetchInquiries();
-  } catch (error) {
-    console.error("상태 저장 실패", error);
-    alert("저장 중 오류 발생");
-  }
-};
-
-const handleSelect = async (inquiry) => {
-  try {
-    const res = await axios.get(`http://localhost:8080/api/inquiries/${inquiry.id}`);
-    const fullInquiry = res.data;
-
-    // 답변이 있다면 추가로 요청해서 answer 포함
-    if (fullInquiry.status === "ANSWERED") {
-      const answerRes = await axios.get(`http://localhost:8080/api/inquiry-answers/${inquiry.id}`);
-      fullInquiry.answer = answerRes.data.answer; // ✅ 답변 본문 저장
+  const handleSubmit = async (status, inquiry) => {
+    if (!token) {
+      alert("인증이 필요합니다.");
+      return;
     }
 
-    setSelected(fullInquiry);
-  } catch (err) {
-    console.error("문의 상세 조회 실패", err);
-    alert("상세 정보를 불러오는 데 실패했습니다.");
-  }
-};
+    try {
+      await axios.post(
+        "http://localhost:8080/api/inquiry-answers",
+        {
+          inquiryId: inquiry.id,
+          answer: reply,
+          status,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("답변이 전송되었습니다.");
+      setReply("");
+      setSelected(null);
+      fetchInquiries();
+    } catch (error) {
+      console.error("답변 전송 실패", error);
+      if (error.response) console.error("서버 응답:", error.response.data);
+      alert("답변 전송에 실패했습니다.");
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (!token) {
+      alert("인증이 필요합니다.");
+      return;
+    }
+
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/inquiries/${selected.id}/status`,
+        null, // body 없음
+        {
+          params: { status: newStatus },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      alert("상태가 저장되었습니다.");
+      fetchInquiries();
+    } catch (error) {
+      console.error("상태 저장 실패", error);
+      alert("저장 중 오류 발생");
+    }
+  };
+
+  const handleSelect = async (inquiry) => {
+    if (!token) {
+      alert("인증이 필요합니다.");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:8080/api/inquiries/${inquiry.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const fullInquiry = res.data;
+
+      if (fullInquiry.status === "ANSWERED") {
+        const answerRes = await axios.get(`http://localhost:8080/api/inquiry-answers/${inquiry.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fullInquiry.answer = answerRes.data.answer;
+      }
+
+      setSelected(fullInquiry);
+    } catch (err) {
+      console.error("문의 상세 조회 실패", err);
+      alert("상세 정보를 불러오는 데 실패했습니다.");
+    }
+  };
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -153,7 +185,7 @@ const handleSelect = async (inquiry) => {
           inquiry={selected}
           reply={reply}
           onReplyChange={setReply}
-          onClose={() => setSelected(null)} // ✅ 고침
+          onClose={() => setSelected(null)}
           onSubmit={handleSubmit}
           onStatusChange={handleStatusChange}
         />
