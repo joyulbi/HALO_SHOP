@@ -1,9 +1,12 @@
 package com.company.haloshop.inventory;
 
-import com.company.haloshop.dto.shop.Inventory;
-import org.apache.ibatis.annotations.Mapper;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
+
+import com.company.haloshop.dto.shop.Inventory;
 
 @Mapper
 public interface InventoryMapper {
@@ -24,4 +27,7 @@ public interface InventoryMapper {
 
     // 🔥 입고 내역 단건 조회 (수정 시 사용)
     Map<String, Object> findInventoryById(Long id);
+    
+ // 재고 차감
+    void decreaseInventoryVolume(@Param("itemsId") Long itemsId, @Param("quantity") int quantity);
 }

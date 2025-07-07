@@ -1,48 +1,64 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.company.haloshop.member.mapper.LogsMapper">
 
-  <!--
-    LogsDto 결과 매핑
-  -->
+  <!-- 결과 매핑 -->
   <resultMap id="LogsResultMap" type="com.company.haloshop.dto.member.LogsDto">
-    <id property="id" column="id" />
-    <result property="accountId" column="account_id" />
-    <result property="targetAccountId" column="target_account_id" />
-    <result property="action" column="action" />
-    <result property="description" column="description" />
-    <result property="ip" column="ip" />
+    <id     property="id"              column="id" />
+    <result property="accountId"        column="account_id" />
+    <result property="targetAccountId"  column="target_account_id" />
+    <result property="action"           column="action" />
+    <result property="description"      column="description" />
+    <result property="ip"               column="ip" />
   </resultMap>
 
+  <!-- 단일 조회 -->
   <select id="selectById" parameterType="long" resultMap="LogsResultMap">
     SELECT * FROM logs WHERE id = #{id}
   </select>
 
+  <!-- 전체 조회 -->
   <select id="selectAll" resultMap="LogsResultMap">
-    SELECT * FROM logs
+    SELECT * FROM logs ORDER BY id DESC
   </select>
 
-  <insert id="insertLog" parameterType="com.company.haloshop.dto.member.LogsDto">
+  <!-- 삽입 (id는 auto_increment) -->
+  <insert id="insertLog"
+          parameterType="com.company.haloshop.dto.member.LogsDto"
+          useGeneratedKeys="true"
+          keyProperty="id">
     INSERT INTO logs (
-      id, account_id, target_account_id, action, description, ip
-    ) VALUES (
-      #{id}, #{accountId}, #{targetAccountId}, #{action}, #{description}, #{ip}
+      account_id,
+      target_account_id,
+      action,
+      description,
+      ip
+    )
+    VALUES (
+      #{accountId},
+      #{targetAccountId},
+      #{action},
+      #{description},
+      #{ip}
     )
   </insert>
 
+  <!-- 수정 -->
   <update id="updateLog" parameterType="com.company.haloshop.dto.member.LogsDto">
     UPDATE logs
     SET
-      account_id = #{accountId},
+      account_id        = #{accountId},
       target_account_id = #{targetAccountId},
-      action = #{action},
-      description = #{description},
-      ip = #{ip}
+      action            = #{action},
+      description       = #{description},
+      ip                = #{ip}
     WHERE id = #{id}
   </update>
 
+  <!-- 삭제 -->
   <delete id="deleteById" parameterType="long">
     DELETE FROM logs WHERE id = #{id}
   </delete>

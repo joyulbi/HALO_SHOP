@@ -112,17 +112,6 @@ export default function UserListPage() {
     }
   };
 
-  // 4) 삭제 핸들러
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/admin/user/users/${id}`);
-      message.success('유저를 삭제했습니다.');
-      fetchList(searchText);
-    } catch {
-      message.error('삭제 중 오류가 발생했습니다.');
-    }
-  };
-
   useEffect(() => {
     fetchList();
   }, []);
@@ -158,22 +147,16 @@ export default function UserListPage() {
     {
       title: 'Actions',
       key: 'action',
-      width: 160,
+      width: 120,
       render: (_, r) => (
         <Space>
           <Button
             size="small"
             style={{ borderColor: '#0539a6', color: '#0539a6', fontFamily: `'Helvetica Neue', sans-serif` }}
             onClick={() => fetchDetail(r.id)}
-          >Details</Button>
-          <Button
-            size="small"
-            danger
-            onClick={() => Modal.confirm({
-              title: '삭제하시겠습니까?',
-              onOk: () => handleDelete(r.id)
-            })}
-          >Delete</Button>
+          >
+            Details
+          </Button>
         </Space>
       )
     },

@@ -4,11 +4,21 @@ import AuctionForm from "../../components/auction/AuctionForm";
 export default function AuctionNewPage() {
   return (
     <div style={{
-      maxWidth: 480, margin: "60px auto",
-      background: "#fff", padding: 36, borderRadius: 16, border: "2px solid #d3d9ee"
+      maxWidth: 800,
+      margin: "80px auto",
+      background: "#f9fafd",
+      padding: "50px 60px",
+      borderRadius: "16px",
+      border: "1px solid #ddd",
+      boxShadow: "0 6px 20px rgba(0,0,0,0.08)"
     }}>
-      <h2 style={{ textAlign: "center", marginBottom: 30 }}>경매 등록</h2>
-      <AuctionForm />
+
+      <div style={{
+        maxWidth: "600px",
+        margin: "0 auto"
+      }}>
+        <AuctionForm />
+      </div>
     </div>
   );
 }

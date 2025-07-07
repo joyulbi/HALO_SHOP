@@ -23,7 +23,7 @@ const AdminMainPage = () => {
       title: '회원 및 주문 관리',
       buttons: [
         { label: '멤버십 생성 페이지', path: '/admin/membership' },
-        { label: '주문 내역 페이지', path: '/admin/order/OrderListPage' },
+        { label: '주문 내역 페이지', path: '/admin/order' },
         { label: '포인트 로그 조회 페이지', path: '/admin/point/pointlog' },
       ]
     },

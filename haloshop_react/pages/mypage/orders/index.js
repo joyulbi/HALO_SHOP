@@ -1,7 +1,11 @@
+// 주문 내역 페이지 (정리된 버전)
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
 import { useAuth } from '../../../hooks/useAuth';
+import Header from '../../../components/Header'; // 🔥 헤더 직접 불러오기
+import Footer from '../../../components/Footer'; // 🔥 푸터 직접 불러오기
+import { Table, Button, Tag, Spin } from 'antd';
 
 const MyOrderListPage = () => {
   const router = useRouter();
@@ -11,7 +15,6 @@ const MyOrderListPage = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🚩 숨김 처리된 주문 ID 로드
   const getHiddenOrders = () => {
     try {
       return JSON.parse(localStorage.getItem('hiddenOrders')) || [];
@@ -40,62 +43,99 @@ const MyOrderListPage = () => {
     }
   }, [authLoading, isLoggedIn, user]);
 
-  // 🚩 주문 숨기기
-  const hideOrder = (e, orderId) => {
-    e.stopPropagation(); // 상세 페이지 이동 방지
+  const hideOrder = (orderId) => {
     if (confirm('해당 주문을 목록에서 숨기시겠습니까?')) {
       const hiddenOrders = getHiddenOrders();
       if (!hiddenOrders.includes(orderId)) {
         hiddenOrders.push(orderId);
         localStorage.setItem('hiddenOrders', JSON.stringify(hiddenOrders));
       }
-      // 즉시 화면 반영
       setOrders(prev => prev.filter(order => order.id !== orderId));
     }
   };
 
   if (authLoading || loadingOrders) {
-    return <div className="p-4 text-center">주문 내역을 불러오는 중...</div>;
+    return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', marginTop: '150px' }} />;
   }
 
   if (!isLoggedIn) {
-    return <div className="p-4 text-center">로그인 후 주문 내역을 확인할 수 있습니다.</div>;
+    return <div style={{ textAlign: 'center', marginTop: '150px' }}>로그인 후 주문 내역을 확인할 수 있습니다.</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-500">{error}</div>;
+    return <div style={{ textAlign: 'center', color: 'crimson', marginTop: '150px' }}>{error}</div>;
   }
 
+  const columns = [
+    {
+      title: '주문 번호',
+      dataIndex: 'id',
+      key: 'id',
+      render: (text, record) => (
+        <a onClick={() => router.push(`/mypage/orders/${record.id}`)} style={{ color: '#1890ff' }}>
+          {text}
+        </a>
+      ),
+    },
+    {
+      title: '결제 상태',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
+      render: (status) => (
+        status === 'PAID' ? <Tag color="green">결제 완료</Tag> : <Tag color="orange">결제 대기</Tag>
+      )
+    },
+    {
+      title: '총 결제 금액',
+      dataIndex: 'payAmount',
+      key: 'payAmount',
+      render: (amount) => `${amount?.toLocaleString()}원`
+    },
+    {
+      title: '주문일',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date) => new Date(date).toLocaleDateString()
+    },
+    {
+      title: '관리',
+      key: 'action',
+      render: (text, record) => (
+        <Button
+          danger
+          onClick={(e) => {
+            e.stopPropagation();
+            hideOrder(record.id);
+          }}
+        >
+          삭제
+        </Button>
+      )
+    }
+  ];
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">나의 주문 내역</h1>
-      {orders.length === 0 ? (
-        <p className="text-center text-gray-500">주문 내역이 없습니다.</p>
-      ) : (
-        <ul className="space-y-3">
-          {orders.map(order => (
-            <li
-              key={order.id}
-              className="p-4 border rounded cursor-pointer hover:bg-gray-50 relative"
-              onClick={() => router.push(`/mypage/orders/${order.id}`)}
-            >
-              <div className="font-semibold">주문 번호: {order.id}</div>
-              <div>결제 상태: {order.paymentStatus}</div>
-              <div>총 결제 금액: {order.payAmount?.toLocaleString()}원</div>
-              <div className="text-sm text-gray-600">
-                주문일: {new Date(order.createdAt).toLocaleDateString()}
-              </div>
-              <button
-                onClick={(e) => hideOrder(e, order.id)}
-                className="absolute top-2 right-2 text-xs bg-red-500 text-white rounded px-2 py-1 hover:bg-red-600"
-              >
-                삭제하기
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <>
+      {/* ✅ Header 적용 */}
+      <Header />
+
+      {/* ✅ 본문 */}
+      <div style={{ maxWidth: '1000px', margin: '80px auto', padding: '0 20px' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: 'bold', textAlign: 'center', marginBottom: '40px' }}>나의 주문 내역</h1>
+        <Table
+          columns={columns}
+          dataSource={orders}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+          onRow={(record) => ({
+            onClick: () => router.push(`/mypage/orders/${record.id}`),
+          })}
+        />
+      </div>
+
+      {/* ✅ Footer 적용 */}
+      <Footer />
+    </>
   );
 };
 
