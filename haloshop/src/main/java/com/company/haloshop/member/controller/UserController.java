@@ -121,4 +121,29 @@ public class UserController {
             return user;
         }
     }
+    
+    /**
+     * [공개용] 유저 정보 단건 조회 API (GET /user/{accountId})
+     * - 경매 낙찰자 정보 확인 등에서 사용
+     * - 인증 불필요
+     */
+    @GetMapping("/{accountId}")
+    public ResponseEntity<?> getUserByAccountId(@PathVariable Long accountId) {
+        try {
+            AccountDto accountDto = userService.getAccountById(accountId);
+            if (accountDto == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "계정을 찾을 수 없습니다."));
+            }
+
+            UserDto userDto = userService.getUserByAccountId(accountId);
+            return ResponseEntity.ok(Map.of(
+                "account", accountDto,
+                "user", userDto
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
+        }
+    }
 }
