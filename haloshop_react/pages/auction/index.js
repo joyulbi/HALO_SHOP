@@ -41,39 +41,63 @@ export default function AuctionListPage() {
   };
 
   return (
-    <div style={{
-      maxWidth: 900, margin: "40px auto", background: "#f9fafd",
-      borderRadius: 16, border: "2px solid #ddd", padding: 36
-    }}>
-      <h2>경매 목록</h2>
-      <Link href="/auction/regist">
-        <button style={{
-          float: "right", marginBottom: 16, background: "#3d6fee", color: "#fff",
-          padding: "8px 18px", border: "none", borderRadius: 6
-        }}>+ 새 경매 등록</button>
-      </Link>
-      <table style={{ width: "100%", marginTop: 14, borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#dde6fb" }}>
-            <th style={{ padding: 8 }}>이미지</th>
-            <th style={{ padding: 8 }}>제목</th>
-            <th style={{ padding: 8 }}>상태</th>
-            <th style={{ padding: 8 }}>시작가</th>
-            <th style={{ padding: 8 }}>동작</th>
-          </tr>
-        </thead>
-        <tbody>
-          {auctions.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#888" }}>경매가 없습니다.</td></tr>}
-          {auctions.map(auction => (
-            <AuctionList
-              key={auction.id}
-              auction={auction}
-              imageUrl={images[auction.id]}
-              onDelete={handleDelete}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div style={{ maxWidth: 1600, margin: "80px auto", padding: "0 20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+        <h1 style={{ fontSize: "32px", fontWeight: "bold" }}>경매 목록</h1>
+        <Link href="/auction/regist">
+          <button style={{
+            background: "#3d6fee",
+            color: "#fff",
+            padding: "12px 24px",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "16px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            transition: "all 0.3s"
+          }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#264dbd"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3d6fee"}
+          >
+            + 새 경매 등록
+          </button>
+        </Link>
+      </div>
+
+      <div style={{
+        border: "1px solid #ddd",
+        borderRadius: "12px",
+        background: "#fff",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+        overflowX: "auto"
+      }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#f5f7fa", height: "50px", textAlign: "center", fontSize: "16px" }}>
+              <th style={{ padding: "12px" }}>이미지</th>
+              <th style={{ padding: "12px" }}>제목</th>
+              <th style={{ padding: "12px" }}>상태</th>
+              <th style={{ padding: "12px" }}>시작가</th>
+              <th style={{ padding: "12px" }}>동작</th>
+            </tr>
+          </thead>
+          <tbody>
+            {auctions.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center", padding: "30px", color: "#888" }}>경매가 없습니다.</td>
+              </tr>
+            )}
+            {auctions.map(auction => (
+              <AuctionList
+                key={auction.id}
+                auction={auction}
+                imageUrl={images[auction.id]}
+                onDelete={handleDelete}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

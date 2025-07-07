@@ -175,67 +175,86 @@ export default function AuctionRoomLayout() {
 
   if (!AUCTION_ID || typeof startPrice !== "number") return <div>로딩중...</div>;
 
-  return (
-    <div style={{ background: "#eee", minHeight: "100vh", padding: "40px 60px" }}>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "3fr 2fr",
-          gridTemplateRows: "440px 220px",
-          gap: "24px",
-        }}
-      >
-        {/* 경매 정보 */}
-        <div style={{ gridColumn: "1", gridRow: "1" }}>
-          <AuctionInfo images={images} title={title} desc={desc} status={status} />
-        </div>
+return (
+  <div style={{ background: "#f9f9f9", minHeight: "100vh", padding: "60px 80px" }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "2fr 1fr",
+      gridTemplateRows: "auto auto",
+      gap: "24px",
+      maxWidth: "1400px",
+      margin: "0 auto",
+      height: "calc(100vh - 120px)"
+    }}>
+      {/* 경매 정보 */}
+      <div style={{
+        background: "#fff",
+        border: "1px solid #ddd", // ✅ 테두리 추가
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.06)", // ✅ 그림자 톤 다운
+        padding: "30px",
+        minHeight: "480px"
+      }}>
+        <AuctionInfo images={images} title={title} desc={desc} status={status} />
+      </div>
 
-        {/* 입찰 로그/폼 */}
+      {/* 채팅 or 낙찰자 */}
+      <div style={{
+        background: "#fff",
+        border: "1px solid #ddd", // ✅ 테두리 추가
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.06)", // ✅ 그림자 톤 다운
+        padding: "30px",
+        minHeight: "480px"
+      }}>
         {isOngoing && (
-          <div style={{ gridColumn: "1", gridRow: "2" }}>
-            <AuctionLog
-              logs={logs}
-              highest={highest}
-              inputBid={inputBid}
-              setInputBid={setInputBid}
-              handleBid={handleBid}
-              isFinished={false}
-              minBid={minBid}
-              errorMsg={errorMsg}
-              currentUserId={user?.id} // ⬅ 본인 ID 전달
-            />
-          </div>
+          <AuctionChat
+            chat={chat}
+            inputMsg={inputMsg}
+            setInputMsg={setInputMsg}
+            handleChat={handleChat}
+            isFinished={false}
+          />
         )}
         {isFinished && (
-          <div style={{ gridColumn: "1", gridRow: "2" }}>
-            <AuctionLog
-              logs={logs}
-              highest={highest}
-              isFinished={true}
-              errorMsg={"경매가 종료되었습니다."}
-              currentUserId={user?.id}
-            />
-          </div>
+          <AuctionWinnerInfo auctionId={AUCTION_ID} />
         )}
+      </div>
 
-        {/* 채팅 or 낙찰자 정보 */}
+      {/* 입찰 로그/폼 */}
+      <div style={{
+        background: "#fff",
+        border: "1px solid #ddd", // ✅ 테두리 추가
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.06)", // ✅ 그림자 톤 다운
+        padding: "30px",
+        minHeight: "320px",
+        gridColumn: "1 / span 2"
+      }}>
         {isOngoing && (
-          <div style={{ gridColumn: "2", gridRow: "1 / span 2" }}>
-            <AuctionChat
-              chat={chat}
-              inputMsg={inputMsg}
-              setInputMsg={setInputMsg}
-              handleChat={handleChat}
-              isFinished={false}
-            />
-          </div>
+          <AuctionLog
+            logs={logs}
+            highest={highest}
+            inputBid={inputBid}
+            setInputBid={setInputBid}
+            handleBid={handleBid}
+            isFinished={false}
+            minBid={minBid}
+            errorMsg={errorMsg}
+            currentUserId={user?.id}
+          />
         )}
         {isFinished && (
-          <div style={{ gridColumn: "2", gridRow: "1 / span 2" }}>
-            <AuctionWinnerInfo auctionId={AUCTION_ID} />
-          </div>
+          <AuctionLog
+            logs={logs}
+            highest={highest}
+            isFinished={true}
+            errorMsg={"경매가 종료되었습니다."}
+            currentUserId={user?.id}
+          />
         )}
       </div>
     </div>
-  );
+  </div>
+);
 }
