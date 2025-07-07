@@ -1,5 +1,7 @@
 import React from "react";
 
+const BACKEND_URL = "http://localhost:8080";
+
 export default function AuctionInfo({ images, title, desc, status }) {
   return (
     <div style={{
@@ -11,7 +13,17 @@ export default function AuctionInfo({ images, title, desc, status }) {
         flex: 1, minWidth: 180, display: "flex", alignItems: "center", justifyContent: "center"
       }}>
         {images.length > 0 ? (
-          <img src={images[0].url} alt="경매이미지" style={{ maxHeight: 220, maxWidth: 180 }} />
+          <img
+            src={
+              images[0].url
+                ? images[0].url.startsWith("http")
+                  ? images[0].url
+                  : BACKEND_URL + images[0].url
+                : ""
+            }
+            alt="경매이미지"
+            style={{ maxHeight: 220, maxWidth: 180 }}
+          />
         ) : "이미지 자리"}
       </div>
       {/* 상세정보 */}

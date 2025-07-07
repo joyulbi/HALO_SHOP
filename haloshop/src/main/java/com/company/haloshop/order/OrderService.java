@@ -95,12 +95,12 @@ public class OrderService {
         }
 
         // ✅ 5) 포인트 적립 및 멤버십 갱신 (결제금액(payAmount) 기준으로 적립)
-        int savePoint = userPointService.updateUserPointAndGrade(accountId, payAmount);
+       // int savePoint = userPointService.updateUserPointAndGrade(accountId, payAmount);
 
         // ✅ 6) 적립 포인트 로그 기록
-        if (savePoint > 0) {
-            pointLogService.saveLog(accountId, "SAVE", savePoint);
-        }
+        //if (savePoint > 0) {
+            //pointLogService.saveLog(accountId, "SAVE", savePoint);
+       // }
         return orderId;
     }
     

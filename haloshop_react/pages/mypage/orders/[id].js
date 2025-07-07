@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
-import Layout from '../../../components/Layout';
 import { useAuth } from '../../../hooks/useAuth';
 
 const OrderDetailPage = () => {
@@ -24,7 +23,7 @@ const OrderDetailPage = () => {
       } else {
         alert('주문 상세 조회 실패');
       }
-      router.replace('/mypage/orders'); // 마이페이지 주문 목록으로 리다이렉트
+      router.replace('/mypage/orders/orders');
     } finally {
       setLoadingOrder(false);
     }
@@ -37,53 +36,75 @@ const OrderDetailPage = () => {
   }, [authLoading, isLoggedIn, user, id]);
 
   if (authLoading || loadingOrder) {
-    return (
-      <Layout>
-        <div className="p-4 text-center">주문 상세를 불러오는 중...</div>
-      </Layout>
-    );
+    return <div className="p-8 text-center">주문 상세를 불러오는 중...</div>;
   }
 
   if (!order) {
-    return (
-      <Layout>
-        <div className="p-4 text-center">주문 데이터를 찾을 수 없습니다.</div>
-      </Layout>
-    );
+    return <div className="p-8 text-center">주문 데이터를 찾을 수 없습니다.</div>;
   }
 
   return (
-    <Layout>
-      <div className="max-w-xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4 text-center">주문 상세</h1>
-        <div className="border p-4 rounded shadow space-y-2">
-          <div className="font-semibold">주문 번호: {order.id}</div>
-          <div>결제 상태: {order.paymentStatus}</div>
-          <div>총 결제 금액: {order.payAmount?.toLocaleString()}원</div>
-          <div className="text-sm text-gray-600">
-            주문일: {new Date(order.createdAt).toLocaleDateString()}
-          </div>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">주문 상세</h1>
 
-          <div className="mt-4">
-            <h2 className="font-semibold mb-2">주문 상품 목록</h2>
-            {order.orderItems && order.orderItems.length > 0 ? (
-              <ul className="space-y-2">
-                {order.orderItems.map((item) => (
-                  <li key={item.id} className="p-2 border rounded">
-                    <div className="font-medium">{item.itemName}</div>
-                    <div className="text-sm text-gray-700">
-                      {item.productPrice.toLocaleString()}원 x {item.quantity}개
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">주문 상품 정보가 없습니다.</p>
-            )}
-          </div>
+      <div className="border rounded-lg shadow p-6 space-y-3 bg-white">
+        <div className="flex justify-between font-semibold text-lg">
+          <span>주문 번호:</span>
+          <span>{order.id}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>결제 상태:</span>
+          <span className={order.paymentStatus === 'PAID' ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'}>
+            {order.paymentStatus}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span>총 결제 금액:</span>
+          <span>{order.payAmount?.toLocaleString()}원</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>주문일:</span>
+          <span>{new Date(order.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
-    </Layout>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">주문 상품</h2>
+        {order.orderItems && order.orderItems.length > 0 ? (
+          <div className="space-y-4">
+            {order.orderItems.map((item) => (
+              <div key={item.id} className="flex items-center border rounded-lg shadow p-4 gap-4 bg-white">
+                <img
+                  src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/images/no-image.png'}
+                  alt={item.itemName}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">{item.itemName}</h3>
+                  <p className="text-sm text-gray-600">
+                    {item.productPrice.toLocaleString()}원 x {item.quantity}개
+                  </p>
+                  <p className="text-sm font-medium text-gray-800 mt-1">
+                    합계: {(item.productPrice * item.quantity).toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">주문 상품 정보가 없습니다.</p>
+        )}
+      </div>
+
+      <div className="mt-8 text-center">
+        <button
+          onClick={() => router.push('/mypage/orders/orders')}
+          className="px-6 py-3 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition"
+        >
+          주문 목록으로 돌아가기
+        </button>
+      </div>
+    </div>
   );
 };
 

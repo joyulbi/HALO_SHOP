@@ -10,12 +10,14 @@ export default function AuctionForm() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [startPrice, setStartPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [prevImage, setPrevImage] = useState(null); // 이전 이미지 정보 저장
+  // 이미지 업로드 전용 state
+  const [images, setImages] = useState([]);         // File[] 타입
+  const [previews, setPreviews] = useState([]);     // 미리보기용 URL 배열
+  const [existingImages, setExistingImages] = useState([]); // 수정 시 기존 이미지 id 저장
 
   useEffect(() => {
     if (isEdit) {
@@ -27,17 +29,26 @@ export default function AuctionForm() {
         setStartTime(data.startTime?.slice(0, 16) || "");
         setEndTime(data.endTime?.slice(0, 16) || "");
       });
-
+      // 기존 이미지 가져오기
       api.get(`/api/auction-images/auction/${auctionId}`).then(imgRes => {
         const imgs = Array.isArray(imgRes.data) ? imgRes.data : [imgRes.data];
-        const img = imgs[0];
-        if (img) {
-          setImageUrl(img.url || "");
-          setPrevImage({ id: img.id, url: img.url });
-        }
+        setExistingImages(imgs.map(img => ({ id: img.id, url: img.url })));
+        setPreviews(imgs.map(img => img.url));
       });
     }
-  }, [auctionId]);
+  }, [auctionId, isEdit]);
+
+  // 이미지 파일 변경 핸들러
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+    setPreviews(files.map(f => URL.createObjectURL(f)));
+  };
+
+  // 기존 이미지 삭제 (수정 시)
+  const handleRemoveExistingImage = (id) => {
+    setExistingImages(existingImages.filter(img => img.id !== id));
+  };
 
   const toSecond = (s) => s.length === 16 ? s + ":00" : s;
 
@@ -60,29 +71,33 @@ export default function AuctionForm() {
       };
 
       let id = auctionId;
-
       if (isEdit) {
         await api.put(`/api/auctions/${auctionId}`, payload);
 
-        // 이미지 수정 로직
-        if (prevImage && prevImage.url !== imageUrl) {
-          await api.delete(`/api/auction-images/${prevImage.id}`);
-          if (imageUrl) {
-            await api.post(`/api/auction-images`, {
-              auctionId,
-              url: imageUrl
-            });
-          }
+        // 기존 이미지가 남아 있으면 삭제(이 예시는 모두 삭제)
+        for (const img of existingImages) {
+          await api.delete(`/api/auction-images/${img.id}`);
+        }
+        // 새 이미지 업로드
+        if (images.length > 0) {
+          const formData = new FormData();
+          formData.append("auctionId", auctionId);
+          images.forEach(f => formData.append("files", f));
+          await api.post("/api/auction-images/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
         }
 
       } else {
+        // 등록
         const res = await api.post("/api/auctions", payload);
         id = res.data.id;
-
-        if (imageUrl) {
-          await api.post(`/api/auction-images`, {
-            auctionId: id,
-            url: imageUrl
+        if (images.length > 0) {
+          const formData = new FormData();
+          formData.append("auctionId", id);
+          images.forEach(f => formData.append("files", f));
+          await api.post("/api/auction-images/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" }
           });
         }
       }
@@ -129,9 +144,30 @@ export default function AuctionForm() {
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <label>대표 이미지 URL</label><br />
-        <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)}
-          style={{ width: "100%", padding: 8 }} />
+        <label>경매 이미지 (여러개 선택 가능)</label><br />
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ width: "100%", padding: 8 }}
+        />
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {/* 미리보기: 새 이미지 */}
+          {previews.map((url, idx) =>
+            <img key={idx} src={url} alt="미리보기" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, border: "1px solid #bbb" }} />
+          )}
+          {/* 미리보기: 기존 이미지(수정시) */}
+          {isEdit && existingImages.map((img, idx) =>
+            <div key={img.id} style={{ position: "relative" }}>
+              <img src={img.url} alt="이전이미지" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, border: "1px solid #bbb" }} />
+              <button type="button" onClick={() => handleRemoveExistingImage(img.id)}
+                style={{
+                  position: "absolute", top: 0, right: 0, background: "#e44", color: "#fff", border: "none", borderRadius: "50%", width: 20, height: 20, fontSize: 14, cursor: "pointer"
+                }}>×</button>
+            </div>
+          )}
+        </div>
       </div>
 
       <button type="submit" style={{

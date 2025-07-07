@@ -25,27 +25,25 @@ public class CardPayService {
     @Transactional
     public void approve(Long orderId) {
         OrderDto order = orderMapper.findById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("해당 주문이 존재하지 않습니다.");
-        }
 
         if (!"PENDING".equals(order.getPaymentStatus())) {
             throw new IllegalStateException("이미 결제 완료된 주문이거나 승인할 수 없는 상태입니다.");
         }
 
-        // 1️⃣ 결제 상태 PAID로 변경
         orderMapper.updateStatus(orderId, "PAID");
-        log.info("CARD(mock) 결제 승인 완료: Order ID={}, User ID={}", orderId, order.getAccountId());
 
-        // 2️⃣ 포인트 적립 (payAmount 기준)
-        int savePoint = userPointService.updateUserPointAndGrade(order.getAccountId(), order.getPayAmount());
-        if (savePoint > 0) {
-            pointLogService.saveLog(order.getAccountId(), "SAVE", savePoint);
-            log.info("포인트 적립 완료: {}P, User ID={}", savePoint, order.getAccountId());
-        } else {
-            log.info("적립할 포인트가 없어 적립하지 않음, User ID={}", order.getAccountId());
+        if ("MOCK".equals(order.getUsed())||"CARD".equals(order.getUsed())) { // used='MOCK' 확인
+            // 다시 조회하여 확실히 상태를 확인 후 적립 가능
+            OrderDto updatedOrder = orderMapper.findById(orderId);
+            if ("PAID".equals(updatedOrder.getPaymentStatus())) {
+                int savePoint = userPointService.updateUserPointAndGrade(updatedOrder.getAccountId(), updatedOrder.getPayAmount());
+                if (savePoint > 0) {
+                    pointLogService.saveLog(updatedOrder.getAccountId(), "SAVE", savePoint);
+                }
+            }
         }
     }
+
 
     @Transactional
     public void cancel(Long orderId) {

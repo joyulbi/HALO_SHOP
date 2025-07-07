@@ -31,5 +31,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/image/**")
                 .addResourceLocations("classpath:/META-INF/resources/image/", "file:src/main/webapp/image/");
         
+        // 경매 이미지
+        registry.addResourceHandler("/images/auction/**")
+        .addResourceLocations("file:///C:/upload/auction/");
+        
     }
 }
