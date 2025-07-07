@@ -1,3 +1,4 @@
+// src/main/java/com/company/haloshop/dto/member/LogsDto.java
 package com.company.haloshop.dto.member;
 
 import lombok.*;
@@ -8,9 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class LogsDto {
-    private Long id;
-    private Long accountId;
-    private Long targetAccountId;
+    private Long   id;
+    private Long   accountId;
+    private Long   targetAccountId;
     private String action;
     private String description;
     private String ip;
