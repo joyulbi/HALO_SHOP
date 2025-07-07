@@ -117,7 +117,8 @@ const ItemDetail = () => {
 };
 
   const handleBuyNow = () => {
-    router.push(`/order/OrderFormPage?itemId=${item.id}&quantity=${quantity}`);
+    router.push(`/orderformpage?itemId=${item.id}&quantity=${quantity}`);
+
   };
 
 

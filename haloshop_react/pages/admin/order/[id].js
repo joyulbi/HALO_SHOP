@@ -19,13 +19,25 @@ const OrderDetailPage = () => {
     } catch (err) {
       console.error('🚩 주문 상세 조회 오류:', err);
       if (err.response?.status === 403) {
-        alert('본인 주문만 조회할 수 있습니다.');
+        alert('본인 주문만 조회할 수 없습니다.');
       } else {
         alert('주문 상세 조회 실패');
       }
-      router.replace('/mypage/orders');
+      router.replace('/mypage/orders/orders');
     } finally {
       setLoadingOrder(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!confirm('결제를 완료 처리하시겠습니까?')) return;
+    try {
+      await api.post(`/api/payment/mock/approve`, null, { params: { orderId: id } });
+      alert('결제가 완료되었습니다.');
+      fetchOrder(); // 상태 갱신
+    } catch (err) {
+      console.error('🚩 결제 승인 오류:', err);
+      alert('결제 승인에 실패했습니다.');
     }
   };
 
@@ -34,26 +46,6 @@ const OrderDetailPage = () => {
       fetchOrder();
     }
   }, [authLoading, isLoggedIn, user, id]);
-
-  // 🚩 숨기기(삭제) 버튼 로직
-  const hideOrder = () => {
-    if (confirm('이 주문을 목록에서 삭제하시겠습니까?')) {
-      const hiddenOrders = JSON.parse(localStorage.getItem('hiddenOrders') || '[]');
-      if (!hiddenOrders.includes(order.id)) {
-        hiddenOrders.push(order.id);
-        localStorage.setItem('hiddenOrders', JSON.stringify(hiddenOrders));
-      }
-      alert('주문이 삭제되었습니다.');
-      router.push('/mypage/orders');
-    }
-  };
-
-  // 🚩 환불 요청 버튼 로직
-  const requestRefund = () => {
-    if (confirm('환불을 요청하시겠습니까? 고객센터 페이지로 이동합니다.')) {
-      window.location.href = 'http://localhost:3000/contact';
-    }
-  };
 
   if (authLoading || loadingOrder) {
     return <div className="p-8 text-center">주문 상세를 불러오는 중...</div>;
@@ -116,26 +108,23 @@ const OrderDetailPage = () => {
         )}
       </div>
 
-      <div className="mt-8 text-center flex flex-col md:flex-row justify-center gap-4">
+      {order.paymentStatus === 'PENDING' && (
+        <div className="mt-8 text-center">
+          <button
+            onClick={handleApprove}
+            className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+          >
+            결제 완료 처리
+          </button>
+        </div>
+      )}
+
+      <div className="mt-4 text-center">
         <button
-          onClick={() => router.push('/mypage/orders')}
+          onClick={() => router.push('/admin/order')}
           className="px-6 py-3 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition"
         >
           주문 목록으로 돌아가기
-        </button>
-
-        <button
-          onClick={hideOrder}
-          className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-        >
-          이 주문 삭제하기
-        </button>
-
-        <button
-          onClick={requestRefund}
-          className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-        >
-          환불 요청
         </button>
       </div>
     </div>
