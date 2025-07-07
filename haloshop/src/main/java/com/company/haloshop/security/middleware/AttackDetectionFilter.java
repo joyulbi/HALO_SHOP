@@ -154,14 +154,14 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 8) 빈 바디 POST/DELETE (400)
-        if (List.of("POST","DELETE").contains(req.getMethod()) && body.isBlank()) {
-            logOnce.accept(logDto(userId, null, "EMPTY_BODY_SUSPECT",
-                                  "Empty body on " + req.getMethod(), ip));
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                               "Bad Request: empty body");
-            return;
-        }
+//        // 8) 빈 바디 POST/DELETE (400)
+//        if (List.of("POST","DELETE").contains(req.getMethod()) && body.isBlank()) {
+//            logOnce.accept(logDto(userId, null, "EMPTY_BODY_SUSPECT",
+//                                  "Empty body on " + req.getMethod(), ip));
+//            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+//                               "Bad Request: empty body");
+//            return;
+//        }
 
      // 9) Referer 검사 (403)
 //        if (List.of("POST","DELETE").contains(req.getMethod())) {

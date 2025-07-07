@@ -35,7 +35,7 @@ import com.company.haloshop.security.JwtAuthenticationFilter;
 import com.company.haloshop.security.JwtTokenProvider;
 import com.company.haloshop.security.UserDetailsServiceImpl;
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
-import com.company.haloshop.security.middleware.AttackDetectionFilter;  // 추가된 필터 import
+//import com.company.haloshop.security.middleware.AttackDetectionFilter;  // 추가된 필터 import
 
 /**
  * 애플리케이션 전반의 보안 설정 클래스
@@ -47,18 +47,18 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtBlacklistMapper jwtBlacklistMapper;
-    private final AttackDetectionFilter attackDetectionFilter;  // 주입된 공격 탐지 필터
+//    private final AttackDetectionFilter attackDetectionFilter;  // 주입된 공격 탐지 필터
     private final BotDetectionFilter botDetectionFilter;        // 주입된 봇 탐지 필터
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService,
                           JwtTokenProvider jwtTokenProvider,
                           JwtBlacklistMapper jwtBlacklistMapper,
-                          AttackDetectionFilter attackDetectionFilter,
+//                          AttackDetectionFilter attackDetectionFilter,
                           BotDetectionFilter botDetectionFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtBlacklistMapper = jwtBlacklistMapper;
-        this.attackDetectionFilter = attackDetectionFilter;
+//        this.attackDetectionFilter = attackDetectionFilter;
         this.botDetectionFilter = botDetectionFilter;
     }
 
@@ -141,14 +141,19 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers( "/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
+                .ignoringAntMatchers("/api/payment/**","/api/cart/**","/api/auction-images/**", "/api/auctions/**","/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
             )
 
             // 4) 권한 및 URL 접근 제어
             .authorizeRequests(authz -> authz
                 //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/auth/**").permitAll()
+
+                .antMatchers("/api/payment/**","/api/cart/**","/api/items", "/api/pay/kakao/**","/api/auction-images/**").permitAll()
+               
+
                 .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
+
                 .antMatchers("/api/items/admin/**").access("@adminCheck.hasAuthority(authentication)")
                 .antMatchers("/api/**").permitAll()
                 .antMatchers("/admin/me").permitAll()
@@ -185,7 +190,7 @@ public class SecurityConfig {
             .cors().and()
 
             // AttackDetectionFilter: 세션 로그인 필터 앞
-            .addFilterBefore(attackDetectionFilter, UsernamePasswordAuthenticationFilter.class)
+//            .addFilterBefore(attackDetectionFilter, UsernamePasswordAuthenticationFilter.class)
 
             // JWT 인증 필터: 역시 세션 로그인 필터 앞
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
