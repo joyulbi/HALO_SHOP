@@ -1,8 +1,10 @@
 package com.company.haloshop.donationcampaign;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface DonationCampaignMapper {
@@ -20,4 +22,7 @@ public interface DonationCampaignMapper {
     int deleteDonationCampaign(Long id);
     
     int deleteDonationCampaignBySeasonId(Long id);
+    
+    List<Map<String, Object>> sumDonationAmountLastHour();
+    int updateDonationCampaignTotal(@Param("campaignId") Long campaignId, @Param("total") Integer total);
 }

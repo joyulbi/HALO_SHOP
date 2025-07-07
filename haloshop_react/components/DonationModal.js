@@ -108,6 +108,8 @@ const DonationModal = ({ team, onClose }) => {
   const [error, setError] = useState(null);
   const [userPoint, setUserPoint] = useState(0);
   const [amount, setAmount] = useState('');
+  const [accountId, setAccountId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -123,6 +125,7 @@ const DonationModal = ({ team, onClose }) => {
       .then(res => {
         const userId = res.data?.account?.id;
         if (!userId) throw new Error("유저 정보 없음");
+        setAccountId(userId);
 
         return axios.get(`${ApiCallUrl}/api/userpoint/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -138,8 +141,41 @@ const DonationModal = ({ team, onClose }) => {
   }, []);
 
   const handleDonate = () => {
-    alert(`"${amount}" 포인트를 ${team?.name} 팀에 기부했습니다!`);
-    onClose();
+    if (!accountId) {
+      setError("유저 정보를 찾을 수 없습니다.");
+      return;
+    }
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setError("로그인이 필요합니다.");
+      return;
+    }
+    if (!amount || Number(amount) <= 0 || Number(amount) > userPoint) {
+      setError("유효한 기부 포인트를 입력하세요.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    axios.post(
+      `${ApiCallUrl}/api/donations/${accountId}`,
+      {
+        campaignId: team?.id,
+        amount: Number(amount),
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    )
+      .then(() => {
+        alert(`"${amount}" 포인트를 ${team?.name} 팀에 기부했습니다!`);
+        onClose();
+      })
+      .catch(() => {
+        setError("기부 중 오류가 발생했습니다.");
+      })
+      .finally(() => setSubmitting(false));
   };
 
   const infoList = [
@@ -170,22 +206,27 @@ const DonationModal = ({ team, onClose }) => {
               value={amount}
               max={userPoint}
               onChange={e => {
-                const val = e.target.value;
-                if (val === '' || (Number(val) <= userPoint && Number(val) >= 0)) {
-                  setAmount(val);
+                let val = Number(e.target.value);
+                if (isNaN(val) || val < 0) {
+                  setAmount('');
+                } else if (val > userPoint) {
+                  setAmount(userPoint.toString());
+                } else {
+                  setAmount(val.toString());
                 }
               }}
               style={{ color: Number(amount) > userPoint ? 'red' : '#000' }}
+              disabled={submitting}
             />
 
             <ButtonGroup>
-              <Button variant="cancel" onClick={onClose}>취소</Button>
+              <Button variant="cancel" onClick={onClose} disabled={submitting}>취소</Button>
               <Button
                 variant="confirm"
                 onClick={handleDonate}
-                disabled={!amount || Number(amount) > userPoint || Number(amount) <= 0}
+                disabled={!amount || Number(amount) > userPoint || Number(amount) <= 0 || submitting}
               >
-                기부하기
+                {submitting ? '기부 중...' : '기부하기'}
               </Button>
             </ButtonGroup>
           </>

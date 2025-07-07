@@ -2,43 +2,42 @@ package com.company.haloshop.notification;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    @Autowired
+    private NotificationService notificationService;
 
-    public NotificationController(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    // 📬 알림 생성 (테스트용)
+    // 1. 알림 생성
     @PostMapping
-    public ResponseEntity<Void> createNotification(@RequestBody NotificationRequestDto requestDto) {
-        notificationService.createNotification(requestDto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Long> createNotification(@RequestBody NotificationRequestDto requestDto) {
+        Long id = notificationService.createNotification(requestDto);
+        return ResponseEntity.ok(id);
     }
 
-    // 📥 특정 사용자 알림 목록 조회
-    @GetMapping("/user/{receiverId}")
-    public ResponseEntity<List<Notification>> getNotifications(@PathVariable Long receiverId) {
-        List<Notification> notifications = notificationService.getNotificationsForUser(receiverId);
+    // 2. 특정 수신자의 알림 목록 조회
+    @GetMapping("/receiver/{receiverId}")
+    public ResponseEntity<List<NotificationDto>> getNotificationsByReceiver(@PathVariable Long receiverId) {
+        List<NotificationDto> notifications = notificationService.getNotificationsForUser(receiverId);
         return ResponseEntity.ok(notifications);
     }
 
-    // ✅ 알림 읽음 처리
+    // 3. 알림 읽음 상태 변경
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id, @RequestParam Boolean isRead) {
+        notificationService.markAsRead(id, isRead);
+        return ResponseEntity.ok().build();
+    }
+
+    // 4. 알림 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
         return ResponseEntity.ok().build();
     }
 }
