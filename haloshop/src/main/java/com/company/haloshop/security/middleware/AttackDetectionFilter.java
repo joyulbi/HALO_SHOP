@@ -194,13 +194,13 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
 
 
 
-        // 10) 과도한 요청 (rate limit + 1분 차단 → 429)
-        if (applyRateLimit(req, userId, ip, logOnce)) {
-            response.sendError(429,
-                               "Too Many Requests - please try again later");
-            blockExpiryMap.put(blockKey, nowSec + 60);
-            return;
-        }
+//        // 10) 과도한 요청 (rate limit + 1분 차단 → 429)
+//        if (applyRateLimit(req, userId, ip, logOnce)) {
+//            response.sendError(429,
+//                               "Too Many Requests - please try again later");
+//            blockExpiryMap.put(blockKey, nowSec + 60);
+//            return;
+//        }
 
         // 11) 쿠키 위변조 검사 (403)
         if (hasSessionCookie(req) && req.getSession(false) == null) {
@@ -211,17 +211,17 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 12) 반복 직접 접근 (403)
-        if (userId == null && startsWithAny(req.getRequestURI(), suspiciousPaths)) {
-            int cnt = directAccessMap.merge(ip, 1, Integer::sum);
-            if (cnt > 10) {
-                logOnce.accept(logDto(null, null, "REPEATED_DIRECT_ACCESS",
-                                      "Excessive direct accesses", ip));
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                   "Forbidden repeated access");
-                return;
-            }
-        }
+//        // 12) 반복 직접 접근 (403)
+//        if (userId == null && startsWithAny(req.getRequestURI(), suspiciousPaths)) {
+//            int cnt = directAccessMap.merge(ip, 1, Integer::sum);
+//            if (cnt > 10) {
+//                logOnce.accept(logDto(null, null, "REPEATED_DIRECT_ACCESS",
+//                                      "Excessive direct accesses", ip));
+//                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+//                                   "Forbidden repeated access");
+//                return;
+//            }
+//        }
 
         // 13) Content-Type 검사 (415)
         if (List.of("POST","PATCH","DELETE").contains(req.getMethod())) {
