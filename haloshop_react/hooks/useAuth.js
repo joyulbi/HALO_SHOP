@@ -1,3 +1,4 @@
+// src/hooks/useAuth.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../utils/axios';
 import { useRouter } from 'next/router';
@@ -90,7 +91,19 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false, message: '로그인 응답이 올바르지 않습니다.' };
     } catch (err) {
-      return { success: false, message: err.response?.data || '네트워크 오류' };
+      // err.response?.data 가 객체일 수 있으니, message 필드 우선, 없으면 JSON 문자열화
+      let msg = '네트워크 오류';
+      const data = err.response?.data;
+      if (data) {
+        if (typeof data === 'string') {
+          msg = data;
+        } else if (data.message) {
+          msg = data.message;
+        } else {
+          msg = JSON.stringify(data);
+        }
+      }
+      return { success: false, message: msg };
     }
   };
 
