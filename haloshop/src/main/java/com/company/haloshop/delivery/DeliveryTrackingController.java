@@ -34,7 +34,7 @@ public class DeliveryTrackingController {
 
     @PutMapping
     public ResponseEntity<String> updateStatus(@RequestBody DeliveryTrackingDTO tracking) {
-        deliveryTrackingService.updateStatus(tracking);
+        deliveryTrackingService.updateTracking(tracking);
         return ResponseEntity.ok("배송 상태 갱신 완료");
     }
     
