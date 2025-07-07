@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
-import Layout from '../../../components/Layout';
 import { useAuth } from '../../../hooks/useAuth';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
 
 const OrderDetailPage = () => {
   const router = useRouter();
@@ -20,11 +21,11 @@ const OrderDetailPage = () => {
     } catch (err) {
       console.error('🚩 주문 상세 조회 오류:', err);
       if (err.response?.status === 403) {
-        alert('본인 주문만 조회할 수 없습니다.');
+        alert('본인 주문만 조회할 수 있습니다.');
       } else {
         alert('주문 상세 조회 실패');
       }
-      router.replace('/mypage/orders'); // 마이페이지 주문 목록으로 리다이렉트
+      router.replace('/mypage/orders');
     } finally {
       setLoadingOrder(false);
     }
@@ -36,54 +37,161 @@ const OrderDetailPage = () => {
     }
   }, [authLoading, isLoggedIn, user, id]);
 
+  const hideOrder = () => {
+    if (confirm('이 주문을 목록에서 삭제하시겠습니까?')) {
+      const hiddenOrders = JSON.parse(localStorage.getItem('hiddenOrders') || '[]');
+      if (!hiddenOrders.includes(order.id)) {
+        hiddenOrders.push(order.id);
+        localStorage.setItem('hiddenOrders', JSON.stringify(hiddenOrders));
+      }
+      alert('주문이 삭제되었습니다.');
+      router.push('/mypage/orders');
+    }
+  };
+
+  const requestRefund = () => {
+    if (confirm('환불을 요청하시겠습니까? 고객센터 페이지로 이동합니다.')) {
+      window.location.href = 'http://localhost:3000/contact';
+    }
+  };
+
   if (authLoading || loadingOrder) {
-    return (
-      <Layout>
-        <div className="p-4 text-center">주문 상세를 불러오는 중...</div>
-      </Layout>
-    );
+    return <div style={{ padding: '80px 0', textAlign: 'center' }}>주문 상세를 불러오는 중...</div>;
   }
 
   if (!order) {
-    return (
-      <Layout>
-        <div className="p-4 text-center">주문 데이터를 찾을 수 없습니다.</div>
-      </Layout>
-    );
+    return <div style={{ padding: '80px 0', textAlign: 'center' }}>주문 데이터를 찾을 수 없습니다.</div>;
   }
 
   return (
-    <Layout>
-      <div className="max-w-xl mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4 text-center">주문 상세</h1>
-        <div className="border p-4 rounded shadow space-y-2">
-          <div className="font-semibold">주문 번호: {order.id}</div>
-          <div>결제 상태: {order.paymentStatus}</div>
-          <div>총 결제 금액: {order.payAmount?.toLocaleString()}원</div>
-          <div className="text-sm text-gray-600">
-            주문일: {new Date(order.createdAt).toLocaleDateString()}
-          </div>
+    <>
+      <Header />
+      <div style={{ maxWidth: '1000px', margin: '80px auto', padding: '0 20px' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: 'bold', textAlign: 'center', marginBottom: '40px' }}>주문 상세</h1>
 
-          <div className="mt-4">
-            <h2 className="font-semibold mb-2">주문 상품 목록</h2>
-            {order.orderItems && order.orderItems.length > 0 ? (
-              <ul className="space-y-2">
-                {order.orderItems.map((item) => (
-                  <li key={item.id} className="p-2 border rounded">
-                    <div className="font-medium">{item.itemName}</div>
-                    <div className="text-sm text-gray-700">
-                      {item.productPrice.toLocaleString()}원 x {item.quantity}개
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">주문 상품 정보가 없습니다.</p>
-            )}
+        <div style={{
+          border: '1px solid #ddd',
+          borderRadius: '16px',
+          padding: '30px',
+          background: '#fff',
+          boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+          marginBottom: '40px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '18px', fontWeight: 'bold' }}>
+            <span>주문 번호</span>
+            <span>{order.id}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>결제 상태</span>
+            <span style={{
+              color: order.paymentStatus === 'PAID' ? '#52c41a' : '#faad14',
+              fontWeight: 'bold'
+            }}>
+              {order.paymentStatus === 'PAID' ? '결제 완료' : '결제 대기'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>총 결제 금액</span>
+            <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{order.payAmount?.toLocaleString()}원</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#555' }}>
+            <span>주문일</span>
+            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
+
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px' }}>주문 상품</h2>
+        {order.orderItems && order.orderItems.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
+            {order.orderItems.map((item) => (
+              <div key={item.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                border: '1px solid #ddd',
+                borderRadius: '12px',
+                padding: '16px',
+                background: '#fff',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+              }}>
+                <img
+                  src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/images/no-image.png'}
+                  alt={item.itemName}
+                  style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', marginRight: '16px' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '6px' }}>{item.itemName}</h3>
+                  <div style={{ fontSize: '14px', color: '#666' }}>
+                    {item.productPrice.toLocaleString()}원 x {item.quantity}개
+                  </div>
+                  <div style={{ fontSize: '16px', color: '#222', fontWeight: 'bold', marginTop: '4px' }}>
+                    합계: {(item.productPrice * item.quantity).toLocaleString()}원
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: '#999' }}>주문 상품 정보가 없습니다.</p>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '80px' }}>
+          <button
+            onClick={() => router.push('/mypage/orders')}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: '#555',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#333'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#555'}
+          >
+            주문 목록으로 돌아가기
+          </button>
+
+          <button
+            onClick={hideOrder}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: '#f5222d',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#cf1322'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#f5222d'}
+          >
+            이 주문 삭제하기
+          </button>
+
+          <button
+            onClick={requestRefund}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: '#1890ff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#096dd9'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#1890ff'}
+          >
+            환불 요청
+          </button>
+        </div>
       </div>
-    </Layout>
+      <Footer />
+    </>
   );
 };
 

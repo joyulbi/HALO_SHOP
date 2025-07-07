@@ -1,16 +1,48 @@
 import React from "react";
 import Link from "next/link";
 
+const BACKEND_URL = "http://localhost:8080";
+
 export default function AuctionList({ auction, imageUrl, onDelete }) {
+  // 이미지 경로 처리
+  const resolvedUrl = imageUrl
+    ? imageUrl.startsWith("http")
+      ? imageUrl
+      : BACKEND_URL + imageUrl
+    : null;
+
   return (
-    <tr style={{ borderBottom: "1px solid #eee" }}>
-      <td style={{ textAlign: "center", padding: 8 }}>
-        {imageUrl
-          ? <img src={imageUrl} alt="img" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, border: "1px solid #ddd" }} />
-          : <div style={{ width: 60, height: 60, background: "#eee", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>-</div>}
+    <tr style={{ borderBottom: "1px solid #eee", height: "80px", textAlign: "center" }}>
+      <td style={{ padding: "12px" }}>
+        {resolvedUrl ? (
+          <img
+            src={resolvedUrl}
+            alt="img"
+            style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ddd" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "60px",
+              height: "60px",
+              background: "#eee",
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#999",
+              fontSize: "14px",
+              fontWeight: "bold"
+            }}
+          >
+            없음
+          </div>
+        )}
       </td>
-      <td style={{ padding: 8 }}>{auction.title}</td>
-      <td style={{ padding: 8 }}>
+
+      <td style={{ padding: "12px", fontSize: "16px" }}>{auction.title}</td>
+
+      <td style={{ padding: "12px", fontSize: "14px", fontWeight: "bold" }}>
         {auction.status === "FINISHED"
           ? "경매 종료"
           : auction.status === "ONGOING"
@@ -21,21 +53,56 @@ export default function AuctionList({ auction, imageUrl, onDelete }) {
                 ? "취소됨"
                 : auction.status}
       </td>
-      <td style={{ padding: 8 }}>{auction.startPrice?.toLocaleString() || "-"}</td>
-      <td style={{ padding: 8, display: "flex", gap: 8 }}>
-        <Link href={`/auction/${auction.id}`}>
-          <button style={buttonStyle("#377be6")}>상세</button>
-        </Link>
-        <Link href={`/auction/regist?id=${auction.id}`}>
-          <button style={buttonStyle("#ffaa00")}>수정</button>
-        </Link>
-        <button style={buttonStyle("#e64444")} onClick={() => onDelete(auction.id)}>삭제</button>
+
+      <td style={{ padding: "12px", fontSize: "15px", color: "#1890ff", fontWeight: "bold" }}>
+        {auction.startPrice?.toLocaleString() || "-"}
+      </td>
+
+      <td style={{ padding: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap" }}>
+          <Link href={`/auction/${auction.id}`}>
+            <button
+              style={buttonStyle("#3d6fee")}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#264dbd"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3d6fee"}
+            >
+              상세
+            </button>
+          </Link>
+
+          <Link href={`/auction/regist?id=${auction.id}`}>
+            <button
+              style={buttonStyle("#ffaa00")}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#d48806"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#ffaa00"}
+            >
+              수정
+            </button>
+          </Link>
+
+          <button
+            style={buttonStyle("#f5222d")}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#cf1322"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#f5222d"}
+            onClick={() => onDelete(auction.id)}
+          >
+            삭제
+          </button>
+        </div>
       </td>
     </tr>
   );
 }
 
 const buttonStyle = (bg) => ({
-  background: bg, color: "#fff", border: "none",
-  borderRadius: 5, padding: "5px 10px", fontWeight: "bold"
+  background: bg,
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  padding: "8px 16px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "14px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+  transition: "all 0.3s"
 });

@@ -25,7 +25,7 @@ haloshop/.factorypath
 haloshop/*.iml
 haloshop/bin/
 # API키
-**/application-secret.properties
+**/api-key.properties
 
 ######################################
 # ⚛️ React (haloshop_react - CRA 기준)
@@ -83,6 +83,5 @@ upload/
 uploads/
 *.db
 *.sqlite
-**/application-oauth.properties
 haloshop/src/main/webapp/image/campaign
 haloshop/src/main/webapp/image/inquiry

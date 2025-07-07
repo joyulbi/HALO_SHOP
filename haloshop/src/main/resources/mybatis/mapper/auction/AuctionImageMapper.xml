@@ -42,4 +42,10 @@
         DELETE FROM auction_image
         WHERE id = #{id}
     </delete>
+    
+    <!-- 경매 삭제 이미지 삭제 -->
+    <delete id="deleteByAuctionId" parameterType="long">
+	    DELETE FROM auction_image 
+	    WHERE auction_id = #{auctionId}
+	</delete>
 </mapper>

@@ -1,6 +1,7 @@
 package com.company.haloshop.payment;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -16,7 +17,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.company.haloshop.dto.shop.OrderDto;
+import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.order.OrderMapper;
+import com.company.haloshop.order.OrderService;
+import com.company.haloshop.orderitem.OrderItemMapper;
 import com.company.haloshop.payment.dto.PaymentApproveRequest;
 import com.company.haloshop.payment.dto.PaymentCancelRequest;
 import com.company.haloshop.payment.dto.PaymentReadyRequest;
@@ -32,8 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 public class KakaoPayService {
 
     private final OrderMapper orderMapper;
+    private final OrderService orderService;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final OrderItemMapper orderItemMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${kakao.pay.admin-key}")
@@ -44,8 +50,8 @@ public class KakaoPayService {
 
     @PostConstruct
     public void checkAdminKey() {
-        log.info("KakaoPay adminKey={}", adminKey);
-        log.info("KakaoPay cid={}", cid);
+        log.info("✅ KakaoPay adminKey={}", adminKey);
+        log.info("✅ KakaoPay cid={}", cid);
     }
 
     public Map<String, Object> ready(PaymentReadyRequest request) {
@@ -85,14 +91,25 @@ public class KakaoPayService {
         order.setPaymentStatus("PENDING");
         order.setAmount(request.getAmount());
 
-
         orderMapper.insert(order);
-        log.info("KakaoPay ready: PENDING 주문 insert 완료, tid={}, orderId={}", tid, order.getId());
+        Long orderId = order.getId();
+
+        // ✅ 주문 아이템 함께 insert
+        List<OrderItemDto> orderItems = request.getOrderItems();
+        if (orderItems == null || orderItems.isEmpty()) {
+            throw new IllegalArgumentException("주문 아이템이 없습니다.");
+        }
+        for (OrderItemDto item : orderItems) {
+            item.setOrdersId(orderId);
+            orderItemMapper.insert(item);  // 또는 orderItemMapper.insert(item);
+        }
+
+        log.info("✅ KakaoPay ready: PENDING 주문 및 주문 아이템 insert 완료, tid={}, orderId={}", tid, orderId);
 
         Map<String, Object> result = new HashMap<>();
         result.put("next_redirect_pc_url", body.get("next_redirect_pc_url"));
         result.put("tid", tid);
-        result.put("orderId", order.getId());
+        result.put("orderId", orderId);
 
         return result;
     }
@@ -110,7 +127,7 @@ public class KakaoPayService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("cid", cid);
-        params.add("tid", order.getTid()); // ✅ 여기서 DB의 tid 사용
+        params.add("tid", order.getTid());
         params.add("partner_order_id", String.valueOf(request.getAccountId()));
         params.add("partner_user_id", request.getAccountId().toString());
         params.add("pg_token", request.getPgToken());
@@ -123,25 +140,22 @@ public class KakaoPayService {
                 Map.class
         );
 
-        log.info("KakaoPay Approve Response: {}", response.getBody());
+        log.info("✅ KakaoPay Approve Response: {}", response.getBody());
 
-        order.setPaymentStatus("PAID");
-        orderMapper.update(order);
+        orderService.updatePaymentStatus(order.getId(), "PAID");
 
-        log.info("주문 결제 완료: Order ID={}, User ID={}", order.getId(), request.getAccountId());
+        log.info("✅ 주문 결제 완료 및 재고 차감 완료: Order ID={}, User ID={}", order.getId(), request.getAccountId());
 
         if (order.getAmount() != null && order.getAmount() > 0) {
             userPointService.usePoint(order.getAccountId(), order.getAmount());
             pointLogService.saveLog(order.getAccountId(), "USE", order.getAmount());
-            log.info("포인트 사용 완료: {}P, User ID={}", order.getAmount(), order.getAccountId());
+            log.info("✅ 포인트 사용 완료: {}P, User ID={}", order.getAmount(), order.getAccountId());
         }
 
         int savePoint = userPointService.updateUserPointAndGrade(order.getAccountId(), order.getPayAmount());
         pointLogService.saveLog(order.getAccountId(), "SAVE", savePoint);
-
-        log.info("포인트 적립 완료: {}P, User ID={}", savePoint, order.getAccountId());
+        log.info("✅ 포인트 적립 완료: {}P, User ID={}", savePoint, order.getAccountId());
     }
-
 
     @Transactional
     public void cancel(PaymentCancelRequest request) {
@@ -165,19 +179,18 @@ public class KakaoPayService {
                 Map.class
         );
 
-        log.info("KakaoPay Cancel Response: {}", response.getBody());
+        log.info("✅ KakaoPay Cancel Response: {}", response.getBody());
 
         orderMapper.updateStatus(order.getId(), "CANCELLED");
 
-        // ✅ 수정된 부분: payAmount 기준으로 회수
         int refundPoint = userPointService.deductPointByOrder(order.getAccountId(), order.getPayAmount());
         pointLogService.saveLog(order.getAccountId(), "REFUND_DEDUCT", refundPoint);
-        log.info("포인트 회수 완료: {}P, User ID: {}", refundPoint, order.getAccountId());
+        log.info("✅ 포인트 회수 완료: {}P, User ID: {}", refundPoint, order.getAccountId());
 
         if (order.getAmount() != null && order.getAmount() > 0) {
             userPointService.restorePoint(order.getAccountId(), order.getAmount());
             pointLogService.saveLog(order.getAccountId(), "REFUND_RESTORE", order.getAmount());
-            log.info("사용 포인트 복원 완료: {}P, User ID: {}", order.getAmount(), order.getAccountId());
+            log.info("✅ 사용 포인트 복원 완료: {}P, User ID: {}", order.getAmount(), order.getAccountId());
         }
     }
 }

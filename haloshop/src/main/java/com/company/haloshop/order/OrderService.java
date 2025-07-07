@@ -1,7 +1,7 @@
 package com.company.haloshop.order;
 
+
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,12 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
+import com.company.haloshop.inventory.InventoryService;
 import com.company.haloshop.orderitem.OrderItemMapper;
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -23,6 +27,8 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final InventoryService inventoryService;
+
 
     public List<OrderDto> findAll() {
         return orderMapper.findAll();
@@ -95,19 +101,45 @@ public class OrderService {
         }
 
         // ✅ 5) 포인트 적립 및 멤버십 갱신 (결제금액(payAmount) 기준으로 적립)
-        int savePoint = userPointService.updateUserPointAndGrade(accountId, payAmount);
+       // int savePoint = userPointService.updateUserPointAndGrade(accountId, payAmount);
 
         // ✅ 6) 적립 포인트 로그 기록
-        if (savePoint > 0) {
-            pointLogService.saveLog(accountId, "SAVE", savePoint);
-        }
+        //if (savePoint > 0) {
+            //pointLogService.saveLog(accountId, "SAVE", savePoint);
+       // }
         return orderId;
     }
     
     @Transactional
     public void updatePaymentStatus(Long orderId, String paymentStatus) {
         orderMapper.updateStatus(orderId, paymentStatus);
+        System.out.println("🚩 결제 상태 업데이트 완료: orderId=" + orderId + ", status=" + paymentStatus);
+
+        if ("PAID".equals(paymentStatus)) {
+            List<OrderItemDto> orderItems = orderItemMapper.findByOrderId(orderId);
+            System.out.println("🚩 주문 아이템 수: " + orderItems.size());
+
+            // 🚩🚩🚩 [여기] 로그 넣기
+            for (OrderItemDto item : orderItems) {
+                log.info("✅ [검증] orderId={}, itemId={}, itemName={}, quantity={}",
+                    orderId, item.getItemId(), item.getItemName(), item.getQuantity());
+            }
+
+            for (OrderItemDto item : orderItems) {
+                boolean isEnough = inventoryService.checkInventoryEnough(item.getItemId(), item.getQuantity());
+                if (!isEnough) {
+                    throw new IllegalStateException("재고가 부족하여 결제를 완료할 수 없습니다. itemId=" + item.getItemId());
+                }
+            }
+
+            for (OrderItemDto item : orderItems) {
+                System.out.println("🚩 재고 차감 시도: itemId=" + item.getItemId() + ", quantity=" + item.getQuantity());
+                inventoryService.decreaseInventory(item.getItemId(), item.getQuantity());
+            }
+        }
     }
+
+
 
 
 

@@ -116,9 +116,18 @@ const ItemDetail = () => {
   }, 1200);
 };
 
-  const handleBuyNow = () => {
-    router.push(`/order/OrderFormPage?itemId=${item.id}&quantity=${quantity}`);
-  };
+const handleBuyNow = () => {
+    router.push({
+        pathname: '/order/SingleOrderFormPage',
+        query: {
+            itemId: item.id,
+            itemName: item.name,
+            price: item.price,
+            quantity: quantity
+        }
+    });
+};
+
 
 
   if (!item) return <div>로딩중...</div>;

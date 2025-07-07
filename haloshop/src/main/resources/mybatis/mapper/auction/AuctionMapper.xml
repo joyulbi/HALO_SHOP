@@ -57,4 +57,38 @@
         DELETE FROM auction
         WHERE id = #{id}
     </delete>
+
+    <!-- 시작 시간 도달 → ONGOING -->
+    <update id="updateStatusToOngoingIfStartTimePassed">
+        <![CDATA[
+        UPDATE auction
+        SET status = 'ONGOING'
+        WHERE status = 'READY' AND start_time <= NOW()
+        ]]>
+    </update>
+
+    <!-- 종료 시간 도달 → FINISHED -->
+    <update id="updateStatusToFinishedIfEndTimePassed">
+        <![CDATA[
+        UPDATE auction
+        SET status = 'FINISHED'
+        WHERE status = 'ONGOING' AND end_time <= NOW()
+        ]]>
+    </update>
+
+    <!-- 단일 경매 종료 처리 (타이머용) -->
+    <update id="updateStatusToFinished">
+        UPDATE auction
+        SET status = 'FINISHED'
+        WHERE id = #{auctionId} AND status != 'FINISHED'
+    </update>
+    
+    <!-- 경매 결과 존재 확인 -->
+    <select id="selectFinishedAuctionsWithoutResult" resultType="long">
+	    SELECT a.id
+	    FROM auction a
+	    LEFT JOIN auction_result ar ON a.id = ar.auction_id
+	    WHERE a.status = 'FINISHED' AND ar.auction_id IS NULL
+	</select>
+
 </mapper>

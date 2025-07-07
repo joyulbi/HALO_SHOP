@@ -44,11 +44,19 @@ public interface AccountMapper {
     int insertAccount(AccountDto account);
 
     /**
-     * 기존 Account 데이터 수정
+     * 기존 Account 데이터 수정 (모든 필드를 통째로 업데이트)
      * @param account 수정할 AccountDto 객체
      * @return 수정 성공 행 개수
      */
     int updateAccount(AccountDto account);
+
+    /**
+     * 변경 가능한 필드만 업데이트
+     * - SQL 매퍼 XML 쪽에서 각 필드별로 null 체크 후 SET 절에 추가
+     * @param accountDto 수정할 AccountDto 객체
+     * @return 수정 성공 행 개수
+     */
+    int updateAccountFields(AccountDto accountDto);
 
     /**
      * ID 기준 Account 데이터 삭제
@@ -56,7 +64,13 @@ public interface AccountMapper {
      * @return 삭제 성공 행 개수
      */
     int deleteById(@Param("id") Long id);
-    
-    int updateAccountLastActive(Long accountId, Date lastActive);
-    int updateAccountFields(AccountDto accountDto);
+
+    /**
+     * 마지막 활동 시간만 업데이트
+     * @param accountId Account의 고유 ID
+     * @param lastActive 업데이트할 마지막 활동 일시
+     * @return 수정 성공 행 개수
+     */
+    int updateAccountLastActive(@Param("accountId") Long accountId,
+                                @Param("lastActive") Date lastActive);
 }

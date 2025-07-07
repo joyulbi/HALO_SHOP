@@ -1,11 +1,21 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import StarRating from '../../components/StarRating';
+import { useAuth } from '../../hooks/useAuth';
 
 const ReviewPage = () => {
   const router = useRouter();
   const { id } = router.query;
+
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+    }
+  }, [authLoading, isLoggedIn, router]);
 
   const [review, setReview] = useState({
     content: '',
@@ -34,7 +44,7 @@ const ReviewPage = () => {
         orderItemsId: id,
         content: review.content,
         rating: review.rating,
-        accountId: 1
+        accountId: user?.id  // ✅ 하드코딩 제거 → 로그인 유저 id 사용
       };
 
       // ✅ JSON을 Blob으로 처리
@@ -56,6 +66,8 @@ const ReviewPage = () => {
       }
     }
   };
+
+  if (authLoading) return <p>로딩 중...</p>;  // ✅ 로딩 처리
 
   return (
     <div style={{ padding: '24px' }}>

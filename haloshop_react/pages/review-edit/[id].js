@@ -2,10 +2,20 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import StarRating from '../../components/StarRating';
+import { useAuth } from '../../hooks/useAuth';
 
 const ReviewEditPage = () => {
   const router = useRouter();
   const { id } = router.query;
+
+  const{ user, isLoggedIn, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+    }
+  }, [authLoading, isLoggedIn, router]);
 
   const [review, setReview] = useState(null);
   const [content, setContent] = useState('');
@@ -30,7 +40,10 @@ const ReviewEditPage = () => {
 
   const handleSubmit = async () => {
     try {
-      await axios.put(`${SERVER_URL}/api/reviews/${id}`, { content, rating });
+      await axios.put(`${SERVER_URL}/api/reviews/${id}`, { 
+        content,
+        rating
+      });
       alert('리뷰 수정 완료');
       router.push('/my-reviews');
     } catch (err) {
@@ -39,7 +52,9 @@ const ReviewEditPage = () => {
     }
   };
 
-  if (!review) return <p>로딩 중...</p>;
+  if (authLoading || !isLoggedIn) return <p>로딩 중...</p>;
+
+  if (!review) return <p>리뷰 데이터를 불러오는 중입니다...</p>;
 
   return (
     <div style={{ display: 'flex', padding: '32px', gap: '32px' }}>

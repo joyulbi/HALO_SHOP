@@ -1,6 +1,7 @@
 package com.company.haloshop.auction.controller;
 
 import com.company.haloshop.auction.dto.Auction;
+import com.company.haloshop.auction.realtime.AuctionTimerManager;
 import com.company.haloshop.auction.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,16 @@ import java.util.List;
 public class AuctionController {
 
     private final AuctionService auctionService;
+    private final AuctionTimerManager auctionTimerManager;
 
     // 경매 단건 조회
     @GetMapping("/{id}")
     public Auction getById(@PathVariable Long id) {
-        return auctionService.getById(id);
+        Auction auction = auctionService.getById(id);
+        if (auction != null) {
+            auctionTimerManager.registerAuctionTimer(auction.getId(), auction.getEndTime());
+        }
+        return auction;
     }
 
     // 전체 경매 목록 조회
