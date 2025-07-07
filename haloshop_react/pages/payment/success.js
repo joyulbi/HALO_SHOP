@@ -19,7 +19,7 @@ export default function KakaoSuccessPage() {
           accountId: Number(accountId),
         });
         alert('결제 완료!');
-        router.push('/order/complete');
+        router.push('/mypage/orders');
       } catch (error) {
         console.error(error);
         alert('결제 승인 실패');

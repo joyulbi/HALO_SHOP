@@ -48,9 +48,9 @@ const CartPage = () => {
       .catch(err => console.error('삭제 실패:', err));
   };
 
-  const handleCheckout = () => {
-    router.push('/orderformpage');
-  };
+const handleCheckout = () => {
+    router.push('/order/CartOrderFormPage');
+};
 
   const handleCancel = () => {
     router.push('/');

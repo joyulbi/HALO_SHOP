@@ -21,7 +21,8 @@ public class PaymentController {
 
     @PostMapping("/mock/approve")
     public ResponseEntity<?> approveMockPayment(@RequestParam Long orderId) {
-        cardPayService.approve(orderId);
+    	log.info("✅ [Mock 결제 승인 요청] orderId={}", orderId);  // ✅ 이 줄 추가
+    	cardPayService.approve(orderId);
         return ResponseEntity.ok().build();
     }
 
