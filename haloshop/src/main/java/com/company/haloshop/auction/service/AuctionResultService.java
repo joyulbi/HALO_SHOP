@@ -5,9 +5,12 @@ import com.company.haloshop.auction.mapper.AuctionMapper;
 import com.company.haloshop.auction.mapper.AuctionResultMapper;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.company.haloshop.auction.logic.AuctionResultCalculator;
 
 @Service
@@ -21,6 +24,11 @@ public class AuctionResultService {
     // 낙찰 결과 단건 조회
     public AuctionResult getByAuctionId(Long auctionId) {
         return auctionResultMapper.selectByAuctionId(auctionId);
+    }
+    
+    // 계정별 낙찰 결과 리스트 조회
+    public List<AuctionResult> getByAccountId(Long accountId) {
+        return auctionResultMapper.selectByAccountId(accountId);
     }
 
     // 낙찰 결과 등록
@@ -63,5 +71,31 @@ public class AuctionResultService {
         for (Long auctionId : finishedAuctionIds) {
             saveAuctionResult(auctionId);
         }
+    }
+    
+    // --- 구매확정/취소/관리자 메모 추가 ---
+
+    // 구매 확정(confirmed: true, confirmedAt 세팅, adminMemo 입력)
+    @Transactional
+    public void confirmAuctionResult(Long auctionId, String adminMemo) {
+        AuctionResult result = auctionResultMapper.selectByAuctionId(auctionId);
+        if (result == null) throw new IllegalArgumentException("해당 경매의 낙찰 결과가 없습니다.");
+        result.setConfirmed(true);
+        result.setConfirmedAt(LocalDateTime.now());
+        result.setCanceledReason(null);  
+        if (adminMemo != null) result.setAdminMemo(adminMemo);
+        auctionResultMapper.update(result);
+    }
+
+    // 구매 취소(confirmed: false, confirmedAt 세팅, canceledReason, adminMemo 입력)
+    @Transactional
+    public void cancelAuctionResult(Long auctionId, String canceledReason, String adminMemo) {
+        AuctionResult result = auctionResultMapper.selectByAuctionId(auctionId);
+        if (result == null) throw new IllegalArgumentException("해당 경매의 낙찰 결과가 없습니다.");
+        result.setConfirmed(false);
+        result.setConfirmedAt(LocalDateTime.now());
+        result.setCanceledReason(canceledReason);
+        if (adminMemo != null) result.setAdminMemo(adminMemo);
+        auctionResultMapper.update(result);
     }
 }

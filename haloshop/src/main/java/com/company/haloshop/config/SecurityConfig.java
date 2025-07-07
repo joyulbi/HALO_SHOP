@@ -141,13 +141,16 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers("/api/**", "/auth/**", "/user/me", "/admin/**","/security/**")
+                .ignoringAntMatchers( "/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
             )
 
             // 4) 권한 및 URL 접근 제어
             .authorizeRequests(authz -> authz
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
+                
+                .antMatchers("/api/items/admin/**").access("@adminCheck.hasAuthority(authentication)")
+                
                 .antMatchers("/api/**").permitAll()
                 .antMatchers("/admin/me").permitAll()
                 .antMatchers("/user/me").permitAll()

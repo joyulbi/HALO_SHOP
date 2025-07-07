@@ -10,6 +10,14 @@
         FROM auction_result
         WHERE auction_id = #{auctionId}
     </select>
+    
+    <!-- 계정별 낙찰 결과 리스트 조회 추가 -->
+    <select id="selectByAccountId" resultType="com.company.haloshop.auction.dto.AuctionResult">
+        SELECT *
+        FROM auction_result
+        WHERE account_id = #{accountId}
+        ORDER BY created_at DESC
+    </select>    
 
     <!-- 낙찰 결과 등록 -->
     <insert id="insert" parameterType="com.company.haloshop.auction.dto.AuctionResult">
