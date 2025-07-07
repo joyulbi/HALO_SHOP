@@ -47,7 +47,6 @@ const OrderFormPage = () => {
           paymentStatus: "PENDING",
           accountId: user.id
         });
-        console.log('카카오페이 응답:', res.data);
         if (res.data.next_redirect_pc_url) {
           window.location.href = res.data.next_redirect_pc_url;
         } else {
@@ -69,10 +68,7 @@ const OrderFormPage = () => {
           }))
         };
 
-        console.log('결제 payload:', payload);
-
         const res = await api.post('/api/orders', payload);
-        console.log('주문 완료 응답:', res.data);
         alert('주문이 완료되었습니다!');
         router.push(`/mypage/orders/${res.data.orderId}`);
       }
@@ -101,13 +97,19 @@ const OrderFormPage = () => {
   const finalPrice = totalPrice - appliedPoint;
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
+    <div style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+      <h1 style={{
+        fontSize: '36px',
+        fontWeight: 'bold',
+        marginBottom: '40px',
+        textAlign: 'center',
+        color: '#222'
+      }}>
         주문서 작성
       </h1>
 
       {cartItems.length === 0 ? (
-        <p style={{ textAlign: 'center' }}>주문할 상품이 없습니다.</p>
+        <p style={{ textAlign: 'center', fontSize: '18px', color: '#666' }}>주문할 상품이 없습니다.</p>
       ) : (
         <div>
           {cartItems.map(item => (
@@ -116,10 +118,11 @@ const OrderFormPage = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '20px',
-              borderBottom: '1px solid #ddd',
-              borderRadius: '10px',
+              borderRadius: '12px',
               marginBottom: '20px',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              backgroundColor: '#fff',
+              transition: 'transform 0.2s, box-shadow 0.2s'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <img
@@ -128,46 +131,59 @@ const OrderFormPage = () => {
                   style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '10px' }}
                 />
                 <div>
-                  <h3 style={{ marginBottom: '10px' }}>{item.name}</h3>
-                  <p style={{ color: '#c8102e', fontWeight: 'bold' }}>{item.price.toLocaleString()}원</p>
-                  <p>수량: {item.quantity}</p>
+                  <h3 style={{ marginBottom: '10px', fontSize: '20px' }}>{item.name}</h3>
+                  <p style={{ color: '#c8102e', fontWeight: 'bold', fontSize: '18px' }}>{item.price.toLocaleString()}원</p>
+                  <p style={{ color: '#555' }}>수량: {item.quantity}</p>
                 </div>
               </div>
             </div>
           ))}
 
-          <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', marginTop: '40px' }}>
-            <h3>결제 요약</h3>
-            <p>상품 금액: {totalPrice.toLocaleString()}원</p>
-            <p>포인트 사용: {appliedPoint.toLocaleString()}원</p>
-            <p style={{ fontWeight: 'bold', color: '#c8102e' }}>
+          <div style={{
+            padding: '30px',
+            border: '1px solid #e0e0e0',
+            borderRadius: '12px',
+            marginTop: '40px',
+            backgroundColor: '#fafafa',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+          }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '20px', color: '#333' }}>결제 요약</h3>
+            <p style={{ fontSize: '16px', marginBottom: '8px' }}>상품 금액: {totalPrice.toLocaleString()}원</p>
+            <p style={{ fontSize: '16px', marginBottom: '8px' }}>포인트 사용: {appliedPoint.toLocaleString()}원</p>
+            <p style={{ fontWeight: 'bold', color: '#c8102e', fontSize: '20px', marginTop: '16px' }}>
               총 결제 금액: {finalPrice.toLocaleString()}원
             </p>
 
-            <div style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '30px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <input
                 type="text"
                 placeholder="사용할 포인트 입력"
                 value={point}
                 onChange={(e) => setPoint(e.target.value)}
-                style={{ padding: '10px', width: '200px', marginRight: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                style={{
+                  padding: '12px',
+                  width: '220px',
+                  borderRadius: '6px',
+                  border: '1px solid #ccc',
+                  fontSize: '16px'
+                }}
               />
               <button onClick={handleApplyPoint} style={applyButtonStyle}>포인트 적용</button>
             </div>
 
-            <div style={{ marginTop: '20px' }}>
-              <label style={{ marginRight: '10px' }}>결제 수단 선택:</label>
+            <div style={{ marginTop: '30px' }}>
+              <label style={{ marginRight: '10px', fontSize: '16px' }}>결제 수단 선택:</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
               >
                 <option value="CARD">카드 결제</option>
                 <option value="KAKAOPAY">카카오페이</option>
               </select>
             </div>
 
-            <div style={{ marginTop: '30px', display: 'flex', gap: '10px' }}>
+            <div style={{ marginTop: '40px', display: 'flex', gap: '16px' }}>
               <button onClick={() => router.push('/cart')} style={cancelButtonStyle}>취소</button>
               <button onClick={handlePayNow} style={checkoutButtonStyle}>결제하기</button>
             </div>
@@ -179,30 +195,36 @@ const OrderFormPage = () => {
 };
 
 const applyButtonStyle = {
-  padding: '10px 16px',
+  padding: '12px 20px',
   backgroundColor: '#c8102e',
   color: 'white',
   border: 'none',
   borderRadius: '6px',
-  cursor: 'pointer'
+  cursor: 'pointer',
+  transition: 'all 0.3s',
+  fontWeight: 'bold'
 };
 
 const cancelButtonStyle = {
-  padding: '12px 24px',
-  backgroundColor: '#999',
+  padding: '14px 28px',
+  backgroundColor: '#bbb',
   color: 'white',
   border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer'
+  borderRadius: '30px',
+  cursor: 'pointer',
+  transition: 'all 0.3s',
+  fontWeight: 'bold'
 };
 
 const checkoutButtonStyle = {
-  padding: '12px 24px',
+  padding: '14px 28px',
   backgroundColor: '#c8102e',
   color: 'white',
   border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer'
+  borderRadius: '30px',
+  cursor: 'pointer',
+  transition: 'all 0.3s',
+  fontWeight: 'bold'
 };
 
 export default OrderFormPage;
