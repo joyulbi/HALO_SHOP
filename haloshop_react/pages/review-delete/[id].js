@@ -2,10 +2,20 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import StarRating from '../../components/StarRating';
+import { useAuth } from '../../hooks/useAuth';
 
 const ReviewDeletePage = () => {
   const router = useRouter();
   const { id } = router.query;
+
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+    }
+  }, [authLoading, isLoggedIn, router]);
 
   const [review, setReview] = useState(null);
   const SERVER_URL = 'http://localhost:8080';
@@ -32,7 +42,9 @@ const ReviewDeletePage = () => {
     }
   };
 
-  if (!review) return <p>로딩 중...</p>;
+  if (authLoading || !isLoggedIn) return <p>로딩 중...</p>;
+
+  if (!review) return <p>리뷰 데이터를 불러오는 중입니다...</p>;
 
   return (
     <div style={{ display: 'flex', padding: '32px', gap: '32px' }}>

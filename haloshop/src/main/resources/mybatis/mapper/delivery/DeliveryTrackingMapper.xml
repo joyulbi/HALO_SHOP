@@ -24,7 +24,7 @@
 
 	<insert id="insertTracking"
 		parameterType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
-		INSERT INTO delivery_tracking (order_items_id, status, tracking_number,
+		INSERT INTO delivery_tracking (order_item_id, status, tracking_number,
 		carrier, updated_at)
 		VALUES (#{orderItemsId}, #{status}, #{trackingNumber}, #{carrier}, now())
 	</insert>
@@ -32,8 +32,11 @@
 	<update id="updateStatus"
 		parameterType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
 		UPDATE delivery_tracking
-		SET status = #{status}, updated_at = now()
-		WHERE order_items_id = #{orderItemsId}
+		SET status = #{status},
+			tracking_number - #{trackingNumber},
+			carrier = #{carrier},
+			updated_at = now()
+		WHERE order_item_id = #{orderItemsId}
 	</update>
 
 	<select id="selectByAccountId" resultMap="DeliveryTrackingResultMap">
@@ -50,6 +53,4 @@
 		JOIN orders o ON oi.orders_id = o.id
 		WHERE o.account_id = #{accountId}
 	</select>
-
-
 </mapper>

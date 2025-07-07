@@ -74,4 +74,30 @@ public class OrderController {
     public ResponseEntity<List<OrderDto>> findMyOrders(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(orderService.findByAccountId(user.getId()));
     }
+    
+    @PutMapping("/{id}/payment-status")
+    public ResponseEntity<?> updatePaymentStatus(@PathVariable Long id,
+    											 @RequestBody Map<String, String> body,
+    											 @AuthenticationPrincipal CustomUserDetails user) {
+    	String paymentStatus = body.get("paymentStatus");
+    	
+    	// user null 체크 (비로그인 요청 처리)
+    	if (user == null) {
+    		return ResponseEntity.status(401).body("로그인이 필요합니다.");
+    	}
+    	
+    	// order null 체크
+    	OrderDto order = orderService.findById(id);
+    	if (order == null) {
+    		return ResponseEntity.status(404).body("해당 주문이 존재하지 않습니다.");
+    	}
+    	
+    	// 권한 체크 (본인 주문만 수정 가능)
+    	if (!order.getAccountId().equals(user.getId())) {
+    		throw new AccessDeniedException("본인 주문만 결제 상태를 수정할 수 있습니다.");
+    	}
+    	
+    	orderService.updatePaymentStatus(id, paymentStatus);
+    	return ResponseEntity.ok("결제 상태 업데이트 완료");
+    }
 }

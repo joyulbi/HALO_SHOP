@@ -1,11 +1,13 @@
 package com.company.haloshop.order;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.company.haloshop.delivery.DeliveryTrackingService;
+import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
@@ -23,6 +25,7 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final DeliveryTrackingService deliveryTrackingService;
 
     public List<OrderDto> findAll() {
         return orderMapper.findAll();
@@ -104,9 +107,42 @@ public class OrderService {
         return orderId;
     }
     
+    // 결제 상태 업데이트
     @Transactional
     public void updatePaymentStatus(Long orderId, String paymentStatus) {
+    	// ✅ 1) 결제 상태 업데이트
         orderMapper.updateStatus(orderId, paymentStatus);
+        
+        // ✅ 2) 결제 완료 시 처리
+        if ("PAID".equalsIgnoreCase(paymentStatus)) {
+        	// ✅ 3) 해당 주문의 모든 order_items 조회
+        	List<OrderItemDto> items = orderItemMapper.findByOrderId(orderId);
+        	
+        	// ✅ 4) 갹 order_item을 delivery_tracking에 등록
+        	for (OrderItemDto item : items) {
+        		DeliveryTrackingDTO tracking = DeliveryTrackingDTO.builder()
+        				.orderItemsId(item.getId())
+        				.status("배송준비중")
+        				.trackingNumber("미정")
+        				.carrier("미정")
+        				.updatedAt(LocalDateTime.now())
+        				.build();
+        		deliveryTrackingService.insertTracking(tracking);
+        	}
+        }
+    }
+    
+    // 배송 상태 업데이트
+    @Transactional
+    public void updateDeliveryStatus(Long orderItemId, String status, String trackingNumber, String carrier) {
+    	DeliveryTrackingDTO trackingDTO = DeliveryTrackingDTO.builder()
+    			.orderItemsId(orderItemId)
+    			.status(status)
+    			.trackingNumber(trackingNumber)
+    			.carrier(carrier)
+    			.updatedAt(LocalDateTime.now())
+    			.build();
+    	deliveryTrackingService.updateTracking(trackingDTO);
     }
 
 

@@ -2,25 +2,37 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import StarRating from '../components/StarRating';
+import { useAuth } from '../hooks/useAuth';
 
 const MyReviewsPage = () => {
+  const { user, isLoggedIn, loading: authLoading } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [activeMenuId, setActiveMenuId] = useState(null);
   const router = useRouter();
 
-  const accountId = 1;
   const SERVER_URL = 'http://localhost:8080';
 
   useEffect(() => {
-    axios
-      .get(`${SERVER_URL}/api/reviews/user/${accountId}`)
-      .then((res) => setReviews(res.data))
-      .catch((err) => console.error('리뷰 불러오기 실패', err));
-  }, []);
+    if (!authLoading && !isLoggedIn) {
+      alert('로그인이 필요합니다.');
+      router.push('/login');
+    }
+  }, [authLoading, isLoggedIn, router]);
+
+  useEffect(() => {
+    if (user?.id) {
+      axios
+        .get(`${SERVER_URL}/api/reviews/user/${user.id}`)
+        .then((res) => setReviews(res.data))
+        .catch((err) => console.error('리뷰 불러오기 실패', err));
+    }
+  }, [user]);
 
   const handleClickMenu = (id) => {
     setActiveMenuId((prev) => (prev === id ? null : id));
   };
+
+  if (authLoading) return <p>로딩 중...</p>;
 
   return (
     <div style={{ padding: '24px' }}>
@@ -31,8 +43,7 @@ const MyReviewsPage = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {reviews.map((review) => {
-            // ✅ 이미지 경로 로그 확인용
-            console.log("이미지 경로: ", review.images?.[0]);
+            console.log("이미지 경로: ", review.images?.[0]);  // ✅ 이미지 경로 로그 확인용
 
             return (
               <div

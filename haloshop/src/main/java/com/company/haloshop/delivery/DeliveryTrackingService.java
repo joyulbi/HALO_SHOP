@@ -20,7 +20,7 @@ public class DeliveryTrackingService {
 		return deliveryTrackingMapper.findByOrderItemsId(orderItemsId);
 	}
 	
-	public void updateStatus(DeliveryTrackingDTO tracking) {
+	public void updateTracking(DeliveryTrackingDTO tracking) {
 		deliveryTrackingMapper.updateStatus(tracking);
 	}
 	
