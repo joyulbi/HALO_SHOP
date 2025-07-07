@@ -78,11 +78,19 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
         loginFailMap.clear();
     }
 
+    
+    
     @Override
     protected void doFilterInternal(HttpServletRequest rawRequest,
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
+        // 0) multipart/form-data 요청은 본문을 미리 읽지 않고 그대로 다음 필터/컨트롤러로 넘김
+        String contentType = rawRequest.getContentType();
+        if (contentType != null && contentType.toLowerCase().startsWith("multipart/")) {
+            chain.doFilter(rawRequest, response);
+            return;
+        }
 
         // 1) 요청 래핑 및 본문 캐싱
         CachedBodyHttpServletRequest req = new CachedBodyHttpServletRequest(rawRequest);
@@ -124,13 +132,13 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
         }
 
         // 6) 비인가 직접 접근 (403)
-        if (userId == null && startsWithAny(req.getRequestURI(), suspiciousPaths)) {
-            logOnce.accept(logDto(null, null, "SUSPECT_DIRECT_ACCESS",
-                                  "Unauthorized access to " + req.getRequestURI(), ip));
-            response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                               "Forbidden direct access");
-            return;
-        }
+//        if (userId == null && startsWithAny(req.getRequestURI(), suspiciousPaths)) {
+//            logOnce.accept(logDto(null, null, "SUSPECT_DIRECT_ACCESS",
+//                                  "Unauthorized access to " + req.getRequestURI(), ip));
+//            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+//                               "Forbidden direct access");
+//            return;
+//        }
 
         // 7) 비정상 상태 유저 접근 (403)
         Integer status = Optional.ofNullable(req.getSession(false))
@@ -155,23 +163,36 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 9) Referer 검사 (403)
-        if (List.of("POST","DELETE").contains(req.getMethod())) {
-            String uri = req.getRequestURI();
-            // [추가] 로그인/회원가입은 Referer 검증 건너뛰기
-            if (uri.startsWith("/auth/login") || uri.startsWith("/auth/signup")) {
-                chain.doFilter(req, response);
-                return;
-            }
-            String ref = req.getHeader("Referer");
-            if (ref == null || !ref.startsWith(ALLOWED_ORIGIN)) {
-                logOnce.accept(logDto(userId, null, "SUSPECT_REFERER_MISMATCH",
-                                      "Referer invalid: " + ref, ip));
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                   "Forbidden referer");
-                return;
-            }
-        }
+     // 9) Referer 검사 (403)
+//        if (List.of("POST","DELETE").contains(req.getMethod())) {
+//            String uri = req.getRequestURI();
+//
+//            // 1) /api 로 시작하는 모든 엔드포인트는 검증 건너뛰기
+//            if (uri.startsWith("/api")) {
+//                chain.doFilter(req, response);
+//                return;
+//            }
+//
+//            // 2) 로그인·회원가입은 건너뛰기
+//            if (uri.startsWith("/auth/login") || uri.startsWith("/auth/signup")) {
+//                chain.doFilter(req, response);
+//                return;
+//            }
+//
+//            // (기존 개별 스킵 대상들은 이제 없어도 됩니다.)
+//
+//            String ref = req.getHeader("Referer");
+//            if (ref == null || !ref.startsWith(ALLOWED_ORIGIN)) {
+//                logOnce.accept(logDto(userId, null, "SUSPECT_REFERER_MISMATCH",
+//                                      "Referer invalid: " + ref, ip));
+//                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+//                                   "Forbidden referer");
+//                return;
+//            }
+//        }
+
+
+
 
         // 10) 과도한 요청 (rate limit + 1분 차단 → 429)
         if (applyRateLimit(req, userId, ip, logOnce)) {
