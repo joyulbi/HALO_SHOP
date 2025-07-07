@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -33,7 +35,7 @@ import com.company.haloshop.security.JwtAuthenticationFilter;
 import com.company.haloshop.security.JwtTokenProvider;
 import com.company.haloshop.security.UserDetailsServiceImpl;
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
-import com.company.haloshop.security.Role;
+import com.company.haloshop.security.middleware.AttackDetectionFilter;  // 추가된 필터 import
 
 /**
  * 애플리케이션 전반의 보안 설정 클래스
@@ -45,13 +47,19 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtBlacklistMapper jwtBlacklistMapper;
+    private final AttackDetectionFilter attackDetectionFilter;  // 주입된 공격 탐지 필터
+    private final BotDetectionFilter botDetectionFilter;        // 주입된 봇 탐지 필터
 
     public SecurityConfig(UserDetailsServiceImpl userDetailsService,
                           JwtTokenProvider jwtTokenProvider,
-                          JwtBlacklistMapper jwtBlacklistMapper) {
+                          JwtBlacklistMapper jwtBlacklistMapper,
+                          AttackDetectionFilter attackDetectionFilter,
+                          BotDetectionFilter botDetectionFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtBlacklistMapper = jwtBlacklistMapper;
+        this.attackDetectionFilter = attackDetectionFilter;
+        this.botDetectionFilter = botDetectionFilter;
     }
 
     /**
@@ -68,18 +76,6 @@ public class SecurityConfig {
      * 관리자를 위한 Argon2PasswordEncoder 빈 등록
      * Argon2는 메모리 사용량, 병렬 처리 수, 반복 횟수 등을 조정하여
      * GPU/ASIC 기반 공격에도 매우 강력한 암호화 구현체
-     * 
-     * 파라미터 상세 설명:
-     * - saltLength: 솔트 바이트 길이 (여기선 16바이트 생성)
-     * - hashLength: 결과 해시 바이트 길이 (32바이트 출력)
-     * - parallelism: 병렬 처리 스레드 수 (1로 설정하여 단일 스레드)
-     * - memory: 메모리 사용량(KB 단위, 65536 = 64MB)
-     *   * 메모리 기반 공격(메모리 접근 비용 증가)에 대항
-     * - iterations: 해시 반복 수행 횟수 (4회 반복);
-     *   * 반복 횟수 증가로 연산 비용 상승
-     * 
-     * 이 설정은 높은 보안성 보장하나,
-     * 서버 리소스 사용량이 크므로 사전 부하 테스트 권장
      */
     @Bean
     public PasswordEncoder adminPasswordEncoder() {
@@ -96,7 +92,6 @@ public class SecurityConfig {
      * AuthenticationManager 빈 등록
      * - 관리자 인증용 Provider: Argon2PasswordEncoder
      * - 일반 사용자 인증용 Provider: BCryptPasswordEncoder
-     * 관리자 인증 실패 시, 일반 사용자 인증으로 위임
      */
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -108,14 +103,12 @@ public class SecurityConfig {
         userProvider.setUserDetailsService(userDetailsService);
         userProvider.setPasswordEncoder(userPasswordEncoder());
 
-        // 순서대로 관리자 -> 사용자 인증 시도
         return new ProviderManager(Arrays.asList(adminProvider, userProvider));
     }
 
     /**
      * JWT 인증 필터 빈 등록
      * - Authorization 헤더의 Bearer 토큰을 검증
-     * - 블랙리스트에 없는 경우, SecurityContextHolder에 인증 정보 설정
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -125,6 +118,15 @@ public class SecurityConfig {
     /**
      * 전체 보안 필터 체인 설정
      */
+    
+    /**
+     * 봇 탐지 및 차단 필터 빈 등록
+     */
+    @Bean
+    public BotDetectionFilter botDetectionFilter() {
+        return new BotDetectionFilter();
+    }
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -132,8 +134,6 @@ public class SecurityConfig {
             .authenticationManager(authenticationManager())
 
             // 2) 세션 정책: IF_REQUIRED
-            //    - 세션 로그인(관리자) 시 세션 생성
-            //    - JWT 로그인(사용자) 시 Stateless
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
@@ -141,29 +141,24 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers("/api/**", "/auth/**", "/user/me", "/admin/**")
+                .ignoringAntMatchers("/api/**", "/auth/**", "/user/me", "/admin/**","/security/**")
             )
 
             // 4) 권한 및 URL 접근 제어
             .authorizeRequests(authz -> authz
-                // 4-1) 로그인, 회원가입은 모두 허용
                 .antMatchers("/auth/**").permitAll()
-                // 4-2) 공개 API
                 .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
                 .antMatchers("/api/**").permitAll()
-                // 4-3) 내 정보 조회(세션/JWT) 허용
                 .antMatchers("/admin/me").permitAll()
                 .antMatchers("/user/me").permitAll()
-                // 4-4) 일반 유저 전용 페이지
                 .antMatchers("/user/**").authenticated()
-                // 4-5) 관리자 엔드포인트: isAdmin 플래그 체크
                 .antMatchers("/admin/**").access("@adminCheck.hasAuthority(authentication)")
-                // 4-6) 상세 관리자 권한: Role 매칭 검사
                 .antMatchers("/admin/user/**")
                     .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).USER_ADMIN)")
                 .antMatchers("/admin/security/**")
-                	.access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
-                // 4-7) 기타 모든 요청 허용
+                    .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
+                .antMatchers("/security/**")
+                    .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
                 .anyRequest().permitAll()
             )
 
@@ -186,8 +181,15 @@ public class SecurityConfig {
 
             // 7) CORS 설정 및 커스텀 필터 배치
             .cors().and()
+
+            // AttackDetectionFilter: 세션 로그인 필터 앞
+            .addFilterBefore(attackDetectionFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // JWT 인증 필터: 역시 세션 로그인 필터 앞
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(new BotDetectionFilter(), JwtAuthenticationFilter.class)
+
+            // 봇 탐지 및 차단 필터: JWT 필터 뒤
+            .addFilterAfter(botDetectionFilter, JwtAuthenticationFilter.class)
         ;
 
         return http.build();
@@ -208,6 +210,8 @@ public class SecurityConfig {
      * 봇 탐지 및 차단 필터
      * - 구글봇 제외, 주요 크롤러 User-Agent 차단
      */
+    @Component
+    @Order(3)
     public static class BotDetectionFilter extends OncePerRequestFilter {
         private static final List<String> BLOCKED_BOTS = Arrays.asList(
             "BingBot", "Slurp", "DuckDuckBot", "Baiduspider", "YandexBot",
@@ -221,13 +225,11 @@ public class SecurityConfig {
                 throws ServletException, IOException {
             String ua = request.getHeader("User-Agent");
             if (ua != null) {
-                // 구글봇은 허용
                 if (ua.contains(ALLOWED_GOOGLEBOT)) {
                     chain.doFilter(request, response);
                     return;
                 }
                 String uaLower = ua.toLowerCase();
-                // 차단 목록에 해당되면 403 Forbidden
                 for (String bot : BLOCKED_BOTS) {
                     if (uaLower.contains(bot.toLowerCase())) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied: Bot blocked");

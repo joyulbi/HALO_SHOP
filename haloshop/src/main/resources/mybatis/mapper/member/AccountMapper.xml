@@ -1,105 +1,147 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.company.haloshop.member.mapper.AccountMapper">
 
-  <!--
-    AccountDto 결과 매핑
-    테이블 account 컬럼과 DTO 필드 연결
-  -->
+  <!-- AccountDto 결과 매핑 -->
   <resultMap id="AccountResultMap" type="com.company.haloshop.dto.member.AccountDto">
-    <id property="id" column="id" />
-    <result property="email" column="email" />
-    <result property="password" column="password" />
-    <result property="emailChk" column="email_chk" />
-    <result property="nickname" column="nickname" />
-    <result property="isAdmin" column="is_admin" />
-    <result property="lastActive" column="last_active" />
-    <result property="ip" column="ip" />
-    <result property="phone" column="phone" />
+    <id     property="id"                column="id" />
+    <result property="email"             column="email" />
+    <result property="password"          column="password" />
+    <result property="emailChk"          column="email_chk" />
+    <result property="nickname"          column="nickname" />
+    <result property="isAdmin"           column="is_admin" />
+    <result property="lastActive"        column="last_active" />
+    <result property="ip"                column="ip" />
+    <result property="phone"             column="phone" />
     <result property="passwordUpdatedAt" column="password_updated_at" />
-    <result property="createdAt" column="created_at" />
-    <result property="userStatusId" column="user_status_id" />
-    <result property="updatedAt" column="updated_at" />
-    <result property="socialId" column="social_id" />
+    <result property="createdAt"         column="created_at" />
+    <result property="userStatusId"      column="user_status_id" />
+    <result property="updatedAt"         column="updated_at" />
+    <result property="socialId"          column="social_id" />
   </resultMap>
 
-  <!--
-    ID로 Account 조회 쿼리
-  -->
-  <select id="selectById" parameterType="long" resultMap="AccountResultMap">
-    SELECT * FROM account WHERE id = #{id}
+  <!-- 1) ID로 Account 조회 -->
+  <select id="selectById"
+          parameterType="long"
+          resultMap="AccountResultMap">
+    SELECT *
+      FROM account
+     WHERE id = #{id}
   </select>
 
-  <!--
-    이메일로 Account 조회 쿼리
-  -->
-  <select id="selectByEmail" parameterType="string" resultMap="AccountResultMap">
-    SELECT * FROM account WHERE email = #{email}
+  <!-- 2) 이메일로 Account 조회 -->
+  <select id="selectByEmail"
+          parameterType="string"
+          resultMap="AccountResultMap">
+    SELECT *
+      FROM account
+     WHERE email = #{email}
   </select>
 
-  <!--
-    모든 Account 목록 조회 쿼리
-  -->
-  <select id="selectAll" resultMap="AccountResultMap">
-    SELECT * FROM account
+  <!-- 3) 모든 Account 목록 조회 -->
+  <select id="selectAll"
+          resultMap="AccountResultMap">
+    SELECT *
+      FROM account
   </select>
 
-  <!--
-    Account 데이터 삽입 쿼리
-    - 자동 생성키(id) 사용 설정
-  -->
-  <insert id="insertAccount" parameterType="com.company.haloshop.dto.member.AccountDto" useGeneratedKeys="true" keyProperty="id">
+  <!-- 4) Account 데이터 삽입 -->
+  <insert id="insertAccount"
+          parameterType="com.company.haloshop.dto.member.AccountDto"
+          useGeneratedKeys="true"
+          keyProperty="id">
     INSERT INTO account (
-      email, password, email_chk, nickname, is_admin, last_active, ip, phone, password_updated_at, created_at, user_status_id, updated_at, social_id
+      email,
+      password,
+      email_chk,
+      nickname,
+      is_admin,
+      last_active,
+      ip,
+      phone,
+      password_updated_at,
+      created_at,
+      user_status_id,
+      updated_at,
+      social_id
     ) VALUES (
-      #{email}, #{password}, #{emailChk}, #{nickname}, #{isAdmin}, #{lastActive}, #{ip}, #{phone}, #{passwordUpdatedAt}, #{createdAt}, #{userStatusId}, #{updatedAt}, #{socialId}
+      #{email},
+      #{password},
+      #{emailChk},
+      #{nickname},
+      #{isAdmin},
+      #{lastActive},
+      #{ip},
+      #{phone},
+      #{passwordUpdatedAt},
+      #{createdAt},
+      #{userStatusId},
+      #{updatedAt},
+      #{socialId}
     )
   </insert>
 
-  <!--
-    Account 데이터 수정 쿼리
-  -->
-  <update id="updateAccount" parameterType="com.company.haloshop.dto.member.AccountDto">
+  <!-- 5) 전체 필드 업데이트 -->
+  <update id="updateAccount"
+          parameterType="com.company.haloshop.dto.member.AccountDto">
     UPDATE account
-    SET
-      email = #{email},
-      password = #{password},
-      email_chk = #{emailChk},
-      nickname = #{nickname},
-      is_admin = #{isAdmin},
-      last_active = #{lastActive},
-      ip = #{ip},
-      phone = #{phone},
-      password_updated_at = #{passwordUpdatedAt},
-      created_at = #{createdAt},
-      user_status_id = #{userStatusId},
-      updated_at = #{updatedAt},
-      social_id = #{socialId}
-    WHERE id = #{id}
+       SET email               = #{email},
+           password            = #{password},
+           email_chk           = #{emailChk},
+           nickname            = #{nickname},
+           is_admin            = #{isAdmin},
+           last_active         = #{lastActive},
+           ip                  = #{ip},
+           phone               = #{phone},
+           password_updated_at = #{passwordUpdatedAt},
+           created_at          = #{createdAt},
+           user_status_id      = #{userStatusId},
+           updated_at          = #{updatedAt},
+           social_id           = #{socialId}
+     WHERE id = #{id}
   </update>
 
-  <!--
-    ID 기준 Account 삭제 쿼리
-  -->
-  <delete id="deleteById" parameterType="long">
-    DELETE FROM account WHERE id = #{id}
-  </delete>
-
-	<update id="updateAccountLastActive" parameterType="map">
-	    UPDATE account
-	    SET last_active = #{lastActive}
-	    WHERE id = #{accountId}
-	</update>
-	
-  <!-- 부분(닉네임/이메일) 수정 쿼리 -->
-  <update id="updateAccountFields" parameterType="com.company.haloshop.dto.member.AccountDto">
+  <!-- 6) 부분 업데이트 (필요한 필드만) -->
+  <update id="updateAccountFields"
+          parameterType="com.company.haloshop.dto.member.AccountDto">
     UPDATE account
     <set>
-      <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>
-      <if test="email != null and email != ''">email = #{email},</if>
+      <if test="nickname != null and nickname != ''">
+        nickname = #{nickname},
+      </if>
+      <if test="email != null and email != ''">
+        email = #{email},
+      </if>
+      <if test="phone != null">
+        phone = #{phone},
+      </if>
+      <if test="userStatusId != null">
+        user_status_id = #{userStatusId},
+      </if>
+      <if test="ip != null">
+        ip = #{ip},
+      </if>
+      <!-- 필요에 따라 추가 필드도 여기에 넣어주세요 -->
     </set>
     WHERE id = #{id}
   </update>
+
+  <!-- 7) 마지막 활동 시간만 업데이트 -->
+  <update id="updateAccountLastActive"
+          parameterType="map">
+    UPDATE account
+       SET last_active = #{lastActive}
+     WHERE id = #{accountId}
+  </update>
+
+  <!-- 8) ID 기준 삭제 -->
+  <delete id="deleteById"
+          parameterType="long">
+    DELETE FROM account
+     WHERE id = #{id}
+  </delete>
 
 </mapper>

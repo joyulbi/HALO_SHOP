@@ -1,22 +1,24 @@
 package com.company.haloshop.order;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.company.haloshop.delivery.DeliveryTrackingService;
-import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
+import com.company.haloshop.inventory.InventoryService;
 import com.company.haloshop.orderitem.OrderItemMapper;
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -25,7 +27,8 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
-    private final DeliveryTrackingService deliveryTrackingService;
+    private final InventoryService inventoryService;
+
 
     public List<OrderDto> findAll() {
         return orderMapper.findAll();
@@ -107,43 +110,36 @@ public class OrderService {
         return orderId;
     }
     
-    // 결제 상태 업데이트
     @Transactional
     public void updatePaymentStatus(Long orderId, String paymentStatus) {
-    	// ✅ 1) 결제 상태 업데이트
         orderMapper.updateStatus(orderId, paymentStatus);
-        
-        // ✅ 2) 결제 완료 시 처리
-        if ("PAID".equalsIgnoreCase(paymentStatus)) {
-        	// ✅ 3) 해당 주문의 모든 order_items 조회
-        	List<OrderItemDto> items = orderItemMapper.findByOrderId(orderId);
-        	
-        	// ✅ 4) 갹 order_item을 delivery_tracking에 등록
-        	for (OrderItemDto item : items) {
-        		DeliveryTrackingDTO tracking = DeliveryTrackingDTO.builder()
-        				.orderItemsId(item.getId())
-        				.status("배송준비중")
-        				.trackingNumber("미정")
-        				.carrier("미정")
-        				.updatedAt(LocalDateTime.now())
-        				.build();
-        		deliveryTrackingService.insertTracking(tracking);
-        	}
+        System.out.println("🚩 결제 상태 업데이트 완료: orderId=" + orderId + ", status=" + paymentStatus);
+
+        if ("PAID".equals(paymentStatus)) {
+            List<OrderItemDto> orderItems = orderItemMapper.findByOrderId(orderId);
+            System.out.println("🚩 주문 아이템 수: " + orderItems.size());
+
+            // 🚩🚩🚩 [여기] 로그 넣기
+            for (OrderItemDto item : orderItems) {
+                log.info("✅ [검증] orderId={}, itemId={}, itemName={}, quantity={}",
+                    orderId, item.getItemId(), item.getItemName(), item.getQuantity());
+            }
+
+            for (OrderItemDto item : orderItems) {
+                boolean isEnough = inventoryService.checkInventoryEnough(item.getItemId(), item.getQuantity());
+                if (!isEnough) {
+                    throw new IllegalStateException("재고가 부족하여 결제를 완료할 수 없습니다. itemId=" + item.getItemId());
+                }
+            }
+
+            for (OrderItemDto item : orderItems) {
+                System.out.println("🚩 재고 차감 시도: itemId=" + item.getItemId() + ", quantity=" + item.getQuantity());
+                inventoryService.decreaseInventory(item.getItemId(), item.getQuantity());
+            }
         }
     }
-    
-    // 배송 상태 업데이트
-    @Transactional
-    public void updateDeliveryStatus(Long orderItemId, String status, String trackingNumber, String carrier) {
-    	DeliveryTrackingDTO trackingDTO = DeliveryTrackingDTO.builder()
-    			.orderItemsId(orderItemId)
-    			.status(status)
-    			.trackingNumber(trackingNumber)
-    			.carrier(carrier)
-    			.updatedAt(LocalDateTime.now())
-    			.build();
-    	deliveryTrackingService.updateTracking(trackingDTO);
-    }
+
+
 
 
 

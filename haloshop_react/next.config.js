@@ -10,6 +10,13 @@ module.exports = {
         source: '/auth/:path*',
         destination: 'http://localhost:8080/auth/:path*',
       },
+      {
+        source: '/admin/:path*',               // ← 추가
+        destination: 'http://localhost:8080/admin/:path*',
+      },
+      { source: '/security/:path*', 
+        destination: 'http://localhost:8080/security/:path*' 
+      },
     ];
   },
 };

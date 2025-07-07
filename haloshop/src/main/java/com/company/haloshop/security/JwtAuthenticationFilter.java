@@ -1,26 +1,28 @@
 package com.company.haloshop.security;
 
+import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
-import com.company.haloshop.security.UserDetailsServiceImpl;
-
-import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * JWT 인증 필터
  * 요청의 Authorization 헤더에서 JWT 토큰을 추출하여 유효성을 검사하고,
  * 유효한 경우 SecurityContextHolder에 인증 정보를 설정
  */
+
+@Order(2)  // AttackDetectionFilter(@Order(1)) 다음, BotDetectionFilter(@Order(3)) 이전
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
