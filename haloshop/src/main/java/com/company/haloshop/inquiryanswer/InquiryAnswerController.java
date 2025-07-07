@@ -1,9 +1,9 @@
 package com.company.haloshop.inquiryanswer;
 
-import java.net.URI;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,52 +12,47 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/inquiry-answers")
-@CrossOrigin(origins="http://localhost:3000")
-@RequiredArgsConstructor
 public class InquiryAnswerController {
 
-    private final InquiryAnswerService inquiryAnswerService;
+    @Autowired
+    private InquiryAnswerService inquiryAnswerService;
 
-    // 답변 등록
+    // 1. 답변 등록
     @PostMapping
-    public ResponseEntity<Void> createAnswer(@RequestBody InquiryAnswerRequestDto dto) {
-        inquiryAnswerService.createAnswer(dto);
-        URI location = ServletUriComponentsBuilder
-            .fromCurrentRequest()
-            .path("/{id}")
-            .buildAndExpand(dto.getInquiryId())
-            .toUri();
-        return ResponseEntity.created(location).build();
+    public ResponseEntity<Void> createAnswer(@RequestBody InquiryAnswer answer, @AuthenticationPrincipal(expression = "id") Long principalId, Authentication authentication) {
+        // principal.getName()이 userId 혹은 email이라면, DB 조회해서 accountId 추출 필요
+        // 예를 들어, principal.getName()이 이메일이라 가정
+    	System.out.println("프린시발 : "+ principalId);
+
+        answer.setAccountId(principalId);
+
+        inquiryAnswerService.createAnswer(answer);
+        return ResponseEntity.ok().build();
     }
 
-    // 답변 조회
+    // 2. 특정 문의에 대한 답변 조회
     @GetMapping("/{inquiryId}")
     public ResponseEntity<InquiryAnswer> getAnswer(@PathVariable Long inquiryId) {
         InquiryAnswer answer = inquiryAnswerService.getAnswerByInquiryId(inquiryId);
         return ResponseEntity.ok(answer);
     }
 
-    // 답변 수정
+    // 3. 답변 수정
     @PutMapping("/{inquiryId}")
     public ResponseEntity<Void> updateAnswer(@PathVariable Long inquiryId, @RequestBody InquiryAnswer answer) {
-        // PathVariable과 RequestBody inquiryId 일치 확인 권장
-        if (!inquiryId.equals(answer.getInquiryId())) {
-            return ResponseEntity.badRequest().build();
-        }
+        answer.setInquiryId(inquiryId);
         inquiryAnswerService.updateAnswer(answer);
         return ResponseEntity.ok().build();
     }
 
-    // 답변 삭제
+    // 4. 답변 삭제
     @DeleteMapping("/{inquiryId}")
     public ResponseEntity<Void> deleteAnswer(@PathVariable Long inquiryId) {
         inquiryAnswerService.deleteAnswer(inquiryId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
+   
 }

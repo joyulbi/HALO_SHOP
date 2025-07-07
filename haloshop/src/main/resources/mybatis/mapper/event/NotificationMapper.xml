@@ -1,34 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.company.haloshop.notification.NotificationMapper">
 
-    <resultMap id="NotificationDtoResultMap" type="com.company.haloshop.notification.NotificationDto">
-        <id property="id" column="id" />
-        <result property="receiverId" column="receiver_id" />
-        <result property="entityId" column="entity_id" />
-        <result property="referenceId" column="reference_id" />
-        <result property="isRead" column="is_read" />
-        <result property="createdAt" column="created_at" />
-    </resultMap>
-
-    <insert id="createNotification" parameterType="com.company.haloshop.notification.NotificationDto" useGeneratedKeys="true" keyProperty="id">
+    <!-- 1. 알림 생성 -->
+    <insert id="insert" parameterType="com.company.haloshop.notification.Notification" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO notification (receiver_id, entity_id, reference_id, is_read, created_at)
-        VALUES (#{receiverId}, #{entityId}, #{referenceId}, #{isRead}, #{createdAt})
+        VALUES (#{receiver.id}, #{entity.id}, #{referenceId}, #{isRead}, #{createdAt})
     </insert>
 
-    <select id="findByReceiverId" parameterType="long" resultMap="NotificationDtoResultMap">
-        SELECT * FROM notification
+    <!-- 2. 본인 알림 조회 -->
+    <select id="findByReceiverId" parameterType="long" resultType="com.company.haloshop.notification.Notification">
+        SELECT id, receiver_id, entity_id, reference_id, is_read, created_at
+        FROM notification
         WHERE receiver_id = #{receiverId}
         ORDER BY created_at DESC
     </select>
 
-    <update id="updateReadStatus" parameterType="map">
+    <!-- 3. 알림 읽음 상태 업데이트 -->
+    <update id="updateById" parameterType="map">
         UPDATE notification
         SET is_read = #{isRead}
         WHERE id = #{id}
     </update>
+
+    <!-- 4. 알림 삭제 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM notification
+        WHERE id = #{id}
+    </delete>
 
 </mapper>
