@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import StarRating from '../../../components/StarRating';
+import AdminLayout from '../AdminLayout';
 
 const AdminReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -33,6 +34,7 @@ const AdminReviewsPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div style={{ padding: '32px' }}>
       <h2 style={{ marginBottom: '24px' }}>리뷰 관리</h2>
 
@@ -94,6 +96,7 @@ const AdminReviewsPage = () => {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 };
 

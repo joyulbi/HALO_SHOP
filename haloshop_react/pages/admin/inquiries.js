@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import InquiriesManagement from "../../components/InquiriesManagement";
+import AdminLayout from './AdminLayout'; 
 
 const Container = styled.div`
   width: 70vw;
@@ -40,18 +41,20 @@ const Inquiries = () => {
   }, []);
 
   return (
-    <Container>
-      <Header>
-        <Title>문의 목록</Title>
-        <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="SUBMITTED">접수됨</option>
-          <option value="REVIEWING">검토중</option>
-          <option value="ANSWERED">답변완료</option>
-        </Select>
-      </Header>
+    <AdminLayout>
+      <Container>
+        <Header>
+          <Title>문의 목록</Title>
+          <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="SUBMITTED">접수됨</option>
+            <option value="REVIEWING">검토중</option>
+            <option value="ANSWERED">답변완료</option>
+          </Select>
+        </Header>
 
-      <InquiriesManagement status={status} token={token} />
-    </Container>
+        <InquiriesManagement status={status} token={token} />
+      </Container>
+    </AdminLayout>
   );
 };
 

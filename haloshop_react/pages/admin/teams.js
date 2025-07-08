@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import TeamCreateModal from "../../components/TeamCreateModal";
+import AdminLayout from './AdminLayout';
 
 const Container = styled.div`
   width: 60vw;
@@ -140,6 +141,7 @@ const TeamManagement = () => {
   };
 
   return (
+    <AdminLayout>
     <Container>
       <h3>팀 설정</h3>
       <ButtonWrapper>
@@ -214,6 +216,7 @@ const TeamManagement = () => {
         <TeamCreateModal onClose={() => setShowModal(false)} onCreated={fetchTeams} />
       )}
     </Container>
+    </AdminLayout>
   );
 };
 

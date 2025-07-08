@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
 import useCategories from '../../../hooks/useCategories';
+import AdminLayout from '../AdminLayout';
+
 
 const EditItemPage = () => {
   const router = useRouter();
@@ -91,6 +93,7 @@ const EditItemPage = () => {
   if (!item) return <div>Loading...</div>;
 
   return (
+    <AdminLayout>
     <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '32px', textAlign: 'center' }}>
         관리자 상품 수정 페이지
@@ -231,6 +234,7 @@ const EditItemPage = () => {
         </form>
       </div>
     </div>
+    </AdminLayout>
   );
 };
 
