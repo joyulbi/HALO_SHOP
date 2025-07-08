@@ -28,13 +28,20 @@ const ItemDetail = () => {
   const { cartButtonRef } = useContext(CartButtonContext);
   const { fetchCartCount } = useCart();
 
-  useEffect(() => {
-    if (id) {
-      api.get(`/api/items/${id}`)
-        .then(res => setItem(res.data))
-        .catch(err => console.error('상품 상세 불러오기 실패:', err));
-    }
-  }, [id]);
+useEffect(() => {
+  if (!id) return;
+
+  api.get(`/api/items/${id}`)  // 로그인 필요 없는 API니까 토큰 필요 없음
+    .then(res => setItem(res.data))
+    .catch(err => {
+      if (err.response?.status === 404) {
+        alert("해당 상품이 존재하지 않습니다.");
+        router.push("/");
+      } else {
+        console.error('상품 상세 불러오기 실패:', err);
+      }
+    });
+}, [id]);
 
   const handleMouseMove = (e) => {
     let x = e.nativeEvent.offsetX;
@@ -65,50 +72,61 @@ const ItemDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    const productImage = item.images && item.images.length > 0 ? `http://localhost:8080${item.images[0].url}` : '/images/no-image.png';
+  const token = localStorage.getItem("accessToken");
 
-    const productRect = productImageRef.current.getBoundingClientRect();
-    const targetRect = cartButtonRef.current.getBoundingClientRect();
+  // 비로그인 상태일 경우
+  if (!token) {
+    alert("로그인 후 이용 가능합니다.");
+    router.push("/login"); // 필요 없으면 이 줄은 제거해도 됨
+    return;
+  }
 
-    const startX = productRect.left;
-    const startY = productRect.top;
+  const productImage = item.images && item.images.length > 0
+    ? `http://localhost:8080${item.images[0].url}`
+    : '/images/no-image.png';
 
-    const centerX = window.innerWidth / 2 - productRect.width / 2;
-    const centerY = window.innerHeight / 2 - productRect.height / 2;
+  const productRect = productImageRef.current.getBoundingClientRect();
+  const targetRect = cartButtonRef.current.getBoundingClientRect();
 
-    const endX = targetRect.left + targetRect.width / 2 - productRect.width / 2;
-    const endY = targetRect.top + targetRect.height / 2 - productRect.height / 2;
+  const startX = productRect.left;
+  const startY = productRect.top;
 
-    const newAnimationName = `flyToCart${Date.now()}`;
-    setAnimationName(newAnimationName);
+  const centerX = window.innerWidth / 2 - productRect.width / 2;
+  const centerY = window.innerHeight / 2 - productRect.height / 2;
 
-    const styleSheet = document.styleSheets[0];
-    const keyframes =
-      `@keyframes ${newAnimationName} {
-        0% { transform: translate(${startX}px, ${startY}px) scale(1); }
-        50% { transform: translate(${centerX}px, ${centerY}px) scale(0.3); }
-        100% { transform: translate(${endX}px, ${endY}px) scale(0.1); }
-      }`;
-    styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+  const endX = targetRect.left + targetRect.width / 2 - productRect.width / 2;
+  const endY = targetRect.top + targetRect.height / 2 - productRect.height / 2;
 
-    setFlyImage(productImage);
-    setFlyStyle({
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: `${productRect.width}px`,
-      height: `${productRect.height}px`,
-      animation: `${newAnimationName} 1.2s ease-in-out forwards`,
-      zIndex: 9999
-    });
-    setIsFlying(true);
+  const newAnimationName = `flyToCart${Date.now()}`;
+  setAnimationName(newAnimationName);
 
+  const styleSheet = document.styleSheets[0];
+  const keyframes =
+    `@keyframes ${newAnimationName} {
+      0% { transform: translate(${startX}px, ${startY}px) scale(1); }
+      50% { transform: translate(${centerX}px, ${centerY}px) scale(0.3); }
+      100% { transform: translate(${endX}px, ${endY}px) scale(0.1); }
+    }`;
+  styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+
+  setFlyImage(productImage);
+  setFlyStyle({
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: `${productRect.width}px`,
+    height: `${productRect.height}px`,
+    animation: `${newAnimationName} 1.2s ease-in-out forwards`,
+    zIndex: 9999
+  });
+  setIsFlying(true);
+
+  // ✅ 실제 장바구니 담기 요청
   api.post('/api/cart', {
-    accountId: 8,
+    accountId: 8, // 실제론 백엔드에서 토큰 기반 accountId 추출하는게 좋음
     itemsId: item.id,
     quantity: quantity
-  })
-    .catch(err => console.error('장바구니 담기 실패:', err));
+  }).catch(err => console.error('장바구니 담기 실패:', err));
 
   setTimeout(() => {
     setIsFlying(false);

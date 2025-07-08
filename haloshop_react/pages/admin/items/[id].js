@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../../utils/axios';
 import useCategories from '../../../hooks/useCategories';
 
 const EditItemPage = () => {
@@ -15,7 +15,7 @@ const EditItemPage = () => {
 
   const fetchItem = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/items/${id}`);
+      const res = await api.get(`http://localhost:8080/api/items/${id}`);
       console.log('불러온 상품 데이터 👉', res.data);
       setItem(res.data);
       const previews = res.data.images.map(img => `http://localhost:8080${img.url}`);
@@ -27,7 +27,7 @@ const EditItemPage = () => {
 
   const fetchTeams = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/teams');
+      const res = await api.get('http://localhost:8080/api/teams');
       setTeams(res.data);
     } catch (error) {
       console.error(error);
@@ -64,7 +64,7 @@ const EditItemPage = () => {
     });
 
     try {
-      await axios.put(`http://localhost:8080/api/items/admin/${id}`, formData, {
+      await api.put(`http://localhost:8080/api/items/admin/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert('수정 완료');
@@ -79,7 +79,7 @@ const EditItemPage = () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
-      await axios.delete(`http://localhost:8080/api/items/admin/${id}`);
+      await api.delete(`http://localhost:8080/api/items/admin/${id}`);
       alert('삭제 완료');
       router.push('/admin/items');
     } catch (error) {

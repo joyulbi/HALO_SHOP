@@ -66,6 +66,10 @@ const QuickMenu = ({ cartRef }) => {
       >
         👤
       </button>
+      <button
+        title="알림"
+        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>
+        🔔</button>
     </div>
   );
 };

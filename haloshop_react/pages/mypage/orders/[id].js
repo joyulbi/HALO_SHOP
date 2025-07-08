@@ -13,6 +13,7 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState(null);
   const [loadingOrder, setLoadingOrder] = useState(true);
 
+  // 주문 상세 조회
   const fetchOrder = async () => {
     try {
       const res = await api.get(`/api/orders/${id}`);
@@ -20,11 +21,9 @@ const OrderDetailPage = () => {
       setOrder(res.data);
     } catch (err) {
       console.error('🚩 주문 상세 조회 오류:', err);
-      if (err.response?.status === 403) {
-        alert('본인 주문만 조회할 수 있습니다.');
-      } else {
-        alert('주문 상세 조회 실패');
-      }
+      alert(err.response?.status === 403
+        ? '본인 주문만 조회할 수 있습니다.'
+        : '주문 상세 조회 실패');
       router.replace('/mypage/orders');
     } finally {
       setLoadingOrder(false);
@@ -51,7 +50,7 @@ const OrderDetailPage = () => {
 
   const requestRefund = () => {
     if (confirm('환불을 요청하시겠습니까? 고객센터 페이지로 이동합니다.')) {
-      window.location.href = 'http://localhost:3000/contact';
+      router.push('/contact');
     }
   };
 
@@ -113,10 +112,17 @@ const OrderDetailPage = () => {
                 background: '#fff',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
               }}>
+                {/* ✅ 이미지 경로 표시 부분 */}
                 <img
                   src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/images/no-image.png'}
                   alt={item.itemName}
-                  style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px', marginRight: '16px' }}
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    marginRight: '16px'
+                  }}
                 />
                 <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '6px' }}>{item.itemName}</h3>

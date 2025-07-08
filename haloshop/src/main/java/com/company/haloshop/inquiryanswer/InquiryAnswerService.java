@@ -1,14 +1,18 @@
 package com.company.haloshop.inquiryanswer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 import javax.transaction.Transactional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import com.company.haloshop.entity.member.Account;
+import com.company.haloshop.event.EventEntity;
 import com.company.haloshop.inquiry.Inquiry;
-import com.company.haloshop.inquiry.InquiryMapper;
+import com.company.haloshop.inquiry.InquiryService;
+import com.company.haloshop.notification.Notification;
+import com.company.haloshop.notification.NotificationEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,35 +21,21 @@ import lombok.RequiredArgsConstructor;
 public class InquiryAnswerService {
 
     private final InquiryAnswerMapper inquiryAnswerMapper;
-    private final InquiryMapper inquiryMapper;
+    private final ApplicationEventPublisher eventPublisher;
+    private final InquiryService inquiryService;
 
     // 답변 등록
     @Transactional
     public void createAnswer(InquiryAnswer answer) {
+        if (answer.getInquiryId() == null) {
+            throw new IllegalArgumentException("Inquiry ID must be provided");
+        }
+        if (answer.getAccountId() == null) {
+            throw new IllegalArgumentException("Answer must have accountId of the responder");
+        }
+
+        // 단순히 답변 insert만 수행
         inquiryAnswerMapper.insertInquiryAnswer(answer);
-    }
-    
-    @Transactional
-    public void createAnswer(InquiryAnswerRequestDto dto) {
-        InquiryAnswer answer = new InquiryAnswer();
-
-        // Inquiry 객체만 ID만 세팅해서 연관관계 설정
-        Inquiry inquiry = new Inquiry();
-        inquiry.setId(dto.getInquiryId());
-        answer.setInquiry(inquiry);
-        answer.setInquiryId(dto.getInquiryId());
-
-        answer.setAnswer(dto.getAnswer());
-        answer.setAccountId(dto.getAccountId());
-
-        createAnswer(answer);
-        // 답변된 문의 "답변완료" 처리
-        Map<String, Object> param = new HashMap<>();
-        param.put("id", dto.getInquiryId());
-        param.put("status", "ANSWERED");
-
-        // 상태 업데이트
-        inquiryMapper.updateInquiryStatus(param);
     }
 
     // 답변 조회
