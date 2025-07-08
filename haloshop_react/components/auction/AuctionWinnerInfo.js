@@ -39,7 +39,7 @@ export default function AuctionWinnerInfo({ auctionId }) {
   // 어드민 메모 저장
   const handleSaveMemo = async () => {
     try {
-      await api.post(`/api/auction-results/auction/${auctionId}/confirm`, { adminMemo }); // 구매확정이 아니더라도 메모만 수정 용도!
+      await api.post(`/api/auction-results/auction/${auctionId}/memo`, { adminMemo }); // 구매확정이 아니더라도 메모만 수정 용도!
       message.success("어드민 메모가 저장되었습니다.");
       setMemoModal(false);
     } catch (e) {
