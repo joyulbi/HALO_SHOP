@@ -33,7 +33,7 @@
 		parameterType="com.company.haloshop.dto.shop.DeliveryTrackingDTO">
 		UPDATE delivery_tracking
 		SET status = #{status},
-			tracking_number - #{trackingNumber},
+			tracking_number = #{trackingNumber},
 			carrier = #{carrier},
 			updated_at = now()
 		WHERE order_item_id = #{orderItemsId}

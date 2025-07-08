@@ -56,6 +56,15 @@ public class DeliveryService {
     // ✅ 배송상태 수정
     @Transactional
     public void updateDeliveryStatus(Long orderItemId, String status) {
+    	DeliveryDTO delivery = deliveryMapper.findByOrderItemId(orderItemId);
+    	
+    	if (delivery == null) {
+    		throw new IllegalArgumentException("주문 항목이 존재하지 않습니다.");
+    	}
+    	
+    	if (delivery.getDeliveryStatus().equals(status)) {
+    		throw new IllegalArgumentException("이미 배송 상태가 " + status + "입니다.");
+    	}
         deliveryMapper.updateDeliveryStatus(orderItemId, status);
     }
 
