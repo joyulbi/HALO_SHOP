@@ -107,9 +107,8 @@ const handleCheckout = () => {
           }}>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Summary</h3>
             <p>총 가격: {totalPrice.toLocaleString()}원</p>
-            <p>배송비: {deliveryFee.toLocaleString()}원</p>
             <p style={{ fontWeight: 'bold', color: '#c8102e', fontSize: '1.1rem' }}>
-              최종 결제 금액: {(totalPrice + deliveryFee).toLocaleString()}원
+              최종 결제 금액: {totalPrice}원
             </p>
 
             <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
