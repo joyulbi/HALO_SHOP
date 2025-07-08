@@ -13,6 +13,7 @@
     <!-- 조인으로 item 정보까지 불러오기 -->
     <select id="getCartList" resultType="com.company.haloshop.dto.shop.Cart">
         SELECT c.id, c.account_id, c.items_id, c.quantity, c.created_at, c.updated_at,
+               i.id AS items_id,
                i.name, i.price, 
                (SELECT url FROM items_image WHERE items_id = i.id LIMIT 1) AS imageUrl
         FROM cart c
