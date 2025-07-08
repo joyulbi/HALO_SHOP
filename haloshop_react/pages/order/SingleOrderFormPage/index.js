@@ -12,7 +12,7 @@ const SingleOrderFormPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [userPoint, setUserPoint] = useState(0); // ✅ 보유 포인트 상태 추가
 
-  const [addresses, setAddress] = useState([]);  // 등록된 배송지들
+  const [addresses, setAddresses] = useState([]);  // 등록된 배송지들
   const [selectedAddress, setSelectedAddress] = useState(null);  // 선택된 배송지
 
   const router = useRouter();
@@ -42,8 +42,8 @@ const SingleOrderFormPage = () => {
   // ✅ 배송지 목록 불러오기 함수
   const fetchAddresses = async () => {
     try {
-      const res = await api.get(`/api/delivery/${user.id}`);
-      setAddress(res.data);
+      const res = await api.get(`/api/deliveries/${user.id}`);
+      setAddresses(res.data);
     } catch (err) {
       console.error('배송지 목록 불러오기 실패: ', err);
     }
@@ -197,42 +197,10 @@ const SingleOrderFormPage = () => {
         boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
       }}>
         <DeliveryList
-          accountId={user?.id}
+          addresses={addresses}
           onSelect={setSelectedAddress}
         />
       </div>
-
-      {/* 등록된 배송지 리스트 추가 */}
-      {addresses.length > 0 && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '20px',
-          border: '1px solid #ddd',
-          borderRadius: '10px',
-          marginBottom: '20px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-        }}>
-          <h4>등록된 배송지 목록</h4>
-          {addresses.map((addr) => (
-            <div
-              key={addr.id}
-              onClick={() => setSelectedAddress(addr)}
-              style={{
-                padding: '10px',
-                marginBottom: '8px',
-                border: '1px solid #ccc',
-                borderRadius: '6px',
-                backgroundColor: selectedAddress?.id === addr.id ? '#e0f7fa' : '#fff',
-                cursor: 'pointer'
-              }}
-            >
-              <strong>{addr.recipientName}</strong> | {addr.address} {addr.addressDetail} ({addr.zipcode})
-            </div>
-          ))}
-        </div>
-      )}
 
       <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
         <h3>결제 요약</h3>
