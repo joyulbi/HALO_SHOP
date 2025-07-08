@@ -44,30 +44,39 @@ const ReviewPage = () => {
         orderItemsId: id,
         content: review.content,
         rating: review.rating,
-        accountId: user?.id  // ✅ 하드코딩 제거 → 로그인 유저 id 사용
+        accountId: user?.id, // 로그인된 유저 ID
       };
 
-      // ✅ JSON을 Blob으로 처리
-      formData.append("reviewDto", new Blob([JSON.stringify(reviewDto)], { type: "application/json" }));
+      // JSON -> Blob으로 변환해서 추가
+      formData.append(
+        'reviewDto',
+        new Blob([JSON.stringify(reviewDto)], { type: 'application/json' })
+      );
+
+      // 이미지 파일들 추가
       images.forEach((file) => {
-        formData.append("images", file);
+        formData.append('images', file);
       });
 
-      await axios.post("http://localhost:8080/api/reviews", formData);
+      await axios.post('/api/reviews', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       alert('리뷰 작성 완료');
       router.push('/delivery');
     } catch (err) {
+      console.error('[리뷰 작성 실패]', err);
       if (err.response?.status === 409) {
         alert('이미 리뷰를 작성하셨습니다.');
       } else {
-        alert('리뷰 작성 실패');
-        console.error(err);
+        alert('리뷰 작성 중 오류가 발생했습니다.');
       }
     }
   };
 
-  if (authLoading) return <p>로딩 중...</p>;  // ✅ 로딩 처리
+  if (authLoading) return <p>로딩 중...</p>; // 로그인 체크 중
 
   return (
     <div style={{ padding: '24px' }}>
@@ -79,7 +88,8 @@ const ReviewPage = () => {
         </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <label>리뷰 내용:</label><br />
+          <label>리뷰 내용:</label>
+          <br />
           <textarea
             name="content"
             rows={4}
@@ -91,8 +101,14 @@ const ReviewPage = () => {
         </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <label>이미지 첨부:</label><br />
-          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+          <label>이미지 첨부:</label>
+          <br />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+          />
         </div>
 
         <button type="submit">리뷰 등록</button>

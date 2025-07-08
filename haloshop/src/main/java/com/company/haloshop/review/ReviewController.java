@@ -1,12 +1,24 @@
 package com.company.haloshop.review;
 
-import com.company.haloshop.dto.shop.ReviewDTO;
-import lombok.RequiredArgsConstructor;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import com.company.haloshop.dto.shop.ReviewDTO;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -16,7 +28,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     // ✅ 리뷰 등록 (텍스트 + 이미지 처리 + 포인트 지급)
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createReview(
         @RequestPart("reviewDto") ReviewDTO reviewDto,
         @RequestPart(value = "images", required = false) List<MultipartFile> images) {
@@ -25,6 +37,10 @@ public class ReviewController {
         System.out.println("📸 받은 이미지 개수: " + (images != null ? images.size() : 0));
 
         try {
+            if (images == null) {
+                images = Collections.emptyList();
+            }
+
             Long reviewId = reviewService.writeReviewWithImagesAndPoints(reviewDto, images);
             boolean gavePoints = reviewDto.getContent().trim().length() >= 20;
 
