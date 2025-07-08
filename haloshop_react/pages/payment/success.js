@@ -1,15 +1,16 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from '../../utils/axios';
+import { useCart } from '../../context/CartContext';
 
 export default function KakaoSuccessPage() {
   const router = useRouter();
   const { pg_token, accountId } = router.query;
+  const { refreshCart } = useCart();
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // router.query 는 hydration 이전에 undefined일 수 있으므로 검사
     if (!pg_token || !accountId) return;
 
     const approvePayment = async () => {
@@ -18,12 +19,20 @@ export default function KakaoSuccessPage() {
           pgToken: pg_token,
           accountId: Number(accountId),
         });
+
+        try {
+          await refreshCart();
+          await new Promise(resolve => setTimeout(resolve, 100)); // ✅ 딜레이 추가
+        } catch (e) {
+          console.error('refreshCart() 실패:', e);
+        }
+
         alert('결제 완료!');
         router.push('/mypage/orders');
       } catch (error) {
-        console.error(error);
+        console.error('결제 승인 실패 디버깅:', error.response?.data || error);
         alert('결제 승인 실패');
-        router.push('/order/fail'); // 실패 페이지
+        router.push('/order/fail');
       } finally {
         setLoading(false);
       }
