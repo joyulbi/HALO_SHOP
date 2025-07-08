@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
+import axios from "axios";
 
 const fadeInUp = keyframes`
   from {
@@ -83,13 +84,30 @@ const StyledLink = styled.a`
 
 
 const NotificationModal = ({ visible, onClose, notification }) => {
+  const [detailTitle, setDetailTitle] = useState(null);
+
   useEffect(() => {
     if (!visible) return;
-    const timer = setTimeout(onClose, 100000000);
-    return () => clearTimeout(timer);
-  }, [visible, onClose]);
 
-  console.log("data : ", notification)
+    let timer = setTimeout(onClose, 100000000);
+
+    // notification.entity.id가 100일 때만 API 호출
+    if (notification.entity?.id === 100) {
+      axios
+        .get(`http://localhost:8080/api/inquiries/${notification.referenceId}`)
+        .then((res) => {
+          setDetailTitle(res.data.title); // content 추출해서 저장
+        })
+        .catch((err) => {
+          console.error("문의 상세 조회 실패:", err);
+          setDetailContent(null);
+        });
+    } else {
+      setDetailContent(null); // entity.id가 100이 아니면 초기화
+    }
+
+    return () => clearTimeout(timer);
+  }, [visible, onClose, notification?.referenceId, notification?.entity?.id]);
 
   if (!visible) return null;
 
@@ -109,19 +127,29 @@ const NotificationModal = ({ visible, onClose, notification }) => {
           </svg>
           <h4>알림 도착</h4>
         </Header>
-        <Content><strong>문의 ID:</strong> {notification.referenceId}</Content>
-        <Content>문의가 답변되었습니다. 확인해 주세요.</Content>
-{notification.entity?.id === 1 && (
-  <Content>
-    👉 <StyledLink
-      href="http://localhost:3000/contact"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      문의 페이지로 이동
-    </StyledLink>
-  </Content>
-)}
+
+        {/* entity.id가 100이면 API에서 받은 content 출력 */}
+        {notification.entity?.id === 100 && (
+          <Content>
+            <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
+          </Content>
+        )}
+        <Content>문의가 답변되었습니다.</Content>
+
+
+        {notification.entity?.id === 1 && (
+          <Content>
+            👉{" "}
+            <StyledLink
+              href="http://localhost:3000/contact"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              문의 페이지로 이동
+            </StyledLink>
+          </Content>
+        )}
+
         <CloseButton onClick={onClose}>닫기</CloseButton>
       </ToastBox>
     </ToastContainer>

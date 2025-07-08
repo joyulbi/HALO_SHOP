@@ -65,7 +65,7 @@ const contact = () => {
         </TabButton>
       </TabBar>
       <MainPanel>
-        {selectedTab === "write" && <InquiryForm />}
+        {selectedTab === "write" && <InquiryForm onSuccess={() => setSelectedTab("list")} />}
         {selectedTab === "list" && <InquiryHistory />}
       </MainPanel>
     </Wrapper>
