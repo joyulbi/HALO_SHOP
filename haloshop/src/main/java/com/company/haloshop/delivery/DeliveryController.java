@@ -29,4 +29,14 @@ public class DeliveryController {
         List<DeliveryDTO> deliveries = deliveryService.getDeliveriesByUser(accountId);
         return ResponseEntity.ok(deliveries);
     }
+    
+    // ✅ 결제 완료 후 배송 상태 업데이트 (배송준비중)
+    public ResponseEntity<String> updateDeliveryStatus(@PathVariable Long orderItemId) {
+    	try {
+    		deliveryService.updateDeliveryStatus(orderItemId, "배송준비중");
+    		return ResponseEntity.ok("배송 상태가 '배송준비중'으로 업데이트 되었습니다.");
+    	} catch (Exception e) {
+    		return ResponseEntity.status(500).body("배송 상태 업데이트 실패: " + e.getMessage());
+    	}
+    }
 }
