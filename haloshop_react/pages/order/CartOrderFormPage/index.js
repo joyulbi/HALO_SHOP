@@ -24,7 +24,7 @@ const CartOrderFormPage = () => {
       .then(res => {
         const mappedItems = res.data.map(item => ({
           ...item,
-          itemId: item.items_id,
+          itemId: item.item_id ?? item.itemId ?? item.id,
         }));
         setCartItems(mappedItems);
       })
@@ -53,43 +53,32 @@ const CartOrderFormPage = () => {
       const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const payAmount = totalPrice - appliedPoint;
 
+      const payload = {
+        totalPrice,
+        payAmount,
+        amount: appliedPoint,
+        used: paymentMethod,
+        paymentStatus: "PENDING",
+        accountId: user.id,
+        orderItems: cartItems.map(item => ({
+          itemId: item.itemId,
+          itemName: item.name,
+          productPrice: item.price,
+          quantity: item.quantity
+        }))
+      };
+
       if (paymentMethod === 'KAKAOPAY') {
-        const res = await api.post('/api/payment/ready', {
-          totalPrice,
-          payAmount,
-          amount: appliedPoint,
-          used: paymentMethod,
-          paymentStatus: "PENDING",
-          accountId: user.id,
-          orderItems: cartItems.map(item => ({
-            itemId: item.itemId ?? item.items_id ?? item.id,
-            itemName: item.name,
-            productPrice: item.price,
-            quantity: item.quantity
-          }))
-        });
+        const res = await api.post('/api/payment/ready', payload);
         if (res.data.next_redirect_pc_url) {
           window.location.href = res.data.next_redirect_pc_url;
         } else {
           alert('카카오페이 결제 URL을 받아오지 못했습니다.');
         }
       } else {
-        const payload = {
-          totalPrice,
-          payAmount,
-          amount: appliedPoint,
-          used: paymentMethod,
-          paymentStatus: "PENDING",
-          accountId: user.id,
-          orderItems: cartItems.map(item => ({
-            itemId: item.itemId,
-            itemName: item.name,
-            productPrice: item.price,
-            quantity: item.quantity
-          }))
-        };
-
+        console.log('결제 payload:', payload);
         const res = await api.post('/api/orders', payload);
+        console.log('주문 완료 응답:', res.data);
         alert('주문이 완료되었습니다!');
         router.push(`/mypage/orders/${res.data.orderId}`);
       }
@@ -108,7 +97,7 @@ const CartOrderFormPage = () => {
       return;
     }
     if (pointValue > userPoint) {
-      alert(`보유한 포인트 (${userPoint.toLocaleString()}P) 까지만 사용 가능합니다.`);
+      alert(`보유한 포인트(${userPoint.toLocaleString()}P)까지만 사용 가능합니다.`);
       setAppliedPoint(userPoint);
       return;
     }
@@ -161,7 +150,7 @@ const CartOrderFormPage = () => {
             <div style={{ marginTop: '20px' }}>
               <input
                 type="text"
-                placeholder={` (보유: ${userPoint.toLocaleString()}P)`}
+                placeholder={`(보유: ${userPoint.toLocaleString()}P)`}
                 value={point}
                 onChange={(e) => setPoint(e.target.value)}
                 style={{ padding: '10px', width: '200px', marginRight: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
