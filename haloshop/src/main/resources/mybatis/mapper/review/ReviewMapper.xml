@@ -112,13 +112,14 @@
 	</select>
 	
 	<update id="addPointsToUser">
-	    UPDATE account
-	    SET point = point + #{point}
-	    WHERE id = #{accountId}
+	    UPDATE user_point
+	    SET total_point = total_point + #{point},
+	    	updated_at = NOW()
+	    WHERE account_id = #{accountId}
 	</update>
 	
 	<insert id="insertPointLog">
 	    INSERT INTO point_log (account_id, amount, type, created_at)
-	    VALUES (#{accountId}, #{amount}, #{type}, NOW())
+	    VALUES (#{accountId}, #{amount}, 'REVIEW', NOW())
 	</insert>
 </mapper>

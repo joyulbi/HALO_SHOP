@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../../../utils/axios';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../../hooks/useAuth';
+import DeliveryForm from '../../../components/DeliveryForm';
+import DeliveryList from '../../../components/DeliveryList';
 
 const SingleOrderFormPage = () => {
   const [item, setItem] = useState(null);
@@ -9,6 +11,10 @@ const SingleOrderFormPage = () => {
   const [appliedPoint, setAppliedPoint] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [userPoint, setUserPoint] = useState(0); // ✅ 보유 포인트 상태 추가
+
+  const [addresses, setAddress] = useState([]);  // 등록된 배송지들
+  const [selectedAddress, setSelectedAddress] = useState(null);  // 선택된 배송지
+
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
   const { itemId, itemName, price, quantity } = router.query;
@@ -30,6 +36,23 @@ const SingleOrderFormPage = () => {
           setUserPoint(res.data.totalPoint);
         })
         .catch(err => console.error('유저 포인트 불러오기 실패:', err));
+    }
+  }, [user]);
+
+  // ✅ 배송지 목록 불러오기 함수
+  const fetchAddresses = async () => {
+    try {
+      const res = await api.get(`/api/delivery/${user.id}`);
+      setAddress(res.data);
+    } catch (err) {
+      console.error('배송지 목록 불러오기 실패: ', err);
+    }
+  };
+
+  // ✅ 첫 렌더링 시 배송지 목록 로드
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses();
     }
   }, [user]);
 
@@ -64,6 +87,7 @@ const SingleOrderFormPage = () => {
         used: paymentMethod,
         paymentStatus: "PENDING",
         accountId: user.id,
+        deliveryId: selectedAddress.id,  // 선택된 배송지 ID 추가
         orderItems: [{
           itemId: item.itemId,
           itemName: item.name,
@@ -145,6 +169,70 @@ const SingleOrderFormPage = () => {
           <p>수량: {item.quantity}</p>
         </div>
       </div>
+
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '20px',
+        border: '1px solid #ddd',
+        borderRadius: '10px',
+        marginBottom: '20px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+      }}>
+        <DeliveryForm
+          accountId={user?.id}
+          onSubmitSuccess={fetchAddresses}  // 등록 후 리스트 새로고침
+        />
+      </div>
+
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '20px',
+        border: '1px solid #ddd',
+        borderRadius: '10px',
+        marginBottom: '20px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+      }}>
+        <DeliveryList
+          accountId={user?.id}
+          onSelect={setSelectedAddress}
+        />
+      </div>
+
+      {/* 등록된 배송지 리스트 추가 */}
+      {addresses.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '20px',
+          border: '1px solid #ddd',
+          borderRadius: '10px',
+          marginBottom: '20px',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+        }}>
+          <h4>등록된 배송지 목록</h4>
+          {addresses.map((addr) => (
+            <div
+              key={addr.id}
+              onClick={() => setSelectedAddress(addr)}
+              style={{
+                padding: '10px',
+                marginBottom: '8px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                backgroundColor: selectedAddress?.id === addr.id ? '#e0f7fa' : '#fff',
+                cursor: 'pointer'
+              }}
+            >
+              <strong>{addr.recipientName}</strong> | {addr.address} {addr.addressDetail} ({addr.zipcode})
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
         <h3>결제 요약</h3>
