@@ -26,11 +26,11 @@ public class AdminReviewController {
     public ResponseEntity<List<ReviewDTO>> getAllReviewsForAdmin() {
         List<ReviewDTO> reviews = reviewService.getAllReviewsForAdmin();
         if (reviews.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(reviews); // 200 OK
+        return ResponseEntity.ok(reviews);
     }
-
+    
     // ✅ 관리자 - 리뷰 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteReview(@PathVariable Long id) {

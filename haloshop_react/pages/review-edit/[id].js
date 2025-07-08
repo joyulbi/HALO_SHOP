@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import axios from '../../utils/axios';
 import StarRating from '../../components/StarRating';
 import { useAuth } from '../../hooks/useAuth';
 

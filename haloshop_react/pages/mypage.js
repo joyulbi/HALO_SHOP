@@ -62,8 +62,8 @@ const MyPage = () => {
   const menuItems = [
     { key: 'profile', label: '프로필', icon: <UserOutlined />, onClick: () => router.push('/mypage') },
     { key: 'orders', label: '주문 내역', icon: <OrderedListOutlined />, onClick: () => router.push('/mypage/orders') },
-    { key: 'reviews', label: '작성한 리뷰', icon: <StarOutlined />, onClick: () => router.push('/mypage/reviews') },
-    { key: 'delivery', label: '배송 현황', icon: <TruckOutlined />, onClick: () => router.push('/mypage/delivery') },
+    { key: 'reviews', label: '작성한 리뷰', icon: <StarOutlined />, onClick: () => router.push('/my-reviews') },
+    { key: 'delivery', label: '배송 현황', icon: <TruckOutlined />, onClick: () => router.push('/delivery') },
     { key: 'cart', label: '장바구니', icon: <ShoppingCartOutlined />, onClick: () => router.push('/cart') },
     { key: 'password', label: '비밀번호 변경', icon: <LockOutlined />, onClick: () => router.push('/mypage/password') },
     { key: 'auction', label: '낙찰 결과', icon: <DollarOutlined />, onClick: () => router.push('/mypage/auction-result') },

@@ -1,6 +1,6 @@
 // pages/admin/delivery/index.js
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../../../utils/axios';
 
 const AdminDeliveryPage = () => {
   const [deliveries, setDeliveries] = useState([]);
