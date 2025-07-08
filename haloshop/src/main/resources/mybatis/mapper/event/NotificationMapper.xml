@@ -45,13 +45,24 @@
         WHERE n.id = #{id}
     </select>
 
-    <!-- 2. 본인 알림 조회 -->
-    <select id="findByReceiverId" parameterType="long" resultType="com.company.haloshop.notification.Notification">
-        SELECT id, receiver_id, entity_id, reference_id, is_read, created_at
-        FROM notification
-        WHERE receiver_id = #{receiverId}
-        ORDER BY created_at DESC
-    </select>
+    <select id="findByReceiverId" parameterType="long" resultMap="NotificationResultMap">
+	  SELECT
+	    n.id,
+	    n.receiver_id,
+	    a.id AS receiver_id,
+	    a.nickname AS receiver_nickname,
+	    n.entity_id,
+	    e.id AS entity_id,
+	    e.name AS entity_name,
+	    n.reference_id,
+	    n.is_read,
+	    n.created_at
+	  FROM notification n
+	  LEFT JOIN account a ON n.receiver_id = a.id
+	  LEFT JOIN event_entity e ON n.entity_id = e.id
+	  WHERE n.receiver_id = #{receiverId}
+	  ORDER BY n.created_at DESC
+	</select>
 
     <!-- 3. 알림 읽음 상태 업데이트 -->
     <update id="updateById" parameterType="map">

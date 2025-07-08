@@ -10,7 +10,7 @@
 	</resultMap>
 
 	<insert id="insert" parameterType="com.company.haloshop.event.EventEntityRequestDto">
-		INSERT INTO event_entity (name) VALUES (#{name})
+		INSERT INTO event_entity (id, name) VALUES (#{id}, #{name})
 	</insert>
 	
 	<select id="findAll" resultMap="EventEntityResultMap">
