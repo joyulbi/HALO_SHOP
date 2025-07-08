@@ -4,6 +4,7 @@ import { CartButtonContext } from '../../context/CartButtonContext';
 import api from '../../utils/axios';
 import { useCart } from '../../context/CartContext';
 import ItemDetailTabs from '../../components/ItemDetailTabs';
+import SirenLottie from '../../components/lottie/SirenLottie';
 
 const ItemDetail = () => {
   const router = useRouter();
@@ -71,13 +72,16 @@ useEffect(() => {
     }
   };
 
-  const handleAddToCart = async () => {
-  const token = localStorage.getItem("accessToken");
+const handleAddToCart = async () => {
+  if (isSoldOut) {
+    alert("품절된 상품입니다.");
+    return;
+  }
 
-  // 비로그인 상태일 경우
+  const token = localStorage.getItem("accessToken");
   if (!token) {
     alert("로그인 후 이용 가능합니다.");
-    router.push("/login"); // 필요 없으면 이 줄은 제거해도 됨
+    router.push("/login");
     return;
   }
 
@@ -135,24 +139,48 @@ useEffect(() => {
 };
 
 const handleBuyNow = () => {
-    router.push({
-        pathname: '/order/SingleOrderFormPage',
-        query: {
-            itemId: item.id,
-            itemName: item.name,
-            price: item.price,
-            quantity: quantity
-        }
-    });
+  if (isSoldOut) {
+    alert("품절된 상품입니다.");
+    return;
+  }
+
+  router.push({
+    pathname: '/order/SingleOrderFormPage',
+    query: {
+      itemId: item.id,
+      itemName: item.name,
+      price: item.price,
+      quantity: quantity
+    }
+  });
 };
 
 
 
   if (!item) return <div>로딩중...</div>;
 
+  const isSoldOut = item.inventory_volume === 0;
+  console.log('🔥 item.inventory_volume:', item.inventory_volume);
+console.log('🔥 isSoldOut:', isSoldOut);
+
   return (
     <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', position: 'relative' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>{item.name}</h1>
+      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '30px', textAlign: 'center' }}>
+        {item.name}
+          {isSoldOut && (
+            <span style={{
+              marginLeft: '10px',
+              fontSize: '18px',
+              color: 'white',
+              backgroundColor: '#c8102e',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              verticalAlign: 'middle'
+            }}>
+              품절
+            </span>
+            )}
+      </h1>
 
       <div style={{ display: 'flex', gap: '80px', alignItems: 'flex-start', justifyContent: 'center' }}>
         {/* 🔥 버튼 + 이미지: 가로 정렬 */}
@@ -236,6 +264,26 @@ const handleBuyNow = () => {
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '20px' }}>
           <p style={{ fontSize: '16px', color: '#555', lineHeight: '1.6' }}>{item.description}</p>
           <p style={{ fontSize: '24px', color: '#c8102e', fontWeight: 'bold' }}>가격: {item.price.toLocaleString()}원</p>
+        {item.inventory_volume <= 10 && item.inventory_volume > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backgroundColor: '#ffeaea',
+            padding: '8px 12px',
+            borderRadius: '6px'
+          }}>
+            <SirenLottie />
+            <p style={{
+              fontSize: '16px',
+              color: '#d00000',
+              fontWeight: 'bold', 
+              margin: 0
+            }}>
+              현재 남은 재고: {item.inventory_volume}개
+            </p>
+          </div>
+        )}
 
           <div>
             <label style={{ marginRight: '10px' }}>수량: </label>

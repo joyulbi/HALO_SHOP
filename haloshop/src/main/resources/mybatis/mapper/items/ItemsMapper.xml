@@ -12,7 +12,7 @@
         VALUES (#{name}, #{description}, #{price}, #{teamId}, #{categoryId}, NOW())
     </insert>
 
-    <!-- 상품 목록 조회 -->
+    <!-- 🔥 상품 목록 조회 -->
     <select id="findAll" resultType="com.company.haloshop.dto.shop.Items">
         SELECT id,
                name,
@@ -25,7 +25,7 @@
         ORDER BY id DESC
     </select>
 
-    <!-- 상품 상세 조회 -->
+    <!-- 🔥 상품 상세 조회 -->
     <select id="findById" parameterType="long" resultType="com.company.haloshop.dto.shop.Items">
         SELECT id,
                name,
@@ -38,7 +38,7 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 상품 수정 -->
+    <!-- 🔥 상품 수정 -->
     <update id="update" parameterType="com.company.haloshop.dto.shop.Items">
         UPDATE items
         SET name = #{name},
@@ -49,9 +49,16 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 상품 삭제 -->
+    <!-- 🔥 상품 삭제 -->
     <delete id="delete" parameterType="long">
         DELETE FROM items WHERE id = #{id}
     </delete>
+
+    <!-- ✅ 추가: 특정 상품의 총 재고량 조회 -->
+    <select id="getTotalInventoryByItemId" parameterType="long" resultType="int">
+        SELECT COALESCE(SUM(inventory_volume), 0)
+        FROM inventory
+        WHERE items_id = #{itemId}
+    </select>
 
 </mapper>

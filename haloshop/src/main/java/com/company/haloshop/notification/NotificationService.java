@@ -6,8 +6,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.company.haloshop.dto.member.AccountDto;
 import com.company.haloshop.entity.member.Account;
 import com.company.haloshop.event.EventEntity;
 import com.company.haloshop.event.EventEntityMapper;
@@ -16,16 +19,18 @@ import com.company.haloshop.member.mapper.AccountMapper;
 @Service
 public class NotificationService {
 
-    @Autowired
-    private NotificationMapper notificationMapper;
-
-    @Autowired
-    private EventEntityMapper eventEntityMapper;
-
+    @Autowired private NotificationMapper notificationMapper;
+    @Autowired private EventEntityMapper eventEntityMapper;
+    @Autowired private AccountMapper accountMapper;
+    @Autowired private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired private SimpMessagingTemplate messagingTemplate;
+    
     // 알림 생성
     public Long createNotification(NotificationRequestDto dto) {
-    	 Account receiver = new Account();
-    	    receiver.setId(dto.getReceiverId());
+    	
+    	AccountDto accountDto = accountMapper.selectById(dto.getReceiverId());
+    	Account receiver = new Account();
+    	receiver.setId(accountDto.getId());
         EventEntity entity = eventEntityMapper.findById(dto.getEntityId());
 
         Notification notification = new Notification();
@@ -36,7 +41,11 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         notificationMapper.insert(notification);
-        return notification.getId();
+        Notification saved = notificationMapper.findById(notification.getId());
+
+        applicationEventPublisher.publishEvent(new NotificationEvent(this, saved)); // 여기서 발행
+        sendNotificationToUser(saved);
+        return saved.getId();
     }
 
     // 수신자 기준 알림 조회
@@ -53,6 +62,11 @@ public class NotificationService {
             return dto;
         }).collect(Collectors.toList());
     }
+    
+    // id로 알림 조회
+    public Notification findById(Long id) {
+        return notificationMapper.findById(id);
+    }
 
     // 알림 읽음 상태 변경
     public void markAsRead(Long notificationId, Boolean isRead) {
@@ -65,5 +79,12 @@ public class NotificationService {
     // 알림 삭제
     public void deleteNotification(Long id) {
         notificationMapper.deleteById(id);
+    }
+    
+    // 알림 푸시
+    public void sendNotificationToUser(Notification notification) {
+        // destination 예: /user/{username}/queue/notifications
+        String destination = "/user/" + notification.getReceiver().getId() + "/queue/notifications";
+        messagingTemplate.convertAndSend(destination, notification);
     }
 }

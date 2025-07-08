@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Spin, Typography, message } from 'antd';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const { Title } = Typography;
 
@@ -37,6 +38,7 @@ const AdminUserPointListPage = () => {
   ];
 
   return (
+    <AdminLayout>
     <div className="p-4">
       <Title level={3}>회원별 포인트 전체 조회 (관리자용)</Title>
       {loading ? (
@@ -50,6 +52,7 @@ const AdminUserPointListPage = () => {
         />
       )}
     </div>
+    </AdminLayout>
   );
 };
 

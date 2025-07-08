@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { CalendarTwoTone } from "@ant-design/icons";
 import SeasonFormModal from "../../components/SeasonFormModal";
+import AdminLayout from './AdminLayout'; 
 
 const Seasons = () => {
 
@@ -182,6 +183,7 @@ useEffect(() => {
   }, []);
 
   return (
+    <AdminLayout>
 <div style={{ maxWidth: "100%", padding: "32px" }}>
   <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 24 }}><CalendarTwoTone /> 시즌 관리</h1>
 
@@ -372,6 +374,7 @@ useEffect(() => {
     editing={!!editingSeason}
   />
 </div>
+</AdminLayout>
   );
 };
 

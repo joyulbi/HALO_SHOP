@@ -11,6 +11,9 @@ public interface NotificationMapper {
 
     // 1. 알림 생성
     int insert(Notification notification);
+    
+    // id로 알림 조회
+    Notification findById(@Param("id") Long id);
 
     // 2. 본인 알림 조회
     List<Notification> findByReceiverId(@Param("receiverId") Long receiverId);

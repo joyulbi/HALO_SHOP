@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Card, Spin, Typography, message, Button, Input, Space, Select } from 'antd';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const { Title, Text } = Typography;
 
@@ -58,6 +59,7 @@ const AdminUserPointDetailPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div className="p-4 max-w-md mx-auto">
       <Title level={3}>회원별 포인트 상세 조회 (관리자용)</Title>
       <Button onClick={() => router.back()} className="mb-4">뒤로가기</Button>
@@ -98,6 +100,7 @@ const AdminUserPointDetailPage = () => {
         <Text>유저 포인트 정보를 불러올 수 없습니다.</Text>
       )}
     </div>
+    </AdminLayout>
   );
 };
 

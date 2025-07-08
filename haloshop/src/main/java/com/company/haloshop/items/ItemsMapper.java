@@ -18,4 +18,6 @@ public interface ItemsMapper {
     void update(Items item);
 
     void delete(Long id);
+    
+    int getTotalInventoryByItemId(Long itemId);
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const InventoryCreatePage = () => {
   const router = useRouter();
@@ -8,14 +9,12 @@ const InventoryCreatePage = () => {
   const [stockVolume, setStockVolume] = useState('');
   const [items, setItems] = useState([]);
 
-  // 상품 목록 불러오기
   useEffect(() => {
-    api.get('/api/items') // 👉 모든 상품 불러오는 API 필요
+    api.get('/api/items')
       .then(res => setItems(res.data))
       .catch(err => console.error('상품 목록 불러오기 실패:', err));
   }, []);
 
-  // 재고 등록 함수
   const handleRegister = () => {
     if (!itemId || !stockVolume) {
       alert('상품명과 입고량을 모두 선택/입력하세요.');
@@ -37,32 +36,83 @@ const InventoryCreatePage = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>재고 등록 페이지</h1>
+    <AdminLayout>
+      <div style={{
+        padding: '40px',
+        maxWidth: '600px',
+        margin: '0 auto',
+        background: '#fff',
+        borderRadius: '10px',
+        boxShadow: '0 0 12px rgba(0,0,0,0.1)'
+      }}>
+        <h2 style={{ marginBottom: '30px', textAlign: 'center', color: '#333' }}>재고 등록</h2>
 
-      <div style={{ marginBottom: '20px' }}>
-        <label>상품 선택: </label>
-        <select value={itemId} onChange={(e) => setItemId(e.target.value)} style={{ marginRight: '20px' }}>
-        <option value="">상품을 선택하세요</option>
-        {items.map(item => (
-          <option key={item.id} value={item.id}>
-            {item.name}
-          </option>
-        ))}
-      </select>
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>상품 선택</label>
+          <select
+            value={itemId}
+            onChange={(e) => setItemId(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc'
+            }}
+          >
+            <option value="">상품을 선택하세요</option>
+            {items.map(item => (
+              <option key={item.id} value={item.id}>{item.name}</option>
+            ))}
+          </select>
+        </div>
 
-        <label>입고량: </label>
-        <input
-          type="number"
-          value={stockVolume}
-          onChange={(e) => setStockVolume(e.target.value)}
-          style={{ marginLeft: '10px' }}
-        />
+        <div style={{ marginBottom: '30px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>입고량</label>
+          <input
+            type="number"
+            value={stockVolume}
+            onChange={(e) => setStockVolume(e.target.value)}
+            placeholder="숫자만 입력"
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc'
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <button
+            onClick={handleRegister}
+            style={{
+              background: '#007bff',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            등록
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/inventory')}
+            style={{
+              background: '#6c757d',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            취소
+          </button>
+        </div>
       </div>
-
-      <button onClick={handleRegister} style={{ marginRight: '10px' }}>등록</button>
-      <button onClick={() => router.push('/admin/inventory')}>취소</button>
-    </div>
+    </AdminLayout>
   );
 };
 
