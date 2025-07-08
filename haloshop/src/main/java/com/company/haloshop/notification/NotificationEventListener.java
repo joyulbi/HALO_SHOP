@@ -15,11 +15,25 @@ public class NotificationEventListener {
     public void handleNotificationEvent(NotificationEvent event) {
         Notification notification = event.getNotification();
 
-        // 수신자 ID 기준으로 WebSocket 사용자별 채널로 전송
+        if (notification == null) {
+            // 이벤트에 notification 자체가 없으면 로그 후 종료
+            System.err.println("NotificationEvent received with null notification");
+            return;
+        }
+
+        if (notification.getReceiver() == null) {
+            System.err.println("Notification receiver is null");
+            return;
+        }
+
+        if (notification.getEntity() == null) {
+            System.err.println("Notification entity is null");
+            return;
+        }
+
         Long receiverId = notification.getReceiver().getId();
         String destination = "/topic/notifications/" + receiverId;
 
-        // 클라이언트에 보낼 DTO 구성
         NotificationDto dto = new NotificationDto();
         dto.setId(notification.getId());
         dto.setReceiverId(receiverId);
@@ -28,7 +42,6 @@ public class NotificationEventListener {
         dto.setIsRead(notification.getIsRead());
         dto.setCreatedAt(notification.getCreatedAt());
 
-        // WebSocket 전송
         messagingTemplate.convertAndSend(destination, dto);
     }
 }

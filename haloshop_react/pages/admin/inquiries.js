@@ -34,12 +34,14 @@ const Select = styled.select`
 const Inquiries = () => {
   const { user, loading } = useAuth();
   const [status, setStatus] = useState("SUBMITTED");
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    if (user) {
-      console.log("✅ 유저 정보:", user);
+    if (typeof window !== "undefined") {
+      const accessToken = localStorage.getItem("accessToken");
+      setToken(accessToken);
     }
-  }, [user]);
+  }, []);
 
   if (loading) return <div>로딩 중...</div>;
 
@@ -55,7 +57,7 @@ const Inquiries = () => {
         </Select>
       </Header>
 
-      <InquiriesManagement />
+      <InquiriesManagement user={user} status={status} token={token}/>
     </Container>
   );
 };

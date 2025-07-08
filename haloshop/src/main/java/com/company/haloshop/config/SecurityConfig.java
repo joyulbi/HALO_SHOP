@@ -141,12 +141,13 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers( "/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
+                .ignoringAntMatchers( "/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin", "/api/**" )
             )
 
             // 4) 권한 및 URL 접근 제어
             .authorizeRequests(authz -> authz
                 //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
+            		
                 .antMatchers("/auth/**").permitAll()
                 .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
                 .antMatchers("/api/items/admin/**").access("@adminCheck.hasAuthority(authentication)")
@@ -161,7 +162,11 @@ public class SecurityConfig {
                     .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
                 .antMatchers("/security/**")
                     .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
+                
+                    
+                    
                 .anyRequest().permitAll()
+
             )
 
             // 5) 인증/인가 예외 처리: 401 Unauthorized
