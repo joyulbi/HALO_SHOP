@@ -141,7 +141,7 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers("/api/payment/**","/api/cart/**","/api/auction-images/**", "/api/auctions/**","/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
+                .ignoringAntMatchers("/api/orders/**","/api/payment/**","/api/cart/**","/api/auction-images/**", "/api/auctions/**","/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
             )
 
             // 4) 권한 및 URL 접근 제어
