@@ -30,7 +30,7 @@ const CartOrderFormPage = () => {
       .then(res => {
         const mappedItems = res.data.map(item => ({
           ...item,
-          itemId: item.item_id ?? item.itemId ?? item.id,
+          itemId: item.itemsId,
         }));
         setCartItems(mappedItems);
       })
