@@ -28,13 +28,26 @@ const ItemDetail = () => {
   const { cartButtonRef } = useContext(CartButtonContext);
   const { fetchCartCount } = useCart();
 
-  useEffect(() => {
-    if (id) {
-      api.get(`/api/items/${id}`)
-        .then(res => setItem(res.data))
-        .catch(err => console.error('상품 상세 불러오기 실패:', err));
-    }
-  }, [id]);
+useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+
+  if (id && token) {
+    api.get(`/api/items/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => setItem(res.data))
+    .catch(err => {
+      if (err.response?.status === 404) {
+        alert("해당 상품이 존재하지 않습니다.");
+        router.push("/admin/items"); // 혹은 다른 fallback 페이지
+      } else {
+        console.error('상품 상세 불러오기 실패:', err);
+      }
+    });
+  }
+}, [id]);
 
   const handleMouseMove = (e) => {
     let x = e.nativeEvent.offsetX;

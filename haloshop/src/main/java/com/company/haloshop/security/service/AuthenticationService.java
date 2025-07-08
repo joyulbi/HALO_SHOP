@@ -1,6 +1,7 @@
 package com.company.haloshop.security.service;
 
 import java.util.Date;
+import java.time.LocalDateTime;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.company.haloshop.dto.member.AccountDto;
 import com.company.haloshop.dto.member.UserDto;
@@ -20,30 +22,23 @@ import com.company.haloshop.member.mapper.UserMapper;
 import com.company.haloshop.security.JwtTokenProvider;
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
 import com.company.haloshop.security.mapper.JwtWhitelistMapper;
+import com.company.haloshop.userpoint.UserPointService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
     private final AccountMapper accountMapper;
     private final UserMapper userMapper;
+    private final UserPointService userPointService;      // 포인트 초기화 서비스 주입
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtWhitelistMapper jwtWhitelistMapper;
     private final JwtBlacklistMapper jwtBlacklistMapper;
 
     private final PasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
     private final PasswordEncoder argon2Encoder = new Argon2PasswordEncoder();
-
-    public AuthenticationService(AccountMapper accountMapper,
-                                 UserMapper userMapper,
-                                 JwtTokenProvider jwtTokenProvider,
-                                 JwtWhitelistMapper jwtWhitelistMapper,
-                                 JwtBlacklistMapper jwtBlacklistMapper) {
-        this.accountMapper = accountMapper;
-        this.userMapper = userMapper;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.jwtWhitelistMapper = jwtWhitelistMapper;
-        this.jwtBlacklistMapper = jwtBlacklistMapper;
-    }
 
     public LoginResponse login(String email, String rawPassword) {
         AccountDto account = accountMapper.selectByEmail(email);
@@ -102,22 +97,17 @@ public class AuthenticationService {
             // 추가로 로그 기록이나 후처리 가능
         } else {
             // 화이트리스트에서 토큰 비활성화 처리
-            // 사용자가 로그아웃하면 더 이상 이 리프레시 토큰으로 새 액세스 토큰을 받지 못하게 합니다.
             jwtWhitelistMapper.deactivateToken(accountId, refreshToken);
 
             // 블랙리스트에 액세스 토큰 등록
-            // 현재 사용 중인 액세스 토큰을 즉시 무효화하기 위해 블랙리스트에 추가합니다.
-            // 'ban' 컬럼이 더 이상 없으므로, 토큰이 존재하기만 해도 무효화된 것으로 간주합니다.
             JwtBlacklistDto blacklistDto = new JwtBlacklistDto();
             blacklistDto.setAccountId(accountId);
-            blacklistDto.setRefreshToken(refreshToken); // 리프레시 토큰도 함께 저장하여 이력 관리 및 필요 시 검증
-            blacklistDto.setAccessToken(accessToken); // 무효화할 액세스 토큰
-            // 토큰 발급 및 만료 시간 (액세스 토큰의 정보로 채우는 것이 더 정확할 수 있습니다)
-            blacklistDto.setIssuedAt(jwtTokenProvider.getIssuedAt(accessToken)); // 액세스 토큰의 발급 시간
-            blacklistDto.setExpiresAt(jwtTokenProvider.getExpiration(accessToken)); // 액세스 토큰의 만료 시간
-            blacklistDto.setBlacklistedAt(new Date()); // 블랙리스트에 추가된 (로그아웃) 시간
-            blacklistDto.setReason("사용자 로그아웃"); // 블랙리스트에 추가된 이유 명시
-            // blacklistDto.setBan(true); // 'ban' 컬럼이 DB에서 제거되었으므로, 이 라인도 제거합니다.
+            blacklistDto.setRefreshToken(refreshToken);
+            blacklistDto.setAccessToken(accessToken);
+            blacklistDto.setIssuedAt(jwtTokenProvider.getIssuedAt(accessToken));
+            blacklistDto.setExpiresAt(jwtTokenProvider.getExpiration(accessToken));
+            blacklistDto.setBlacklistedAt(new Date());
+            blacklistDto.setReason("사용자 로그아웃");
 
             jwtBlacklistMapper.insertBlacklist(blacklistDto);
         }
@@ -129,7 +119,11 @@ public class AuthenticationService {
         return account != null;
     }
 
-    // 회원가입 처리 (account + user 테이블 동시 등록)
+    /**
+     * 회원가입 처리 (account + user 테이블 동시 등록)
+     * 그리고 user_point 초기화
+     */
+    @Transactional
     public void signup(SignupRequest request, HttpServletRequest httpRequest) {
         if (isEmailDuplicate(request.getEmail())) {
             throw new RuntimeException("이미 사용중인 이메일입니다.");
@@ -137,6 +131,7 @@ public class AuthenticationService {
 
         String encodedPassword = bcryptEncoder.encode(request.getPassword());
 
+        // --- Account 생성 ---
         AccountDto newAccount = new AccountDto();
         newAccount.setEmail(request.getEmail());
         newAccount.setPassword(encodedPassword);
@@ -156,6 +151,7 @@ public class AuthenticationService {
 
         accountMapper.insertAccount(newAccount);
 
+        // --- User 생성 ---
         UserDto newUser = new UserDto();
         newUser.setAccountId(newAccount.getId());
         newUser.setAddress(request.getAddress());
@@ -165,6 +161,9 @@ public class AuthenticationService {
         newUser.setGender(request.getGender());
 
         userMapper.insertUser(newUser);
+
+        // --- UserPoint 초기화 ---
+        userPointService.initializeUserPoint(newAccount.getId());
     }
 
     public static class LoginResponse {
