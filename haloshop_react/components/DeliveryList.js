@@ -1,28 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import api from '../utils/axios';
+import React, { useState } from 'react';
 
-const DeliveryList = ({ accountId, onSelect }) => {
-  const [addresses, setAddresses] = useState([]);
+const DeliveryList = ({ addresses, onSelect }) => {
   const [selectedId, setSelectedId] = useState(null);  // ✅ 선택된 배송지 ID
 
-  // ✅ 배송지 목록 불러오기 함수
-  const fetchAddresses = async () => {
-    try {
-      const res = await api.get(`/api/deliveries/${accountId}`);
-      setAddresses(res.data);
-    } catch (err) {
-      console.error('배송지 목록 불러오기 실패:', err);
-    }
-  };
-
-  // ✅ 첫 렌더링 및 accountId 변경 시 목록 로드
-  useEffect(() => {
-    if (accountId) {
-      fetchAddresses();
-    }
-  }, [accountId]);
-
-  if (addresses.length === 0) {
+  if (!addresses || addresses.length === 0) {
     return <p style={{ margin: '8px 0', color: '#888' }}>등록된 배송지가 없습니다.</p>;
   }
 

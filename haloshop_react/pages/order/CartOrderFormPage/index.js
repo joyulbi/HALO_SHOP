@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import api from '../../../utils/axios';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../../hooks/useAuth';
+import DeliveryForm from '../../../components/DeliveryForm';
+import DeliveryList from '../../../components/DeliveryList';
 
 const CartOrderFormPage = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -9,6 +11,10 @@ const CartOrderFormPage = () => {
   const [appliedPoint, setAppliedPoint] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [userPoint, setUserPoint] = useState(0);
+
+  const [addresses, setAddresses] = useState([]);  // 배송지 목록
+  const [selectedAddress, setSelectedAddress] = useState(null);  // 선택된 배송지 목록
+
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
 
@@ -42,6 +48,23 @@ const CartOrderFormPage = () => {
     }
   }, [user]);
 
+  // ✅ 배송지 목록 불러오기 함수
+  const fetchAddresses = async () => {
+    try {
+      const res = await api.get(`/api/deliveries/${user.id}`);
+      setAddresses(res.data);
+    } catch (err) {
+      console.error('배송지 목록 불러오기 실패: ', err);
+    }
+  };
+
+  // ✅ 첫 렌더링 시 배송지 목록 로드
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses();
+    }
+  }, [user]);
+
   const handlePayNow = async () => {
     if (!user?.id) {
       alert('로그인 후 이용해 주세요.');
@@ -60,6 +83,7 @@ const CartOrderFormPage = () => {
         used: paymentMethod,
         paymentStatus: "PENDING",
         accountId: user.id,
+        deliveryId: selectedAddress.id, // 선택된 배송지 ID 포함
         orderItems: cartItems.map(item => ({
           itemId: item.itemId,
           itemName: item.name,
@@ -140,6 +164,40 @@ const CartOrderFormPage = () => {
               </div>
             </div>
           ))}
+
+          {/* 배송지 등록 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px',
+            border: '1px solid #ddd',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          }}>
+            <DeliveryForm
+              accountId={user?.id}
+              onSubmitSuccess={fetchAddresses}  // 등록 후 리스트 새로고침
+            />
+          </div>
+
+          {/* 배송지 목록 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px',
+            border: '1px solid #ddd',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          }}>
+            <DeliveryList
+              addresses={addresses}
+              onSelect={setSelectedAddress}
+            />
+          </div>
 
           <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', marginTop: '40px' }}>
             <h3>결제 요약</h3>
