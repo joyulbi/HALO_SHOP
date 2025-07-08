@@ -47,7 +47,7 @@ public class AuctionTimerManager {
             // 1. 경매 상태 FINISHED로 변경
             auctionService.finishAuction(auctionId);
 
-            // 2. 1초 지연 후 낙찰자 계산 및 저장
+            // 2. 4초 지연 후 낙찰자 계산 및 저장
             scheduler.schedule(() -> {
                 System.out.println("[낙찰자 계산 예약] auctionId=" + auctionId);
                 auctionResultService.saveAuctionResult(auctionId);
