@@ -3,61 +3,82 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.company.haloshop.orderitem.OrderItemMapper">
+<mapper
+	namespace="com.company.haloshop.orderitem.OrderItemMapper">
 
-    <!-- ✅ OrderItemDto 명시적 매핑 추가 -->
-    <resultMap id="orderItemResultMap" type="com.company.haloshop.dto.shop.OrderItemDto">
-        <id property="id" column="id" />
-        <result property="ordersId" column="orders_id" />
-        <result property="itemId" column="item_id" />
-        <result property="itemName" column="item_name" />
-        <result property="productPrice" column="product_price" />
-        <result property="quantity" column="quantity" />
-    </resultMap>
+	<!-- ✅ OrderItemDto 명시적 매핑 추가 -->
+	<resultMap id="orderItemResultMap"
+		type="com.company.haloshop.dto.shop.OrderItemDto">
+		<id property="id" column="id" />
+		<result property="ordersId" column="orders_id" />
+		<result property="itemId" column="item_id" />
+		<result property="itemName" column="item_name" />
+		<result property="productPrice" column="product_price" />
+		<result property="quantity" column="quantity" />
+		<result property="imageUrl" column="image_url" />
+	</resultMap>
 
-    <!-- OrderItemDto insert -->
-    <insert id="insert"
-        parameterType="com.company.haloshop.dto.shop.OrderItemDto"
-        useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO order_items
-        (orders_id, item_id, item_name, product_price, quantity)
-        VALUES
-        (#{ordersId}, #{itemId}, #{itemName}, #{productPrice}, #{quantity})
-    </insert>
+	<!-- OrderItemDto insert -->
+	<insert id="insert"
+		parameterType="com.company.haloshop.dto.shop.OrderItemDto"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO order_items
+		(orders_id, item_id, item_name, product_price, quantity)
+		VALUES
+		(#{ordersId}, #{itemId}, #{itemName}, #{productPrice}, #{quantity})
+	</insert>
 
-    <!-- 기존 CRUD용 -->
-    <select id="findAll" resultMap="orderItemResultMap">
-        SELECT * FROM order_items
-    </select>
+	<!-- 기존 CRUD용 -->
+	<select id="findAll" resultMap="orderItemResultMap">
+		SELECT * FROM order_items
+	</select>
 
-    <select id="findById" parameterType="long" resultMap="orderItemResultMap">
-        SELECT * FROM order_items WHERE id = #{id}
-    </select>
+	<select id="findById" parameterType="long"
+		resultMap="orderItemResultMap">
+		SELECT * FROM order_items WHERE id = #{id}
+	</select>
 
-    <select id="findAllByCategoryId" parameterType="long" resultMap="orderItemResultMap">
-        SELECT oi.*
-        FROM order_items oi
-        JOIN items i ON oi.item_id = i.id
-        WHERE i.category_id = #{categoryId}
-    </select>
+	<select id="findAllByCategoryId" parameterType="long"
+		resultMap="orderItemResultMap">
+		SELECT oi.*
+		FROM order_items oi
+		JOIN items i ON oi.item_id = i.id
+		WHERE i.category_id = #{categoryId}
+	</select>
 
-    <!-- 🚨 수정: resultMap으로 변경 -->
-    <select id="findByOrderId" parameterType="long" resultMap="orderItemResultMap">
-        SELECT * FROM order_items WHERE orders_id = #{ordersId}
-    </select>
+	<!-- 🚨 수정: resultMap으로 변경 -->
+	<select id="findByOrderId" parameterType="long"
+		resultMap="orderItemResultMap">
+		SELECT
+		oi.id,
+		oi.orders_id,
+		oi.item_id,
+		oi.item_name,
+		oi.product_price,
+		oi.quantity,
+		MIN(ii.url) AS image_url
+		FROM order_items oi
+		JOIN items i ON oi.item_id = i.id
+		LEFT JOIN items_image ii ON ii.items_id = i.id
+		WHERE oi.orders_id = #{ordersId}
+		GROUP BY oi.id, oi.orders_id, oi.item_id, oi.item_name, oi.product_price,
+		oi.quantity
+	</select>
 
-    <update id="update" parameterType="com.company.haloshop.dto.shop.OrderItemDto">
-        UPDATE order_items
-        SET orders_id = #{ordersId},
-            item_id = #{itemId},
-            item_name = #{itemName},
-            product_price = #{productPrice},
-            quantity = #{quantity}
-        WHERE id = #{id}
-    </update>
 
-    <delete id="delete" parameterType="long">
-        DELETE FROM order_items WHERE id = #{id}
-    </delete>
+	<update id="update"
+		parameterType="com.company.haloshop.dto.shop.OrderItemDto">
+		UPDATE order_items
+		SET orders_id = #{ordersId},
+		item_id = #{itemId},
+		item_name = #{itemName},
+		product_price = #{productPrice},
+		quantity = #{quantity}
+		WHERE id = #{id}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM order_items WHERE id = #{id}
+	</delete>
 
 </mapper>
