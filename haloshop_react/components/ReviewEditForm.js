@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const ReviewEditForm = ({ review, onClose, onSuccess }) => {
   const [content, setContent] = useState(review.content);

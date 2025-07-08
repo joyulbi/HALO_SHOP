@@ -2,7 +2,6 @@ package com.company.haloshop.userpoint;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import com.company.haloshop.pointlog.PointLogService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,7 @@ import com.company.haloshop.dto.shop.MembershipDto;
 import com.company.haloshop.dto.shop.PointLogDto;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.membership.MembershipMapper;
+import com.company.haloshop.pointlog.PointLogService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -58,7 +58,6 @@ public class UserPointService {
         userPointMapper.update(userPoint);
     }
 
-
     // 삭제 (회원 탈퇴 시)
     public void deleteByAccountId(Long accountId) {
         userPointMapper.deleteByAccountId(accountId);
@@ -78,7 +77,6 @@ public class UserPointService {
         }
 
         MembershipDto membership = membershipMapper.findBestMatchByTotalPayment(newTotalPayment);
-
         if (membership != null) {
             addedPoint += membership.getPricePoint();
         }
@@ -99,6 +97,14 @@ public class UserPointService {
             userPointMapper.update(userPoint);
         }
 
+        // 포인트 적립 로그
+        PointLogDto logDto = new PointLogDto();
+        logDto.setAccountId(accountId);
+        logDto.setAmount(addedPoint);
+        logDto.setType("SAVE");
+        logDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(logDto);
+
         return addedPoint;
     }
 
@@ -106,18 +112,41 @@ public class UserPointService {
     public int deductPointByOrder(Long accountId, Long payAmount) {
         int deductPoint = (int) (payAmount * 0.01);
         UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint == null) {
+            throw new IllegalArgumentException("UserPoint not found for accountId=" + accountId);
+        }
         userPoint.setTotalPoint(userPoint.getTotalPoint() - deductPoint);
         userPoint.setUpdatedAt(LocalDateTime.now());
         userPointMapper.update(userPoint);
+
+        // 포인트 차감 로그
+        PointLogDto logDto = new PointLogDto();
+        logDto.setAccountId(accountId);
+        logDto.setAmount(deductPoint);
+        logDto.setType("REFUND_DEDUCT");
+        logDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(logDto);
+
         return deductPoint;
     }
 
     @Transactional
     public void restorePoint(Long accountId, int restoreAmount) {
         UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint == null) {
+            throw new IllegalArgumentException("UserPoint not found for accountId=" + accountId);
+        }
         userPoint.setTotalPoint(userPoint.getTotalPoint() + restoreAmount);
         userPoint.setUpdatedAt(LocalDateTime.now());
         userPointMapper.update(userPoint);
+
+        // 사용 포인트 복원 로그
+        PointLogDto logDto = new PointLogDto();
+        logDto.setAccountId(accountId);
+        logDto.setAmount(restoreAmount);
+        logDto.setType("REFUND_RESTORE");
+        logDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(logDto);
     }
 
     @Transactional
@@ -129,8 +158,16 @@ public class UserPointService {
         userPoint.setTotalPoint(userPoint.getTotalPoint() - useAmount);
         userPoint.setUpdatedAt(LocalDateTime.now());
         userPointMapper.update(userPoint);
+
+        // 포인트 사용 로그
+        PointLogDto logDto = new PointLogDto();
+        logDto.setAccountId(accountId);
+        logDto.setAmount(useAmount);
+        logDto.setType("USE");
+        logDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(logDto);
     }
-    
+
     @Transactional
     public void adjustPointManually(Long accountId, int adjustToAmount) {
         UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
@@ -144,33 +181,50 @@ public class UserPointService {
             userPointMapper.insert(userPoint);
 
             // 최초 생성 시 로그
-            PointLogDto pointLogDto = new PointLogDto();
-            pointLogDto.setAccountId(accountId);
-            pointLogDto.setAmount(adjustToAmount);
-            pointLogDto.setType("수동입력");
-            pointLogDto.setCreatedAt(LocalDateTime.now());
-            pointLogService.insert(pointLogDto);
+            PointLogDto logDto = new PointLogDto();
+            logDto.setAccountId(accountId);
+            logDto.setAmount(adjustToAmount);
+            logDto.setType("수동입력");
+            logDto.setCreatedAt(LocalDateTime.now());
+            pointLogService.insert(logDto);
         } else {
-            long beforePoint = userPoint.getTotalPoint();
-            long diff = adjustToAmount - beforePoint; // 변동량
-
+            long before = userPoint.getTotalPoint();
+            long diff = adjustToAmount - before;
             userPoint.setTotalPoint((long) adjustToAmount);
             userPoint.setUpdatedAt(LocalDateTime.now());
             userPointMapper.update(userPoint);
 
-            // 변동량 기준으로 로그 기록
             if (diff != 0) {
-                PointLogDto pointLogDto = new PointLogDto();
-                pointLogDto.setAccountId(accountId);
-                pointLogDto.setAmount((int) diff);
-                pointLogDto.setType("수동입력");
-                pointLogDto.setCreatedAt(LocalDateTime.now());
-                pointLogService.insert(pointLogDto);
+                PointLogDto logDto = new PointLogDto();
+                logDto.setAccountId(accountId);
+                logDto.setAmount((int) diff);
+                logDto.setType("수동입력");
+                logDto.setCreatedAt(LocalDateTime.now());
+                pointLogService.insert(logDto);
             }
         }
     }
 
+    /**
+     * 회원가입 시 호출하여 UserPoint 초기 레코드를 생성합니다.
+     * grade: BASIC, totalPayment: 0, totalPoint: 0
+     */
+    @Transactional
+    public void initializeUserPoint(Long accountId) {
+        UserPointDto dto = new UserPointDto();
+        dto.setAccountId(accountId);
+        dto.setGrade("BASIC");
+        dto.setTotalPayment(0L);
+        dto.setTotalPoint(0L);
+        dto.setUpdatedAt(LocalDateTime.now());
+        userPointMapper.insert(dto);
 
-
-
+        // 초기 포인트 로그
+        PointLogDto logDto = new PointLogDto();
+        logDto.setAccountId(accountId);
+        logDto.setAmount(0);
+        logDto.setType("INITIAL");
+        logDto.setCreatedAt(LocalDateTime.now());
+        pointLogService.insert(logDto);
+    }
 }
