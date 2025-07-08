@@ -38,4 +38,8 @@ public class CartService {
     public void deleteCart(Long id) {
         cartMapper.deleteCart(id);
     }
+    public void clearCartByAccountId(Long accountId) {
+        cartMapper.deleteAllByAccountId(accountId);
+    }
+
 }

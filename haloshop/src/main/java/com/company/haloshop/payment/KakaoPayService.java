@@ -16,6 +16,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.company.haloshop.cart.CartService;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.order.OrderMapper;
@@ -40,6 +41,7 @@ public class KakaoPayService {
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
     private final OrderItemMapper orderItemMapper;
+    private final CartService cartService;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${kakao.pay.admin-key}")
@@ -145,6 +147,7 @@ public class KakaoPayService {
         orderService.updatePaymentStatus(order.getId(), "PAID");
 
         log.info("✅ 주문 결제 완료 및 재고 차감 완료: Order ID={}, User ID={}", order.getId(), request.getAccountId());
+        cartService.clearCartByAccountId(order.getAccountId()); // ✅ 결제 완료 후 장바구니 비우기
 
         if (order.getAmount() != null && order.getAmount() > 0) {
             userPointService.usePoint(order.getAccountId(), order.getAmount());

@@ -37,5 +37,10 @@
         DELETE FROM cart
         WHERE id = #{id}
     </delete>
+    
+    <delete id="deleteAllByAccountId" parameterType="long">
+    	DELETE FROM cart WHERE account_id = #{accountId}
+	</delete>
+    
 
 </mapper>
