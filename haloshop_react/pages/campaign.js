@@ -124,18 +124,38 @@ const campaign = () => {
   const [selectedSeason, setSelectedSeason] = useState(null);
   const [campaignImage, setCampaignImage] = useState({});
   const [rankList, setRankList] = useState([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState(null);
   
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
+  // 시즌 표시 우선 순위 설정
   useEffect(() => {
     axios.get(`${ApiCallUrl}/api/seasons`)
       .then(res => {
         const seasonList = res.data;
         setSeasons(seasonList);
-        if (seasonList.length > 0) {
-          // id가 가장 큰 시즌 선택
-          setSelectedSeason(seasonList.reduce((max, curr) => (curr.id > max.id ? curr : max), seasonList[0]));
+
+        const today = new Date();
+
+        // 1. 오늘 포함된 시즌 중 id가 가장 낮은 것
+        const availableSeason = seasonList
+          .filter(season => {
+            const start = new Date(season.startDate);
+            const end = new Date(season.endDate);
+            return today >= start && today <= end;
+          })
+          .sort((a, b) => a.id - b.id)[0];
+
+        if (availableSeason) {
+          setSelectedSeason(availableSeason);
+        } else {
+          // 2. 오늘 포함된 시즌 없으면 id가 가장 큰 시즌
+          const latestSeason = seasonList.reduce(
+            (max, curr) => (curr.id > max.id ? curr : max),
+            seasonList[0]
+          );
+          setSelectedSeason(latestSeason);
         }
       })
       .catch(console.error);
@@ -198,8 +218,9 @@ const campaign = () => {
   }));
 
   // 모달 열기 함수
-  const openModal = (team) => {
-    setSelectedTeam(team);
+  const openModal = (campaign) => {
+    setSelectedTeam(campaign.team);
+    setSelectedCampaignId(campaign.id);  // 여기서 id 저장
     setModalOpen(true);
   };
 
@@ -207,6 +228,7 @@ const campaign = () => {
   const closeModal = () => {
     setModalOpen(false);
     setSelectedTeam(null);
+    setSelectedCampaignId(null);
   };
 
   if (!selectedSeason) {
@@ -261,7 +283,7 @@ const campaign = () => {
         {rankList.slice(3).map(campaign => (
           <TeamCard 
             key={campaign.id} 
-            onClick={() => openModal(campaign.team)} // 클릭 시 모달 오픈
+            onClick={() => openModal(campaign)} // 클릭 시 모달 오픈
             style={{ cursor: "pointer" }}           // 클릭 가능 커서 추가 (선택)
           >
             <TeamImage
@@ -276,6 +298,7 @@ const campaign = () => {
       {modalOpen && selectedTeam && (
         <DonationModal
           team={selectedTeam}
+          campaignId={selectedCampaignId}
           onClose={closeModal}
         />
       )}

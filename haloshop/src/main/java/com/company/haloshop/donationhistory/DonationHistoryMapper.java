@@ -3,6 +3,7 @@ package com.company.haloshop.donationhistory;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface DonationHistoryMapper {
@@ -21,4 +22,5 @@ public interface DonationHistoryMapper {
 
     // 수정
     void updateDonationHistory(DonationHistory donationHistory);
+    
 }

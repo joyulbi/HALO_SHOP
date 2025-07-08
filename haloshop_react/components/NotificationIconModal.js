@@ -102,6 +102,23 @@ const NotificationIconModal = ({ onClose }) => {
       .finally(() => setLoading(false));
   }, []);
 
+  const handleNotificationClick = async (id) => {
+  const token = localStorage.getItem("accessToken");
+  try {
+    await axios.patch(`http://localhost:8080/api/notifications/${id}/read?isRead=true`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // 상태 업데이트: 클라이언트에서도 읽음 처리
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+    );
+  } catch (err) {
+    console.error("알림 읽음 처리 실패", err);
+  }
+};
+
+
   return (
     <ModalWrapper>
       <Header>
@@ -117,7 +134,7 @@ const NotificationIconModal = ({ onClose }) => {
         <p>알림이 없습니다.</p>
       ) : (
         notifications.map(n => (
-          <NotificationItem key={n.id}>
+          <NotificationItem key={n.id} onClick={() => handleNotificationClick(n.id)}>
             {!n.isRead && <RedDot />}
             <strong>{n.title || `문의 ID: ${n.referenceId}`}</strong>
             <p>{n.message || "문의가 답변되었습니다."}</p>
