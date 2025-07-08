@@ -55,6 +55,21 @@
   <delete id="deleteDonationCampaignBySeasonId" parameterType="long">
   	DELETE FROM donation_campaign WHERE season_id=#{season.id}
   </delete>
+  
+ 	 <!-- 캠페인별 최근 1시간 기부금 합계 조회 -->
+	<select id="sumDonationAmountLastHour" resultType="map">
+	  SELECT campaign_id, SUM(amount) AS total_amount
+	  FROM donation_history
+	  WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+	  GROUP BY campaign_id
+	</select>
+	
+	<!-- 캠페인 total 컬럼 업데이트 -->
+		<update id="updateDonationCampaignTotal">
+		  UPDATE donation_campaign
+		  SET total = #{total}
+		  WHERE id = #{campaignId}
+		</update>
 
 </mapper>
 

@@ -14,7 +14,7 @@
 
     <insert id="insertInquiryAnswer" parameterType="com.company.haloshop.inquiryanswer.InquiryAnswer" useGeneratedKeys="false">
         INSERT INTO inquiry_answer (inquiry_id, answer, account_id, created_at)
-        VALUES (#{inquiryId}, #{answer}, #{accountId}, #{createdAt})
+        VALUES (#{inquiryId}, #{accountId}, #{answer}, #{createdAt})
     </insert>
 
     <select id="findInquiryAnswerById" parameterType="long" resultMap="InquiryAnswerResultMap">

@@ -146,11 +146,15 @@ public class SecurityConfig {
 
             // 4) 권한 및 URL 접근 제어
             .authorizeRequests(authz -> authz
+                //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/auth/**").permitAll()
+
                 .antMatchers("/api/payment/**","/api/cart/**","/api/items", "/api/pay/kakao/**","/api/auction-images/**").permitAll()
-                
+               
+
+                .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
+
                 .antMatchers("/api/items/admin/**").access("@adminCheck.hasAuthority(authentication)")
-                
                 .antMatchers("/api/**").permitAll()
                 .antMatchers("/admin/me").permitAll()
                 .antMatchers("/user/me").permitAll()

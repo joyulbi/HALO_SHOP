@@ -19,8 +19,10 @@
     </select>
 
     <insert id="insert"
-        parameterType="com.company.haloshop.dto.shop.PointLogDto">
-        INSERT INTO point_log (account_id, type, amount, created_at)
+        parameterType="com.company.haloshop.dto.shop.PointLogDto" 
+        useGeneratedKeys="true"
+    	keyProperty="id">
+    	INSERT INTO point_log (account_id, type, amount, created_at)
         VALUES (#{accountId}, #{type}, #{amount}, NOW())
     </insert>
 

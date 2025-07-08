@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.haloshop.event.EventEntityMapper">
+	<resultMap id="EventEntityResultMap" type="com.company.haloshop.event.EventEntity">
+		<id property="id" column="id"/>
+		<result property="name" column="name" />
+	</resultMap>
+
+	<insert id="insert" parameterType="com.company.haloshop.event.EventEntityRequestDto">
+		INSERT INTO event_entity (name) VALUES (#{name})
+	</insert>
+	
+	<select id="findAll" resultMap="EventEntityResultMap">
+		SELECT * FROM event_entity;
+	</select>
+	
+	<select id="findById" resultMap="EventEntityResultMap">
+		SELECT * FROM event_entity WHERE id=#{id}
+	</select>
+	
+
+</mapper>

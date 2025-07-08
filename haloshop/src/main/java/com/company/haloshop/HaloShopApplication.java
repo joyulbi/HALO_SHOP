@@ -14,5 +14,7 @@ public class HaloShopApplication {
     public static void main(String[] args) {
         SpringApplication.run(HaloShopApplication.class, args);
     }
+    
+    
 
 }

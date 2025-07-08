@@ -7,6 +7,7 @@ import '../styles/globals.css';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import 'antd/dist/antd.css';
+import WebSocketClient from '../components/WebSocketClient';
 
 import { useRef } from 'react';
 import { useRouter } from 'next/router';
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <AuthProvider>
       <CartProvider>
+        <WebSocketClient />
         <CartButtonContext.Provider value={{ cartButtonRef }}>
           {isMyPage ? (
             <Component {...pageProps} />
