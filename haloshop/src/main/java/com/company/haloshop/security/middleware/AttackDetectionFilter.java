@@ -140,19 +140,19 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
 //            return;
 //        }
 
-        // 7) 비정상 상태 유저 접근 (403)
-        Integer status = Optional.ofNullable(req.getSession(false))
-                                 .map(s -> s.getAttribute("userStatus"))
-                                 .filter(Integer.class::isInstance)
-                                 .map(Integer.class::cast)
-                                 .orElse(1);
-        if (status != 1) {
-            logOnce.accept(logDto(userId, null, "SUSPICIOUS_STATUS_ACCESS",
-                                  "Non-normal user status: " + status, ip));
-            response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                               "Forbidden due to user status");
-            return;
-        }
+//        // 7) 비정상 상태 유저 접근 (403)
+//        Integer status = Optional.ofNullable(req.getSession(false))
+//                                 .map(s -> s.getAttribute("userStatus"))
+//                                 .filter(Integer.class::isInstance)
+//                                 .map(Integer.class::cast)
+//                                 .orElse(1);
+//        if (status != 1) {
+//            logOnce.accept(logDto(userId, null, "SUSPICIOUS_STATUS_ACCESS",
+//                                  "Non-normal user status: " + status, ip));
+//            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+//                               "Forbidden due to user status");
+//            return;
+//        }
 
 //        // 8) 빈 바디 POST/DELETE (400)
 //        if (List.of("POST","DELETE").contains(req.getMethod()) && body.isBlank()) {
@@ -202,14 +202,14 @@ public class AttackDetectionFilter extends OncePerRequestFilter {
 //            return;
 //        }
 
-        // 11) 쿠키 위변조 검사 (403)
-        if (hasSessionCookie(req) && req.getSession(false) == null) {
-            logOnce.accept(logDto(userId, null, "COOKIE_TAMPERED",
-                                  "Session cookie without valid session", ip));
-            response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                               "Forbidden cookie tampering");
-            return;
-        }
+//        // 11) 쿠키 위변조 검사 (403)
+//        if (hasSessionCookie(req) && req.getSession(false) == null) {
+//            logOnce.accept(logDto(userId, null, "COOKIE_TAMPERED",
+//                                  "Session cookie without valid session", ip));
+//            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+//                               "Forbidden cookie tampering");
+//            return;
+//        }
 
 //        // 12) 반복 직접 접근 (403)
 //        if (userId == null && startsWithAny(req.getRequestURI(), suspiciousPaths)) {
