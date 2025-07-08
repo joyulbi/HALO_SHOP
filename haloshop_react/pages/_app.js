@@ -13,6 +13,7 @@ import { useRef } from 'react';
 import { useRouter } from 'next/router';
 
 function MyApp({ Component, pageProps }) {
+
   const cartButtonRef = useRef(null);
   const router = useRouter();
 
@@ -21,18 +22,18 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <CartProvider>
-        <WebSocketClient />
-        <CartButtonContext.Provider value={{ cartButtonRef }}>
-          {isMyPage ? (
-            <Component {...pageProps} />
-          ) : (
-            <Layout cartRef={cartButtonRef}>
+        <CartProvider>
+          <WebSocketClient />
+          <CartButtonContext.Provider value={{ cartButtonRef }}>
+            {isMyPage ? (
               <Component {...pageProps} />
-            </Layout>
-          )}
-        </CartButtonContext.Provider>
-      </CartProvider>
+            ) : (
+              <Layout cartRef={cartButtonRef}>
+                <Component {...pageProps} />
+              </Layout>
+            )}
+          </CartButtonContext.Provider>
+        </CartProvider>
     </AuthProvider>
   );
 }

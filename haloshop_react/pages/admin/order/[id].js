@@ -28,18 +28,27 @@ const OrderDetailPage = () => {
       setLoadingOrder(false);
     }
   };
+const handleApprove = async () => {
+  if (!confirm('결제를 완료 처리하시겠습니까?')) return;
 
-  const handleApprove = async () => {
-    if (!confirm('결제를 완료 처리하시겠습니까?')) return;
-    try {
-      await api.post(`/api/payment/mock/approve`, null, { params: { orderId: id } });
-      alert('결제가 완료되었습니다.');
-      fetchOrder(); // 상태 갱신
-    } catch (err) {
-      console.error('🚩 결제 승인 오류:', err);
-      alert('결제 승인에 실패했습니다.');
-    }
-  };
+  console.log('✅ 결제 승인 시도: id =', id);
+
+  if (!id) {
+    alert('유효하지 않은 주문 ID입니다.');
+    return;
+  }
+
+  try {
+    await api.post(`/api/payment/mock/approve?orderId=${id}`);
+    alert('결제가 완료되었습니다.');
+    fetchOrder();
+  } catch (err) {
+    console.error('🚩 결제 승인 오류:', err.response?.data || err);
+    alert('결제 승인에 실패했습니다.');
+  }
+};
+
+
 
   useEffect(() => {
     if (!authLoading && isLoggedIn && user?.id && id) {
