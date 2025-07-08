@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import InquiriesManagement from "../../components/InquiriesManagement";
+import { useAuth } from "../../hooks/useAuth";
 
 const Container = styled.div`
   width: 70vw;
@@ -31,13 +32,19 @@ const Select = styled.select`
 `;
 
 const Inquiries = () => {
+  const { user, loading } = useAuth();
   const [status, setStatus] = useState("SUBMITTED");
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    setToken(savedToken);
+    if (typeof window !== "undefined") {
+      const accessToken = localStorage.getItem("accessToken");
+      setToken(accessToken);
+    }
   }, []);
+
+  if (loading) return <div>로딩 중...</div>;
+
 
   return (
     <Container>
@@ -50,7 +57,7 @@ const Inquiries = () => {
         </Select>
       </Header>
 
-      <InquiriesManagement status={status} token={token} />
+      <InquiriesManagement user={user} status={status} token={token}/>
     </Container>
   );
 };
