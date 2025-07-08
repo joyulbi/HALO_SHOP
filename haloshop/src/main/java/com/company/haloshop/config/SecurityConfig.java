@@ -141,7 +141,21 @@ public class SecurityConfig {
             // 3) CSRF 설정
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringAntMatchers("/api/payment/**","/api/cart/**","/api/auction-images/**", "/api/auctions/**","/api/admin/item-images/**", "/auth/**", "/user/me", "/admin/**","/security/**","/api/items/admin")
+                .ignoringAntMatchers("/api/**",
+                		"/api/admin/**",
+                		"/api/items/**",
+                		"/api/orders/**",
+                		"/api/payment/**",
+                		"/api/cart/**",
+                		"/api/auction-images/**", 
+                		"/api/auctions/**",
+                		"/api/admin/item-images/**", 
+                		"/auth/**", 
+                		"/user/me", 
+                		"/admin/**",
+                		"/security/**",
+                		"/api/items/admin",
+                		"/api/auction-results/**","api/items/admin/**")
             )
 
             // 4) 권한 및 URL 접근 제어
@@ -149,12 +163,13 @@ public class SecurityConfig {
                 //.antMatchers("/admin/**").hasRole("ADMIN")  // 관리자 경로는 ADMIN 권한만
                 .antMatchers("/auth/**").permitAll()
 
-                .antMatchers("/api/payment/**","/api/cart/**","/api/items", "/api/pay/kakao/**","/api/auction-images/**").permitAll()
+                .antMatchers("api/items/admin/**","/api/payment/**","/api/cart/**","/api/items", "/api/pay/kakao/**","/api/auction-images/**").permitAll()
                
 
-                .antMatchers("/api/items", "/api/pay/kakao/**").permitAll()
+                .antMatchers("admin/items","/api/items", "/api/pay/kakao/**").permitAll()
 
                 .antMatchers("/api/items/admin/**").access("@adminCheck.hasAuthority(authentication)")
+                .antMatchers("/api/items/**").permitAll()
                 .antMatchers("/api/**").permitAll()
                 .antMatchers("/admin/me").permitAll()
                 .antMatchers("/user/me").permitAll()
