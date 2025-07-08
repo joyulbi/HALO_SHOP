@@ -20,12 +20,10 @@ public class ItemsService {
     private final ItemsMapper itemsMapper;
     private final ItemsImageMapper itemsImageMapper;
 
-    // 🔥 상품 + 이미지 통합 등록 (itemId 반환)
+    // 🔥 상품 + 이미지 통합 등록
     public Long insert(Items item, List<String> imageUrls) {
-        // 1. 상품 저장
         itemsMapper.insert(item);
 
-        // 2. 이미지 저장
         if (imageUrls != null && !imageUrls.isEmpty()) {
             for (String url : imageUrls) {
                 ItemsImage image = new ItemsImage();
@@ -48,33 +46,27 @@ public class ItemsService {
         return itemsMapper.findById(id);
     }
 
-    // 🔥 상품 수정 + 이미지 수정 (파일 저장 포함)
+    // 🔥 상품 수정 + 이미지 저장
     public void update(Items item, MultipartFile image) {
-        // 1. 상품 정보 수정
         itemsMapper.update(item);
 
-        // 2. 이미지 수정
         if (image != null && !image.isEmpty()) {
-            // 기존 이미지 삭제
             itemsImageMapper.deleteByItemsId(item.getId());
 
-            // 🔥 UUID 파일명 생성
             String uuid = UUID.randomUUID().toString();
             String originalFilename = image.getOriginalFilename();
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = uuid + extension;
 
-            // 🔥 실제 파일 저장 경로
             String savePath = "C:/upload/" + fileName;
             File file = new File(savePath);
 
             try {
-                image.transferTo(file); // 🔥 실제 파일 저장
+                image.transferTo(file);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            // 🔥 DB 저장 경로
             ItemsImage newImage = new ItemsImage();
             newImage.setItemsId(item.getId());
             newImage.setUrl("/images/" + fileName);
@@ -82,18 +74,12 @@ public class ItemsService {
         }
     }
 
-    // 🔥 상품 삭제
+    // 🔥 상품 삭제 + 이미지 파일도 삭제
     public void delete(Long id) {
-        // 1. 상품 이미지 리스트 조회
         List<ItemsImage> images = itemsImageMapper.findByItemsId(id);
-
-        // 2. DB에서 상품 삭제
         itemsMapper.delete(id);
-
-        // 3. DB에서 이미지 삭제
         itemsImageMapper.deleteByItemsId(id);
 
-        // 4. 실제 파일 삭제
         for (ItemsImage image : images) {
             String fileName = image.getUrl().replace("/images/", "");
             File file = new File("C:/upload/" + fileName);
@@ -106,5 +92,12 @@ public class ItemsService {
     // 🔥 상품별 이미지 조회
     public List<ItemsImage> findImagesByItemId(Long itemId) {
         return itemsImageMapper.findByItemsId(itemId);
+    }
+
+    // 🔥 상품별 재고 조회 (inventory_volume 합계)
+    public int findInventoryByItemId(Long itemId) {
+        int result = itemsMapper.getTotalInventoryByItemId(itemId);
+        System.out.println("🔥 itemId = " + itemId + " → 재고량 = " + result);
+        return result;
     }
 }

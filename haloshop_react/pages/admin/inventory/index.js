@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const InventoryListPage = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const InventoryListPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div style={{ padding: '20px' }}>
       <h1>재고 관리 페이지</h1>
 
@@ -80,6 +82,7 @@ const InventoryListPage = () => {
         </>
       )}
     </div>
+    </AdminLayout>
   );
 };
 

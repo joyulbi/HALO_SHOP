@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
 import { useAuth } from '../../../hooks/useAuth';
+import AdminLayout from '../AdminLayout';
 
 const OrderDetailPage = () => {
   const router = useRouter();
@@ -14,7 +15,6 @@ const OrderDetailPage = () => {
   const fetchOrder = async () => {
     try {
       const res = await api.get(`/api/orders/${id}`);
-      console.log('🚩 주문 상세 데이터:', res.data);
       setOrder(res.data);
     } catch (err) {
       console.error('🚩 주문 상세 조회 오류:', err);
@@ -57,86 +57,121 @@ const handleApprove = async () => {
   }, [authLoading, isLoggedIn, user, id]);
 
   if (authLoading || loadingOrder) {
-    return <div className="p-8 text-center">주문 상세를 불러오는 중...</div>;
+    return <div style={{ padding: '40px', textAlign: 'center' }}>주문 상세를 불러오는 중...</div>;
   }
 
   if (!order) {
-    return <div className="p-8 text-center">주문 데이터를 찾을 수 없습니다.</div>;
+    return <div style={{ padding: '40px', textAlign: 'center' }}>주문 데이터를 찾을 수 없습니다.</div>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">주문 상세</h1>
+    <AdminLayout>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '32px', textAlign: 'center' }}>
+        주문 상세
+      </h1>
 
-      <div className="border rounded-lg shadow p-6 space-y-3 bg-white">
-        <div className="flex justify-between font-semibold text-lg">
-          <span>주문 번호:</span>
-          <span>{order.id}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>결제 상태:</span>
-          <span className={order.paymentStatus === 'PAID' ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'}>
-            {order.paymentStatus}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>총 결제 금액:</span>
-          <span>{order.payAmount?.toLocaleString()}원</span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>주문일:</span>
-          <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-        </div>
-      </div>
+      <div style={{
+  border: '1px solid #ccc',
+  borderRadius: '10px',
+  padding: '32px',
+  marginBottom: '50px',
+  backgroundColor: '#fdfdfd',
+  fontSize: '18px',
+  lineHeight: '1.8'
+}}>
+  <p><strong>🧾 주문 번호:</strong> {order.id}</p>
+  <p>
+    <strong>💳 결제 상태:</strong>{' '}
+    <span style={{
+      color: order.paymentStatus === 'PAID' ? 'green' : 'orange',
+      fontWeight: 'bold'
+    }}>
+      {order.paymentStatus}
+    </span>
+  </p>
+  <p><strong>💰 총 결제 금액:</strong> {order.payAmount?.toLocaleString()}원</p>
+  <p style={{ fontSize: '15px', color: '#666' }}>
+    <strong>🕒 주문일:</strong> {new Date(order.createdAt).toLocaleDateString()}
+  </p>
+</div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">주문 상품</h2>
-        {order.orderItems && order.orderItems.length > 0 ? (
-          <div className="space-y-4">
-            {order.orderItems.map((item) => (
-              <div key={item.id} className="flex items-center border rounded-lg shadow p-4 gap-4 bg-white">
-                <img
-                  src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/images/no-image.png'}
-                  alt={item.itemName}
-                  className="w-24 h-24 object-cover rounded-md"
-                />
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{item.itemName}</h3>
-                  <p className="text-sm text-gray-600">
-                    {item.productPrice.toLocaleString()}원 x {item.quantity}개
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 mt-1">
-                    합계: {(item.productPrice * item.quantity).toLocaleString()}원
-                  </p>
-                </div>
+      <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px' }}>주문 상품</h2>
+      {order.orderItems && order.orderItems.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {order.orderItems.map((item) => (
+            <div key={item.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              border: '1px solid #eee',
+              borderRadius: '10px',
+              padding: '16px',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+              gap: '16px'
+            }}>
+              <img
+                src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/images/no-image.png'}
+                alt={item.itemName}
+                style={{ width: '96px', height: '96px', objectFit: 'cover', borderRadius: '6px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>{item.itemName}</h3>
+                <p style={{ fontSize: '14px', color: '#666' }}>{item.productPrice.toLocaleString()}원 x {item.quantity}개</p>
+                <p style={{ fontSize: '15px', fontWeight: 'bold', marginTop: '4px' }}>
+                  합계: {(item.productPrice * item.quantity).toLocaleString()}원
+                </p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">주문 상품 정보가 없습니다.</p>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ fontSize: '14px', color: '#999' }}>주문 상품 정보가 없습니다.</p>
+      )}
 
       {order.paymentStatus === 'PENDING' && (
-        <div className="mt-8 text-center">
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
           <button
             onClick={handleApprove}
-            className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#047857',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#065f46'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#047857'}
           >
             결제 완료 처리
           </button>
         </div>
       )}
 
-      <div className="mt-4 text-center">
+      <div style={{ marginTop: '24px', textAlign: 'center' }}>
         <button
           onClick={() => router.push('/admin/order')}
-          className="px-6 py-3 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition"
+          style={{
+            padding: '12px 24px',
+            backgroundColor: '#444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#333'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#444'}
         >
           주문 목록으로 돌아가기
         </button>
       </div>
     </div>
+    </AdminLayout>  
   );
 };
 

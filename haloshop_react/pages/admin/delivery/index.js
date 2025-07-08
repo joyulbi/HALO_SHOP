@@ -1,6 +1,8 @@
 // pages/admin/delivery/index.js
 import React, { useEffect, useState } from 'react';
+import AdminLayout from '../AdminLayout';
 import axios from '../../../utils/axios';
+
 
 const AdminDeliveryPage = () => {
   const [deliveries, setDeliveries] = useState([]);
@@ -26,6 +28,7 @@ const AdminDeliveryPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div style={{ padding: '32px' }}>
       <h2 style={{ marginBottom: '24px', fontSize: '24px' }}>📦 배송 현황</h2>
 
@@ -115,6 +118,7 @@ const AdminDeliveryPage = () => {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 };
 

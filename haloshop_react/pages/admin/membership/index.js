@@ -1,7 +1,6 @@
-// pages/admin/membership/index.js
-
 import { useEffect, useState } from 'react';
 import axios from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 export default function MembershipAdminPage() {
   const [memberships, setMemberships] = useState([]);
@@ -46,65 +45,109 @@ export default function MembershipAdminPage() {
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">멤버십 관리</h1>
-      <form onSubmit={handleSubmit} className="space-y-2 mb-4">
+    <AdminLayout>
+    <div style={{
+      maxWidth: '700px',
+      margin: '40px auto',
+      padding: '30px',
+      border: '1px solid #ccc',
+      borderRadius: '12px',
+      backgroundColor: '#f9f9f9',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', textAlign: 'center' }}>
+        멤버십 관리
+      </h1>
+
+      <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
         <input
           type="text"
           placeholder="멤버십 이름"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="border p-2 w-full"
           required
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '12px',
+            border: '1px solid #aaa',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
         />
         <input
           type="number"
           placeholder="기준 사용 금액"
           value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="border p-2 w-full"
           required
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '12px',
+            border: '1px solid #aaa',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
         />
         <input
           type="number"
           placeholder="적립 포인트"
           value={form.pricePoint}
           onChange={(e) => setForm({ ...form, pricePoint: e.target.value })}
-          className="border p-2 w-full"
           required
+          style={{
+            width: '100%',
+            padding: '10px',
+            marginBottom: '12px',
+            border: '1px solid #aaa',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
         />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+        <button
+          type="submit"
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '15px'
+          }}
+        >
           {editingId ? '수정' : '추가'}
         </button>
       </form>
 
-      <table className="w-full border">
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
         <thead>
-          <tr className="bg-gray-200">
-            <th className="border p-2">ID</th>
-            <th className="border p-2">이름</th>
-            <th className="border p-2">기준 금액</th>
-            <th className="border p-2">적립 포인트</th>
-            <th className="border p-2">액션</th>
+          <tr style={{ backgroundColor: '#eaeaea' }}>
+            <th style={thStyle}>ID</th>
+            <th style={thStyle}>이름</th>
+            <th style={thStyle}>기준 금액</th>
+            <th style={thStyle}>적립 포인트</th>
+            <th style={thStyle}>액션</th>
           </tr>
         </thead>
         <tbody>
           {memberships.map((m) => (
             <tr key={m.id}>
-              <td className="border p-2 text-center">{m.id}</td>
-              <td className="border p-2 text-center">{m.name}</td>
-              <td className="border p-2 text-center">{m.price}</td>
-              <td className="border p-2 text-center">{m.pricePoint}</td>
-              <td className="border p-2 text-center space-x-2">
+              <td style={tdStyle}>{m.id}</td>
+              <td style={tdStyle}>{m.name}</td>
+              <td style={tdStyle}>{m.price}</td>
+              <td style={tdStyle}>{m.pricePoint}</td>
+              <td style={{ ...tdStyle, display: 'flex', justifyContent: 'center', gap: '8px' }}>
                 <button
                   onClick={() => startEdit(m)}
-                  className="bg-green-500 text-white px-2 py-1 rounded"
+                  style={editBtnStyle}
                 >
                   수정
                 </button>
                 <button
                   onClick={() => handleDelete(m.id)}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
+                  style={deleteBtnStyle}
                 >
                   삭제
                 </button>
@@ -114,5 +157,37 @@ export default function MembershipAdminPage() {
         </tbody>
       </table>
     </div>
+    </AdminLayout>
   );
 }
+
+const thStyle = {
+  border: '1px solid #ccc',
+  padding: '10px',
+  textAlign: 'center',
+  fontWeight: 'bold'
+};
+
+const tdStyle = {
+  border: '1px solid #ccc',
+  padding: '10px',
+  textAlign: 'center'
+};
+
+const editBtnStyle = {
+  padding: '6px 12px',
+  backgroundColor: '#28a745',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer'
+};
+
+const deleteBtnStyle = {
+  padding: '6px 12px',
+  backgroundColor: '#dc3545',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer'
+};

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const InventoryEditPage = () => {
   const router = useRouter();
@@ -10,7 +11,6 @@ const InventoryEditPage = () => {
   const [inventoryVolume, setInventoryVolume] = useState(0);
   const [stockVolume, setStockVolume] = useState(0);
 
-  // 입고 내역 가져오기
   useEffect(() => {
     if (id) {
       api.get(`/api/admin/inventory`)
@@ -26,7 +26,6 @@ const InventoryEditPage = () => {
     }
   }, [id]);
 
-  // 재고 수정
   const handleUpdate = () => {
     api.put(`/api/admin/inventory/${id}`, {
       inventoryVolume: inventoryVolume,
@@ -39,7 +38,6 @@ const InventoryEditPage = () => {
       .catch(err => console.error('재고 수정 실패:', err));
   };
 
-  // 재고 삭제
   const handleDelete = () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
@@ -54,35 +52,98 @@ const InventoryEditPage = () => {
   if (!inventory) return <div>로딩중...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>재고 수정 페이지</h1>
-      <p>상품명: {inventory.itemName}</p>
-      <p>상품 ID: {inventory.items_id}</p>
+    <AdminLayout>
+      <div style={{
+        padding: '40px',
+        maxWidth: '600px',
+        margin: '0 auto',
+        background: '#fff',
+        borderRadius: '10px',
+        boxShadow: '0 0 12px rgba(0,0,0,0.1)'
+      }}>
+        <h2 style={{ marginBottom: '30px', textAlign: 'center', color: '#333' }}>재고 수정</h2>
 
-      <div style={{ marginBottom: '10px' }}>
-        <label>총 재고량: </label>
-        <input
-          type="number"
-          value={inventoryVolume}
-          readOnly
-          style={{ marginLeft: '10px', backgroundColor: '#f0f0f0' }}
-        />
+        <div style={{ marginBottom: '20px', fontSize: '16px' }}>
+          <p><strong>상품명:</strong> {inventory.itemName}</p>
+          <p><strong>상품 ID:</strong> {inventory.items_id}</p>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>총 재고량</label>
+          <input
+            type="number"
+            value={inventoryVolume}
+            readOnly
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              backgroundColor: '#f0f0f0'
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '30px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>입고량</label>
+          <input
+            type="number"
+            value={stockVolume}
+            onChange={(e) => setStockVolume(Number(e.target.value))}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ccc'
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <button
+            onClick={handleUpdate}
+            style={{
+              background: '#28a745',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            저장
+          </button>
+
+          <button
+            onClick={handleDelete}
+            style={{
+              background: '#dc3545',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            삭제
+          </button>
+
+          <button
+            onClick={() => router.push('/admin/inventory')}
+            style={{
+              background: '#6c757d',
+              color: '#fff',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            뒤로가기
+          </button>
+        </div>
       </div>
-
-      <div style={{ marginBottom: '10px' }}>
-        <label>입고량: </label>
-        <input
-          type="number"
-          value={stockVolume}
-          onChange={(e) => setStockVolume(Number(e.target.value))}
-          style={{ marginLeft: '10px' }}
-        />
-      </div>
-
-      <button onClick={handleUpdate} style={{ marginRight: '10px' }}>저장</button>
-      <button onClick={handleDelete} style={{ marginRight: '10px' }}>삭제</button>
-      <button onClick={() => router.push('/admin/inventory')}>뒤로가기</button>
-    </div>
+    </AdminLayout>
   );
 };
 

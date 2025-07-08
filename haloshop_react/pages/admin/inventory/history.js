@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../utils/axios';
+import AdminLayout from '../AdminLayout';
 
 const InventoryHistoryPage = () => {
   const [inventoryList, setInventoryList] = useState([]);
@@ -16,6 +17,7 @@ const InventoryHistoryPage = () => {
   }, []);
 
   return (
+    <AdminLayout>
     <div style={{ padding: '20px' }}>
       <h1>재고 입고 내역 페이지</h1>
 
@@ -48,6 +50,7 @@ const InventoryHistoryPage = () => {
         </table>
       )}
     </div>
+    </AdminLayout>
   );
 };
 
