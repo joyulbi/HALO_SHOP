@@ -9,10 +9,12 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const CATEGORY_LIST = [
-  { id: 1, label: "상품 문의" },
-  { id: 2, label: "배송 문의" },
-  { id: 3, label: "환불 문의" },
-  { id: 4, label: "기타" },
+  { id: 101, label: "상품 문의" },
+  { id: 102, label: "경매 문의" },
+  { id: 103, label: "결제 문의" },
+  { id: 104, label: "배송 문의" },
+  { id: 105, label: "계정 문의" },
+  { id: 106, label: "기타 문의" },
 ];
 
 const PageBackground = styled.div`
@@ -58,7 +60,7 @@ const StyledButton = styled(Button)`
   margin-top: 10px;
 `;
 
-const InquiryForm = () => {
+const InquiryForm = ({ onSuccess }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -113,6 +115,10 @@ const InquiryForm = () => {
       message.success("문의가 성공적으로 등록되었습니다.");
       form.resetFields();
       setFileList([]);
+
+      if (typeof onSuccess === "function") {
+        onSuccess();  // 탭 전환 콜백 호출
+      }
     } catch (error) {
       message.error("문의 등록 중 오류가 발생했습니다.");
     } finally {

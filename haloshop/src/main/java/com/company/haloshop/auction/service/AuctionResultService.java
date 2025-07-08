@@ -77,25 +77,35 @@ public class AuctionResultService {
 
     // 구매 확정(confirmed: true, confirmedAt 세팅, adminMemo 입력)
     @Transactional
-    public void confirmAuctionResult(Long auctionId, String adminMemo) {
+    public void confirmAuctionResult(Long auctionId) {
         AuctionResult result = auctionResultMapper.selectByAuctionId(auctionId);
         if (result == null) throw new IllegalArgumentException("해당 경매의 낙찰 결과가 없습니다.");
         result.setConfirmed(true);
         result.setConfirmedAt(LocalDateTime.now());
-        result.setCanceledReason(null);  
-        if (adminMemo != null) result.setAdminMemo(adminMemo);
+        result.setCanceledReason(null);      
         auctionResultMapper.update(result);
     }
 
     // 구매 취소(confirmed: false, confirmedAt 세팅, canceledReason, adminMemo 입력)
     @Transactional
-    public void cancelAuctionResult(Long auctionId, String canceledReason, String adminMemo) {
+    public void cancelAuctionResult(Long auctionId, String canceledReason) {
         AuctionResult result = auctionResultMapper.selectByAuctionId(auctionId);
         if (result == null) throw new IllegalArgumentException("해당 경매의 낙찰 결과가 없습니다.");
+        if (canceledReason == null || canceledReason.isBlank()) {
+            throw new IllegalArgumentException("취소 사유는 필수입니다.");
+        }
         result.setConfirmed(false);
         result.setConfirmedAt(LocalDateTime.now());
         result.setCanceledReason(canceledReason);
-        if (adminMemo != null) result.setAdminMemo(adminMemo);
+        auctionResultMapper.update(result);
+    }
+    
+    // 관리자 메모
+    @Transactional
+    public void updateAdminMemo(Long auctionId, String adminMemo) {
+        AuctionResult result = auctionResultMapper.selectByAuctionId(auctionId);
+        if (result == null) throw new IllegalArgumentException("해당 경매의 낙찰 결과가 없습니다.");
+        result.setAdminMemo(adminMemo);
         auctionResultMapper.update(result);
     }
 }
