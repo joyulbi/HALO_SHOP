@@ -1,5 +1,5 @@
 import React from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const ReviewDeleteConfirm = ({ reviewId, onClose, onSuccess }) => {
   const handleDelete = async () => {

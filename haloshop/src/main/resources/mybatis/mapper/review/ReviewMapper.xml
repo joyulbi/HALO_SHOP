@@ -110,4 +110,15 @@
 	    JOIN items i ON oi.item_id = i.id
 	    ORDER BY r.created_at DESC
 	</select>
+	
+	<update id="addPointsToUser">
+	    UPDATE account
+	    SET point = point + #{point}
+	    WHERE id = #{accountId}
+	</update>
+	
+	<insert id="insertPointLog">
+	    INSERT INTO point_log (account_id, amount, type, created_at)
+	    VALUES (#{accountId}, #{amount}, #{type}, NOW())
+	</insert>
 </mapper>

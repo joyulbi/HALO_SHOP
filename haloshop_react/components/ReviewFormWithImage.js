@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../utils/axios";
 import { useState } from "react";
 
 export default function ReviewFormWithImage({ orderItemsId, accountId }) {
