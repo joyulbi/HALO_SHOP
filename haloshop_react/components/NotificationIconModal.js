@@ -72,13 +72,14 @@ const RedDot = styled.span`
   border-radius: 50%;
 `;
 
-const NotificationIconModal = ({ onClose }) => {
+const NotificationIconModal = ({ onClose, notiData }) => {
   const [accountId, setAccountId] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchInquiryTitles = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       setError("로그인이 필요합니다.");
@@ -86,21 +87,52 @@ const NotificationIconModal = ({ onClose }) => {
       return;
     }
 
-    axios.get("http://localhost:8080/user/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        const id = res.data?.account?.id;
-        if (!id) throw new Error();
-        setAccountId(id);
-        return axios.get(`http://localhost:8080/api/notifications/receiver/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      })
-      .then(res => setNotifications(res.data || []))
-      .catch(() => setError("알림을 불러오는 데 실패했습니다."))
-      .finally(() => setLoading(false));
-  }, []);
+    try {
+      const withTitles = await Promise.all(
+        notiData.map(async (n) => {
+          if (n.entityId === 100) {
+            try {
+              const detail = await axios.get(
+                `http://localhost:8080/api/inquiries/${n.referenceId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              console.log(`알림 ${n.id}의 문의 제목:`, detail.data.title);
+              return { ...n, inquiryTitle: detail.data.title };
+            } catch (e) {
+              console.error(`알림 ${n.id}의 문의 제목 조회 실패`, e);
+              return { ...n, inquiryTitle: null };
+            }
+          }
+          return n;
+        })
+      );
+      setNotifications(withTitles);
+    } catch (err) {
+      setError("알림을 불러오는 데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchInquiryTitles();
+}, [notiData]);
+
+  const handleNotificationClick = async (id) => {
+  const token = localStorage.getItem("accessToken");
+  try {
+    await axios.patch(`http://localhost:8080/api/notifications/${id}/read?isRead=true`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // 상태 업데이트: 클라이언트에서도 읽음 처리
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+    );
+  } catch (err) {
+    console.error("알림 읽음 처리 실패", err);
+  }
+};
+
 
   return (
     <ModalWrapper>
@@ -117,9 +149,13 @@ const NotificationIconModal = ({ onClose }) => {
         <p>알림이 없습니다.</p>
       ) : (
         notifications.map(n => (
-          <NotificationItem key={n.id}>
+          <NotificationItem key={n.id} onClick={() => handleNotificationClick(n.id)}>
             {!n.isRead && <RedDot />}
-            <strong>{n.title || `문의 ID: ${n.referenceId}`}</strong>
+            <strong>
+              {n.entityId === 100
+                ? n.inquiryTitle || `문의 ID: ${n.referenceId}`
+                : n.title || `ID: ${n.referenceId}`}
+            </strong>
             <p>{n.message || "문의가 답변되었습니다."}</p>
           </NotificationItem>
         ))

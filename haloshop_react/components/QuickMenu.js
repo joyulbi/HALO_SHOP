@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext'; // 🔥 추가
-import NotificationIconModal from "./NotificationIconModal";
+import NotificationIcon from "./NotificationIcon";
 
 const QuickMenu = ({ cartRef }) => {
   const router = useRouter();
@@ -70,16 +70,7 @@ const QuickMenu = ({ cartRef }) => {
       >
         👤
       </button>
-      <button
-        title="알림"
-        onClick={() => setIsNotificationOpen(true)} // ✅ 이 부분이 빠져 있음
-        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>
-        🔔
-      </button>
-        {isNotificationOpen && (
-        <NotificationIconModal
-          onClose={() => setIsNotificationOpen(false)}
-        />)}
+      <NotificationIcon /> 
     </div>
   );
 };

@@ -35,5 +35,7 @@
     <delete id="deleteDonationHistoryById" parameterType="long">
         DELETE FROM donation_history WHERE id = #{id}
     </delete>
+    
+
 
 </mapper>
