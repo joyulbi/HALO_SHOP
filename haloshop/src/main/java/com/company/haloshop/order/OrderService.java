@@ -1,11 +1,14 @@
 package com.company.haloshop.order;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.company.haloshop.delivery.DeliveryTrackingMapper;
+import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
@@ -28,6 +31,7 @@ public class OrderService {
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
     private final InventoryService inventoryService;
+    private final DeliveryTrackingMapper deliveryTrackingMapper;
 
 
     public List<OrderDto> findAll() {
@@ -110,6 +114,7 @@ public class OrderService {
         return orderId;
     }
     
+    // 주문 상태 변경 (결제 완료 후 배송 추적 삽입)
     @Transactional
     public void updatePaymentStatus(Long orderId, String paymentStatus) {
         orderMapper.updateStatus(orderId, paymentStatus);
@@ -125,6 +130,7 @@ public class OrderService {
                     orderId, item.getItemId(), item.getItemName(), item.getQuantity());
             }
 
+            // 재고 확인 및 차감
             for (OrderItemDto item : orderItems) {
                 boolean isEnough = inventoryService.checkInventoryEnough(item.getItemId(), item.getQuantity());
                 if (!isEnough) {
@@ -136,11 +142,19 @@ public class OrderService {
                 System.out.println("🚩 재고 차감 시도: itemId=" + item.getItemId() + ", quantity=" + item.getQuantity());
                 inventoryService.decreaseInventory(item.getItemId(), item.getQuantity());
             }
+
+            // ✅ 배송 추적 정보 삽입 (주문 상태가 PAID일 때)
+            for (OrderItemDto item : orderItems) {
+                DeliveryTrackingDTO trackingDTO = new DeliveryTrackingDTO();
+                trackingDTO.setOrderItemsId(item.getId()); // `order_item_id`로 배송 추적 정보 삽입
+                trackingDTO.setStatus("배송중");
+                trackingDTO.setTrackingNumber("H123456789");  // 예시 트래킹 넘버
+                trackingDTO.setCarrier("CJ대한통운");
+                trackingDTO.setUpdatedAt(LocalDateTime.now());
+
+                // 배송 추적 정보 삽입
+                deliveryTrackingMapper.insertTracking(trackingDTO);
+            }
         }
     }
-
-
-
-
-
 }
