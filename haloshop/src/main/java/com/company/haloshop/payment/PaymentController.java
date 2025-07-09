@@ -18,6 +18,16 @@ public class PaymentController {
 
     private final KakaoPayService kakaoPayService;
     private final CardPayService cardPayService;
+    
+    @PostMapping("/mock/ready")
+    public ResponseEntity<?> readyMockPayment(@RequestBody PaymentReadyRequest request) {
+        log.info("✅ [Mock 결제 준비 + 자동 승인] orderId={}", request.getOrderId());
+
+        // 자동 승인 처리
+        cardPayService.approve(request.getOrderId());
+
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/mock/approve")
     public ResponseEntity<?> approveMockPayment(@RequestParam Long orderId) {
@@ -32,10 +42,11 @@ public class PaymentController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<?> approvePayment(@RequestBody PaymentApproveRequest request) {
-        kakaoPayService.approve(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Long> approvePayment(@RequestBody PaymentApproveRequest request) {
+        Long orderId = kakaoPayService.approve(request); // 승인 후 orderId 반환받기
+        return ResponseEntity.ok(orderId);
     }
+
 
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelPayment(@RequestBody PaymentCancelRequest request) { // ✅ 수정
