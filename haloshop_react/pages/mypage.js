@@ -123,26 +123,40 @@ const MyPage = () => {
       <Divider />
 
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        {userInfo && (
-          <>
-            <Text strong>주소</Text>
-            <Text>{userInfo.address || '등록된 주소 없음'}</Text>
-            <Text>{userInfo.addressDetail || ''}</Text>
-            <Text>{userInfo.zipcode || ''}</Text>
-            <Text>{userInfo.birth ? new Date(userInfo.birth).toLocaleDateString() : ''}</Text>
-            <Text>{userInfo.gender || ''}</Text>
-          </>
-        )}
+  {userInfo && (
+    <>
+      <Text strong>주소</Text>
+      <Text>{userInfo.address || '등록된 주소 없음'}</Text>
+      <Text>{userInfo.addressDetail || ''}</Text>
+      <Text>{userInfo.zipcode || ''}</Text>
+      <Text>{userInfo.birth ? new Date(userInfo.birth).toLocaleDateString() : ''}</Text>
+      <Text>{userInfo.gender || ''}</Text>
+    </>
+  )}
 
-        {admin && (
-          <>
-            <Text strong>권한: {admin.role}</Text>
-            <Text>계정 상태: {admin.isLocked ? '잠김' : '활성'}</Text>
-            <Text>마지막 IP: {admin.lastIp || '정보없음'}</Text>
-            <Text>수정일: {admin.updatedAt ? new Date(admin.updatedAt).toLocaleString() : '없음'}</Text>
-          </>
-        )}
-      </Space>
+  {profile.userPointDto && (
+    <>
+      <Divider />
+      <Text strong>멤버십 등급</Text>
+      <Text>{profile.userPointDto.grade || '등급 정보 없음'}</Text>
+
+      <Text strong>보유 포인트</Text>
+      <Text>{profile.userPointDto.totalPoint?.toLocaleString() || 0} P</Text>
+
+    </>
+  )}
+
+  {admin && (
+    <>
+      <Divider />
+      <Text strong>권한: {admin.role}</Text>
+      <Text>계정 상태: {admin.isLocked ? '잠김' : '활성'}</Text>
+      <Text>마지막 IP: {admin.lastIp || '정보없음'}</Text>
+      <Text>수정일: {admin.updatedAt ? new Date(admin.updatedAt).toLocaleString() : '없음'}</Text>
+    </>
+  )}
+</Space>
+
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
