@@ -11,46 +11,55 @@ const WebSocketClient = () => {
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) return;
+ useEffect(() => {
+  if (!user) return;
 
-    // 로컬스토리지에서 JWT 토큰 직접 읽기
-    const jwtToken = localStorage.getItem("accessToken");
-    if (!jwtToken) return;
+  const jwtToken = localStorage.getItem("accessToken");
+  if (!jwtToken) return;
 
-    client.current = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-      reconnectDelay: 5000,
-      debug: (str) => console.log("[STOMP]", str),
-      connectHeaders: {
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    });
+  client.current = new Client({
+    webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+    reconnectDelay: 5000,
+    debug: (str) => console.log("[STOMP]", str),
+    connectHeaders: {
+      Authorization: `Bearer ${jwtToken}`,
+    },
+    onWebSocketClose: (evt) => {
+      console.warn("웹소켓 연결 종료:", evt);
+    },
+    onWebSocketError: (evt) => {
+      console.error("웹소켓 에러:", evt);
+    },
+  });
 
-    client.current.onConnect = () => {
-      console.log("웹소켓 연결 성공");
+  client.current.onConnect = () => {
+    console.log("웹소켓 연결 성공");
 
-      client.current.subscribe("/user/queue/notifications", (message) => {
-        if (message.body) {
+    client.current.subscribe(`/user/${user?.id}/queue/notifications`, (message) => {
+      if (message.body) {
+        try {
           const data = JSON.parse(message.body);
           setNotification(data);
           setModalVisible(true);
+        } catch (err) {
+          console.error("메시지 파싱 에러:", err);
         }
-      });
-    };
-
-    client.current.onStompError = (frame) => {
-      console.error("STOMP 에러:", frame);
-    };
-
-    client.current.activate();
-
-    return () => {
-      if (client.current) {
-        client.current.deactivate();
       }
-    };
-  }, [user]);
+    });
+  };
+
+  client.current.onStompError = (frame) => {
+    console.error("STOMP 에러:", frame);
+  };
+
+  client.current.activate();
+
+  return () => {
+    if (client.current) {
+      client.current.deactivate();
+    }
+  };
+}, [user]);
 
   const closeModal = () => setModalVisible(false);
 

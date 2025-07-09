@@ -5,19 +5,64 @@
 
 <mapper namespace="com.company.haloshop.notification.NotificationMapper">
 
+    <resultMap id="NotificationResultMap" type="com.company.haloshop.notification.Notification">
+        <id property="id" column="id"/>
+        <result property="referenceId" column="reference_id"/>
+        <result property="isRead" column="is_read"/>
+        <result property="createdAt" column="created_at"/>
+
+        <association property="receiver" javaType="com.company.haloshop.entity.member.Account">
+            <id property="id" column="receiver_id"/>
+            <result property="nickname" column="receiver_nickname"/>
+        </association>
+
+        <association property="entity" javaType="com.company.haloshop.event.EventEntity">
+            <id property="id" column="entity_id"/>
+            <result property="name" column="entity_name"/>
+        </association>
+    </resultMap>
+
     <!-- 1. 알림 생성 -->
     <insert id="insert" parameterType="com.company.haloshop.notification.Notification" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO notification (receiver_id, entity_id, reference_id, is_read, created_at)
         VALUES (#{receiver.id}, #{entity.id}, #{referenceId}, #{isRead}, #{createdAt})
     </insert>
-
-    <!-- 2. 본인 알림 조회 -->
-    <select id="findByReceiverId" parameterType="long" resultType="com.company.haloshop.notification.Notification">
-        SELECT id, receiver_id, entity_id, reference_id, is_read, created_at
-        FROM notification
-        WHERE receiver_id = #{receiverId}
-        ORDER BY created_at DESC
+    
+    <!-- ✅ 연관 객체 포함된 알림 조회 -->
+    <select id="findById" parameterType="long" resultMap="NotificationResultMap">
+        SELECT 
+            n.id,
+            n.receiver_id,
+            a.nickname AS receiver_nickname,
+            n.entity_id,
+            e.name AS entity_name,
+            n.reference_id,
+            n.is_read,
+            n.created_at
+        FROM notification n
+        LEFT JOIN account a ON n.receiver_id = a.id
+        LEFT JOIN event_entity e ON n.entity_id = e.id
+        WHERE n.id = #{id}
     </select>
+
+    <select id="findByReceiverId" parameterType="long" resultMap="NotificationResultMap">
+	  SELECT
+	    n.id,
+	    n.receiver_id,
+	    a.id AS receiver_id,
+	    a.nickname AS receiver_nickname,
+	    n.entity_id,
+	    e.id AS entity_id,
+	    e.name AS entity_name,
+	    n.reference_id,
+	    n.is_read,
+	    n.created_at
+	  FROM notification n
+	  LEFT JOIN account a ON n.receiver_id = a.id
+	  LEFT JOIN event_entity e ON n.entity_id = e.id
+	  WHERE n.receiver_id = #{receiverId}
+	  ORDER BY n.created_at DESC
+	</select>
 
     <!-- 3. 알림 읽음 상태 업데이트 -->
     <update id="updateById" parameterType="map">

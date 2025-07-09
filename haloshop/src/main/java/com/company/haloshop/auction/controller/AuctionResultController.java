@@ -49,16 +49,21 @@ public class AuctionResultController {
 
     // 구매 확정
     @PostMapping("/auction/{auctionId}/confirm")
-    public void confirmAuctionResult(@PathVariable Long auctionId, @RequestBody Map<String, Object> body) {
-        String adminMemo = body.get("adminMemo") != null ? body.get("adminMemo").toString() : null;
-        auctionResultService.confirmAuctionResult(auctionId, adminMemo);
+    public void confirmAuctionResult(@PathVariable Long auctionId) {
+        auctionResultService.confirmAuctionResult(auctionId);
     }
 
     // 구매 취소
     @PostMapping("/auction/{auctionId}/cancel")
     public void cancelAuctionResult(@PathVariable Long auctionId, @RequestBody Map<String, Object> body) {
         String canceledReason = body.get("canceledReason") != null ? body.get("canceledReason").toString() : null;
+        auctionResultService.cancelAuctionResult(auctionId, canceledReason);
+    }
+    
+    // 관리자 메모만 수정 (확정/취소 상태 변경 없음)
+    @PostMapping("/auction/{auctionId}/memo")
+    public void updateAdminMemo(@PathVariable Long auctionId, @RequestBody Map<String, Object> body) {
         String adminMemo = body.get("adminMemo") != null ? body.get("adminMemo").toString() : null;
-        auctionResultService.cancelAuctionResult(auctionId, canceledReason, adminMemo);
+        auctionResultService.updateAdminMemo(auctionId, adminMemo);
     }
 }

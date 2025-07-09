@@ -54,13 +54,27 @@
     ORDER BY id ASC
 	</select>
 
-
-		<select id="selectByStatusWithPaging" parameterType="map" resultType="com.company.haloshop.inquiry.Inquiry">
-		    SELECT * FROM inquiry
-		    WHERE status = #{status}
-		    ORDER BY id ASC
-		    LIMIT #{size} OFFSET #{offset}
-		</select>
+	<!-- STATUS 값으로 분리해서 찾기 -->
+	<select id="selectByStatusWithPaging" parameterType="map" resultType="com.company.haloshop.inquiry.InquiryDto">
+	  SELECT 
+	    i.id,
+	    i.account_id AS accountId,
+	    a.email AS accountEmail,
+	    a.nickname AS accountNickname,
+	    i.entity_id AS entityId,
+	    e.name AS entityName,
+	    i.title,
+	    i.content,
+	    i.file,
+	    i.created_at AS createdAt,
+	    i.status
+	  FROM inquiry i
+	  LEFT JOIN account a ON i.account_id = a.id
+	  LEFT JOIN event_entity e ON i.entity_id = e.id
+	  WHERE i.status = #{status}
+	  ORDER BY i.id ASC
+	  LIMIT #{size} OFFSET #{offset}
+	</select>
 		
 		<select id="countByStatus" parameterType="string" resultType="int">
 		    SELECT COUNT(*) FROM inquiry WHERE status = #{status}
@@ -74,9 +88,19 @@
 
 
     <!-- findById -->
-    <select id="findInquiryById" parameterType="long" resultMap="InquiryResultMap">
-        SELECT * FROM inquiry WHERE id = #{id}
-    </select>
+	<select id="findInquiryById" parameterType="long" resultMap="InquiryResultMap">
+	  SELECT 
+	    i.*,
+	    a.id AS "account.id",
+	    a.email AS "account.email",
+	    a.nickname AS "account.nickname",
+	    e.id AS "entity.id",
+	    e.name AS "entity.name"
+	  FROM inquiry i
+	  LEFT JOIN account a ON i.account_id = a.id
+	  LEFT JOIN event_entity e ON i.entity_id = e.id
+	  WHERE i.id = #{id}
+	</select>
 
     <!-- updateStatus -->
     <update id="updateInquiryStatus" parameterType="map">

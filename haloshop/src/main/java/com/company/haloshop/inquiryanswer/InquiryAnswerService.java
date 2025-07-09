@@ -1,18 +1,16 @@
 package com.company.haloshop.inquiryanswer;
 
-import java.time.LocalDateTime;
-
 import javax.transaction.Transactional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import com.company.haloshop.entity.member.Account;
 import com.company.haloshop.event.EventEntity;
 import com.company.haloshop.inquiry.Inquiry;
 import com.company.haloshop.inquiry.InquiryService;
-import com.company.haloshop.notification.Notification;
-import com.company.haloshop.notification.NotificationEvent;
+import com.company.haloshop.inquiry.InquiryStatus;
+import com.company.haloshop.notification.NotificationRequestDto;
+import com.company.haloshop.notification.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class InquiryAnswerService {
 
     private final InquiryAnswerMapper inquiryAnswerMapper;
-    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
     private final InquiryService inquiryService;
 
     // 답변 등록
@@ -34,8 +32,35 @@ public class InquiryAnswerService {
             throw new IllegalArgumentException("Answer must have accountId of the responder");
         }
 
-        // 단순히 답변 insert만 수행
+        // 답변 등록
         inquiryAnswerMapper.insertInquiryAnswer(answer);
+        Long inquiryId = answer.getInquiryId();
+
+        // 문의 상태 변경
+        inquiryService.updateStatus(inquiryId, InquiryStatus.ANSWERED);
+
+        // 문의 정보 조회
+        Inquiry inquiry = inquiryService.getInquiryById(inquiryId);
+        Long inquiryOwnerId = inquiry.getAccount().getId();
+
+        EventEntity entity = inquiry.getEntity();
+        if (entity == null || entity.getId() == null) {
+            throw new IllegalStateException("문의에 연결된 이벤트 Entity가 없습니다.");
+        }
+        Long eventEntity = (entity.getId() / 100 )*100;
+        
+        //System.out.println("엔티티 오리진 :"+entity);
+        //System.out.println("이벤트 엔티티 :"+eventEntity);
+
+        // 알림 생성
+        if (!inquiryOwnerId.equals(answer.getAccountId())) {
+            NotificationRequestDto notificationDto = new NotificationRequestDto();
+            notificationDto.setReceiverId(inquiryOwnerId);
+            notificationDto.setEntityId(eventEntity);
+            notificationDto.setReferenceId(inquiryId);
+
+            notificationService.createNotification(notificationDto);
+        }
     }
 
     // 답변 조회

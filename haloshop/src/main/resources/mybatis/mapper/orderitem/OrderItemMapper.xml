@@ -47,23 +47,21 @@
 	</select>
 
 	<!-- 🚨 수정: resultMap으로 변경 -->
-	<select id="findByOrderId" parameterType="long"
-		resultMap="orderItemResultMap">
-		SELECT
-		oi.id,
-		oi.orders_id,
-		oi.item_id,
-		oi.item_name,
-		oi.product_price,
-		oi.quantity,
-		MIN(ii.url) AS image_url
-		FROM order_items oi
-		JOIN items i ON oi.item_id = i.id
-		LEFT JOIN items_image ii ON ii.items_id = i.id
-		WHERE oi.orders_id = #{ordersId}
-		GROUP BY oi.id, oi.orders_id, oi.item_id, oi.item_name, oi.product_price,
-		oi.quantity
-	</select>
+<select id="findByOrderId" parameterType="long"
+    resultMap="orderItemResultMap">
+    SELECT
+    oi.id,
+    oi.orders_id,
+    oi.item_id,
+    oi.item_name,
+    oi.product_price,
+    oi.quantity,
+    (SELECT ii.url FROM items_image ii WHERE ii.items_id = oi.item_id LIMIT 1) AS image_url
+    FROM order_items oi
+    WHERE oi.orders_id = #{orderId}
+</select>
+
+
 
 
 	<update id="update"

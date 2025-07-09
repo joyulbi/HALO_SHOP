@@ -1,14 +1,17 @@
 package com.company.haloshop.payment;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.company.haloshop.cart.CartService;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.order.OrderMapper;
 import com.company.haloshop.order.OrderService; // ✅ 추가
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,8 @@ public class CardPayService {
     private final OrderService orderService; // ✅ 추가
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final CartService cartService;  // 필드 주입
+
 
     /**
      * CARD(mock) 결제 승인 처리
@@ -34,6 +39,7 @@ public class CardPayService {
 
         // ✅ 주문 상태 업데이트 + 재고 차감 연동
         orderService.updatePaymentStatus(orderId, "PAID");
+        cartService.clearCartByAccountId(order.getAccountId());
 
         if ("MOCK".equals(order.getUsed()) || "CARD".equals(order.getUsed())) {
             // 다시 조회하여 상태 확인 후 포인트 적립

@@ -84,9 +84,17 @@
         ORDER BY dt.updated_at DESC
     </select>
     
+    <!-- ✅ 주문 항목 ID로 배송 추적 조회 -->
+    <select id="findByOrderItemId" parameterType="Long" resultMap="DeliveryResultMap">
+        SELECT * FROM delivery_tracking 
+        WHERE order_item_id = #{orderItemId}
+    </select>
+
+    <!-- ✅ 배송 상태 수정 -->
     <update id="updateDeliveryStatus">
-	    UPDATE delivery_tracking
-	    SET status = #{status}
-	    WHERE order_item_id = #{orderItemId}
-	</update>
+        UPDATE delivery_tracking
+        SET status = #{status}
+        WHERE order_item_id = #{orderItemId}
+    </update>
+
 </mapper>

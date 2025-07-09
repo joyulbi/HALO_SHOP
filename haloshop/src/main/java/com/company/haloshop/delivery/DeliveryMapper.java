@@ -33,4 +33,7 @@ public interface DeliveryMapper {
 
     // ✅ 배송 상태 수정 (관리자용)
     void updateDeliveryStatus(@Param("orderItemId") Long orderItemId, @Param("status") String status);
+
+    // ✅ 주문 항목 ID로 배송 추적 조회
+    DeliveryDTO findByOrderItemId(@Param("orderItemId") Long orderItemId);
 }

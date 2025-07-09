@@ -82,8 +82,12 @@ const InquiryTable = ({ inquiries, onSelect }) => (
         <tr key={inq.id}>
           <Td>{inq.id}</Td>
           <Td>{inq.title}</Td>
-          <Td>{inq.accountName || "익명"}</Td>
-          <Td>{inq.categoryName}</Td>
+          <Td>
+            {inq.accountNickname
+              ? `${inq.accountNickname} (${inq.accountEmail})`
+              : "익명"}
+          </Td>
+          <Td>{inq.entityName}</Td>
           <Td>
             <Status status={inq.status}>{getStatusLabel(inq.status)}</Status>
           </Td>

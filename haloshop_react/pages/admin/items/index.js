@@ -3,6 +3,7 @@ import axios from '../../../utils/axios';
 import { useRouter } from 'next/router';
 import ImageUpload from '../../../components/ImageUpload';
 import useCategories from '../../../hooks/useCategories';
+import AdminLayout from '../AdminLayout';
 
 const AdminItemPage = () => {
   const router = useRouter();
@@ -97,6 +98,7 @@ const AdminItemPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>관리자 상품 등록 페이지</h1>
 
@@ -264,6 +266,7 @@ const AdminItemPage = () => {
       </div>
       {/* ✅ 화면 가득 확장 끝 */}
     </div>
+    </AdminLayout>
   );
 };
 

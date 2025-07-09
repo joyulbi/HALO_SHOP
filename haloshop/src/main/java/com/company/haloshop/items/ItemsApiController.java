@@ -36,6 +36,10 @@ public class ItemsApiController {
 
             List<ItemsImage> images = itemsService.findImagesByItemId(item.getId());
             itemMap.put("images", images);
+            
+            
+            int inventory = itemsService.findInventoryByItemId(item.getId());
+            itemMap.put("inventory_volume", inventory);
 
             result.add(itemMap);
         }
@@ -59,6 +63,9 @@ public class ItemsApiController {
 
         List<ItemsImage> images = itemsService.findImagesByItemId(item.getId());
         itemMap.put("images", images);
+        
+        int inventory = itemsService.findInventoryByItemId(item.getId());
+        itemMap.put("inventory_volume", inventory);
 
         return itemMap;
     }

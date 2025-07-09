@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext'; // 🔥 추가
+import NotificationIconModal from "./NotificationIconModal";
 
 const QuickMenu = ({ cartRef }) => {
   const router = useRouter();
@@ -25,6 +26,9 @@ const QuickMenu = ({ cartRef }) => {
     }
     router.push('/checkout');
   };
+
+  // 알림창 온오프
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
     <div className="quick-menu" style={{ position: 'fixed', right: '20px', top: '200px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -68,8 +72,14 @@ const QuickMenu = ({ cartRef }) => {
       </button>
       <button
         title="알림"
+        onClick={() => setIsNotificationOpen(true)} // ✅ 이 부분이 빠져 있음
         style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>
-        🔔</button>
+        🔔
+      </button>
+        {isNotificationOpen && (
+        <NotificationIconModal
+          onClose={() => setIsNotificationOpen(false)}
+        />)}
     </div>
   );
 };

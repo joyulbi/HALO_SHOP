@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../../utils/axios';
 import StarRating from '../../../components/StarRating';
+import AdminLayout from '../AdminLayout';
 
 const AdminReviewsPage = () => {
   const [reviews, setReviews] = useState([]);
@@ -35,6 +36,7 @@ const AdminReviewsPage = () => {
   };
 
   return (
+    <AdminLayout>
     <div
       style={{
         maxWidth: '1000px',
@@ -129,6 +131,7 @@ const AdminReviewsPage = () => {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 };
 

@@ -13,7 +13,7 @@
     </resultMap>
 
     <insert id="insertInquiryAnswer" parameterType="com.company.haloshop.inquiryanswer.InquiryAnswer" useGeneratedKeys="false">
-        INSERT INTO inquiry_answer (inquiry_id, answer, account_id, created_at)
+        INSERT INTO inquiry_answer (inquiry_id, account_id, answer, created_at)
         VALUES (#{inquiryId}, #{accountId}, #{answer}, #{createdAt})
     </insert>
 

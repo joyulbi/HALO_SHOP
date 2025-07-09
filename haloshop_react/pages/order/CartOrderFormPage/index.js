@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import api from '../../../utils/axios';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../../hooks/useAuth';
+import DeliveryForm from '../../../components/DeliveryForm';
+import DeliveryList from '../../../components/DeliveryList';
 
 const CartOrderFormPage = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -9,6 +11,10 @@ const CartOrderFormPage = () => {
   const [appliedPoint, setAppliedPoint] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
   const [userPoint, setUserPoint] = useState(0);
+
+  const [addresses, setAddresses] = useState([]);  // 배송지 목록
+  const [selectedAddress, setSelectedAddress] = useState(null);  // 선택된 배송지 목록
+
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
 
@@ -24,7 +30,7 @@ const CartOrderFormPage = () => {
       .then(res => {
         const mappedItems = res.data.map(item => ({
           ...item,
-          itemId: item.items_id,
+          itemId: item.itemsId,
         }));
         setCartItems(mappedItems);
       })
@@ -42,6 +48,23 @@ const CartOrderFormPage = () => {
     }
   }, [user]);
 
+  // ✅ 배송지 목록 불러오기 함수
+  const fetchAddresses = async () => {
+    try {
+      const res = await api.get(`/api/deliveries/${user.id}`);
+      setAddresses(res.data);
+    } catch (err) {
+      console.error('배송지 목록 불러오기 실패: ', err);
+    }
+  };
+
+  // ✅ 첫 렌더링 시 배송지 목록 로드
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses();
+    }
+  }, [user]);
+
   const handlePayNow = async () => {
     if (!user?.id) {
       alert('로그인 후 이용해 주세요.');
@@ -53,43 +76,33 @@ const CartOrderFormPage = () => {
       const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const payAmount = totalPrice - appliedPoint;
 
+      const payload = {
+        totalPrice,
+        payAmount,
+        amount: appliedPoint,
+        used: paymentMethod,
+        paymentStatus: "PENDING",
+        accountId: user.id,
+        deliveryId: selectedAddress.id, // 선택된 배송지 ID 포함
+        orderItems: cartItems.map(item => ({
+          itemId: item.itemId,
+          itemName: item.name,
+          productPrice: item.price,
+          quantity: item.quantity
+        }))
+      };
+
       if (paymentMethod === 'KAKAOPAY') {
-        const res = await api.post('/api/payment/ready', {
-          totalPrice,
-          payAmount,
-          amount: appliedPoint,
-          used: paymentMethod,
-          paymentStatus: "PENDING",
-          accountId: user.id,
-          orderItems: cartItems.map(item => ({
-            itemId: item.itemId ?? item.items_id ?? item.id,
-            itemName: item.name,
-            productPrice: item.price,
-            quantity: item.quantity
-          }))
-        });
+        const res = await api.post('/api/payment/ready', payload);
         if (res.data.next_redirect_pc_url) {
           window.location.href = res.data.next_redirect_pc_url;
         } else {
           alert('카카오페이 결제 URL을 받아오지 못했습니다.');
         }
       } else {
-        const payload = {
-          totalPrice,
-          payAmount,
-          amount: appliedPoint,
-          used: paymentMethod,
-          paymentStatus: "PENDING",
-          accountId: user.id,
-          orderItems: cartItems.map(item => ({
-            itemId: item.itemId,
-            itemName: item.name,
-            productPrice: item.price,
-            quantity: item.quantity
-          }))
-        };
-
+        console.log('결제 payload:', payload);
         const res = await api.post('/api/orders', payload);
+        console.log('주문 완료 응답:', res.data);
         alert('주문이 완료되었습니다!');
         router.push(`/mypage/orders/${res.data.orderId}`);
       }
@@ -108,7 +121,7 @@ const CartOrderFormPage = () => {
       return;
     }
     if (pointValue > userPoint) {
-      alert(`보유한 포인트 (${userPoint.toLocaleString()}P) 까지만 사용 가능합니다.`);
+      alert(`보유한 포인트(${userPoint.toLocaleString()}P)까지만 사용 가능합니다.`);
       setAppliedPoint(userPoint);
       return;
     }
@@ -152,6 +165,40 @@ const CartOrderFormPage = () => {
             </div>
           ))}
 
+          {/* 배송지 등록 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px',
+            border: '1px solid #ddd',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          }}>
+            <DeliveryForm
+              accountId={user?.id}
+              onSubmitSuccess={fetchAddresses}  // 등록 후 리스트 새로고침
+            />
+          </div>
+
+          {/* 배송지 목록 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px',
+            border: '1px solid #ddd',
+            borderRadius: '10px',
+            marginBottom: '20px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          }}>
+            <DeliveryList
+              addresses={addresses}
+              onSelect={setSelectedAddress}
+            />
+          </div>
+
           <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '10px', marginTop: '40px' }}>
             <h3>결제 요약</h3>
             <p>상품 금액: {totalPrice.toLocaleString()}원</p>
@@ -161,7 +208,7 @@ const CartOrderFormPage = () => {
             <div style={{ marginTop: '20px' }}>
               <input
                 type="text"
-                placeholder={` (보유: ${userPoint.toLocaleString()}P)`}
+                placeholder={`(보유: ${userPoint.toLocaleString()}P)`}
                 value={point}
                 onChange={(e) => setPoint(e.target.value)}
                 style={{ padding: '10px', width: '200px', marginRight: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
