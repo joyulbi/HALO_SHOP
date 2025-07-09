@@ -20,6 +20,7 @@ import com.company.haloshop.dto.member.UserUpdateRequest;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.member.service.UserService;
 import com.company.haloshop.member.service.UserService.UpdateResult;
+import com.company.haloshop.security.CustomUserDetails;
 import com.company.haloshop.userpoint.UserPointService;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -30,8 +31,7 @@ public class UserController {
     private final UserService userService;
     private final UserPointService userPointService;
     
-
-    public UserController(UserService userService,UserPointService userPointService) {
+    public UserController(UserService userService, UserPointService userPointService) {
         this.userService = userService;
         this.userPointService = userPointService;
     }
@@ -41,33 +41,49 @@ public class UserController {
      * - 로그인된 사용자의 정보를 리턴
      */
     @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal(expression = "id") Long principalId) {
-        if (principalId == null) {
+    public ResponseEntity<?> getMyInfo(
+        @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
+        Long principalId = user.getId();
         try {
+            // 1) 계정 정보
             AccountDto accountDto = userService.getAccountById(principalId);
             if (accountDto == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "계정을 찾을 수 없습니다."));
             }
+
+            // 2) 프로필 정보
             UserDto userDto = userService.getUserByAccountId(principalId);
 
-            // ✅ userPointDto 추가
+            // 3) 포인트 정보 조회 (없으면 기본값 생성)
             UserPointDto userPointDto = userPointService.findByAccountId(principalId);
+            if (userPointDto == null) {
+                userPointDto = UserPointDto.builder()
+                    .id(null)
+                    .accountId(principalId)
+                    .totalPayment(0L)
+                    .totalPoint(0L)
+                    .grade("BASIC")
+                    .updatedAt(null)
+                    .build();
+            }
 
+            // 4) 응답
             return ResponseEntity.ok(Map.of(
                 "account", accountDto,
                 "user", userDto,
-                "userPointDto", userPointDto // ✅ 멤버십 및 포인트 함께 반환
+                "userPointDto", userPointDto
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
     }
-
 
     /**
      * 내정보 수정 API (PUT /user/me)
@@ -76,18 +92,19 @@ public class UserController {
      */
     @PutMapping("/me")
     public ResponseEntity<?> updateMyInfo(
-        @AuthenticationPrincipal(expression = "id") Long principalId,
+        @AuthenticationPrincipal CustomUserDetails user,
         @RequestBody UserUpdateRequest req,
         @RequestHeader(value = "Authorization", required = false) String authorizationHeader,
         @RequestHeader(value = "X-Refresh-Token", required = false) String refreshTokenHeader
     ) {
-        if (principalId == null) {
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
+        Long principalId = user.getId();
 
-        // Bearer 토큰 파싱
-        String accessToken = null;
+        // Authorization 헤더에서 토큰 분리
+        String accessToken;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             accessToken = authorizationHeader.substring(7);
         } else {
@@ -98,7 +115,6 @@ public class UserController {
         try {
             UpdateResult result = userService.updateMyInfo(principalId, req, accessToken, refreshToken);
 
-            // 이메일이 변경되면 새 토큰 반환
             if (result.isEmailChanged()) {
                 return ResponseEntity.ok(Map.of(
                     "result", "수정 완료",
@@ -113,7 +129,7 @@ public class UserController {
                 ));
             }
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
@@ -121,21 +137,16 @@ public class UserController {
 
     // 응답용 DTO (내정보 응답 형태) — 필요 없으면 제거해도 됨
     public static class MyInfoResponse {
-        private AccountDto account;
-        private UserDto user;
+        private final AccountDto account;
+        private final UserDto user;
 
         public MyInfoResponse(AccountDto account, UserDto user) {
             this.account = account;
             this.user = user;
         }
 
-        public AccountDto getAccount() {
-            return account;
-        }
-
-        public UserDto getUser() {
-            return user;
-        }
+        public AccountDto getAccount() { return account; }
+        public UserDto getUser()    { return user;    }
     }
     
     /**
@@ -151,7 +162,6 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "계정을 찾을 수 없습니다."));
             }
-
             UserDto userDto = userService.getUserByAccountId(accountId);
             return ResponseEntity.ok(Map.of(
                 "account", accountDto,
