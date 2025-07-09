@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,7 @@ import com.company.haloshop.dto.security.JwtWhitelistDto;
 import com.company.haloshop.dto.security.SignupRequest;
 import com.company.haloshop.member.mapper.AccountMapper;
 import com.company.haloshop.member.mapper.UserMapper;
+import com.company.haloshop.security.CustomUserDetails;
 import com.company.haloshop.security.JwtTokenProvider;
 import com.company.haloshop.security.mapper.JwtBlacklistMapper;
 import com.company.haloshop.security.mapper.JwtWhitelistMapper;
@@ -36,6 +38,9 @@ public class AuthenticationService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtWhitelistMapper jwtWhitelistMapper;
     private final JwtBlacklistMapper jwtBlacklistMapper;
+    
+    private final SessionRegistry sessionRegistry;
+    private final HttpServletRequest request;
 
     private final PasswordEncoder bcryptEncoder = new BCryptPasswordEncoder();
     private final PasswordEncoder argon2Encoder = new Argon2PasswordEncoder();
@@ -54,6 +59,13 @@ public class AuthenticationService {
             // 관리자 lastActive 갱신 (필요시)
             account.setLastActive(new Date());
             accountMapper.updateAccountLastActive(account.getId(), account.getLastActive());
+            
+            HttpSession session = request.getSession(true);  // 세션 생성 또는 기존 세션 반환
+            String sessionId = session.getId();
+            sessionRegistry.registerNewSession(
+                sessionId,
+                new CustomUserDetails(account)
+            );
 
             return LoginResponse.adminSuccess(account);
         } else {
