@@ -2,7 +2,10 @@ package com.company.haloshop.order;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -144,12 +147,28 @@ public class OrderService {
             }
 
             // ✅ 배송 추적 정보 삽입 (주문 상태가 PAID일 때)
+            Map<String, String> carrierCodeMap = Map.of(
+                "CJ대한통운", "C",
+                "한진택배", "H",
+                "롯데택배", "R",
+                "우체국택배", "U"
+            );
+            List<String> carriers = new ArrayList<>(carrierCodeMap.keySet());
+
             for (OrderItemDto item : orderItems) {
                 DeliveryTrackingDTO trackingDTO = new DeliveryTrackingDTO();
                 trackingDTO.setOrderItemsId(item.getId()); // `order_item_id`로 배송 추적 정보 삽입
-                trackingDTO.setStatus("배송중");
-                trackingDTO.setTrackingNumber("H123456789");  // 예시 트래킹 넘버
-                trackingDTO.setCarrier("CJ대한통운");
+                trackingDTO.setStatus("배송준비중");
+
+                // 🚩 랜덤 배송사 선택
+                String carrier = carriers.get(ThreadLocalRandom.current().nextInt(carriers.size()));
+                trackingDTO.setCarrier(carrier);
+
+                // 🚩 택배사 코드 앞자리 + 9자리 랜덤 숫자
+                String code = carrierCodeMap.get(carrier);
+                String trackingNumber = code + ThreadLocalRandom.current().nextInt(100_000_000, 1_000_000_000);
+                trackingDTO.setTrackingNumber(trackingNumber);
+
                 trackingDTO.setUpdatedAt(LocalDateTime.now());
 
                 // 배송 추적 정보 삽입
@@ -157,4 +176,5 @@ public class OrderService {
             }
         }
     }
+
 }
