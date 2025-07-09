@@ -60,6 +60,7 @@ api.interceptors.request.use(
 // -------------------------
 // 4) 응답 인터셉터 (Response Interceptor)
 //    - 401 Unauthorized 등 에러 처리
+//    - 세션 만료 또는 인증 실패 시 로그인 페이지로 리다이렉트
 //    - (토큰 갱신 로직은 useAuth.js에 구현)
 // -------------------------
 api.interceptors.response.use(
@@ -67,6 +68,15 @@ api.interceptors.response.use(
   async (error) => {
     // 글로벌 에러 로깅 가능
     console.error('[API ERROR]', error.response?.status, error);
+
+    // 401 Unauthorized 처리: 세션 만료 또는 인증 필요
+    if (error.response?.status === 401) {
+      // 세션 만료 쿼리 파라미터 붙여서 리다이렉트
+      window.location.href = '/login?timeout=true';
+      // 이후의 promise chain은 중단
+      return new Promise(() => {});
+    }
+
     return Promise.reject(error);
   }
 );
