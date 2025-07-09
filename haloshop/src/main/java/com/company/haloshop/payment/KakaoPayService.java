@@ -117,7 +117,7 @@ public class KakaoPayService {
     }
 
     @Transactional
-    public void approve(PaymentApproveRequest request) {
+    public Long  approve(PaymentApproveRequest request) {
         OrderDto order = orderMapper.findLatestPendingByAccountId(request.getAccountId());
         if (order == null) {
             throw new IllegalArgumentException("PENDING 상태의 주문이 없습니다.");
@@ -158,6 +158,7 @@ public class KakaoPayService {
         int savePoint = userPointService.updateUserPointAndGrade(order.getAccountId(), order.getPayAmount());
         pointLogService.saveLog(order.getAccountId(), "SAVE", savePoint);
         log.info("✅ 포인트 적립 완료: {}P, User ID={}", savePoint, order.getAccountId());
+        return order.getId();
     }
 
     @Transactional
