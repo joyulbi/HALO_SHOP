@@ -26,8 +26,8 @@ public class EventEntityService {
 				    EventEntity.builder().id(103L).name("결제").build(),
 				    EventEntity.builder().id(104L).name("환불").build(),
 				    EventEntity.builder().id(105L).name("배송").build(),
-				    EventEntity.builder().id(105L).name("계정").build(),
-				    EventEntity.builder().id(106L).name("기타").build()
+				    EventEntity.builder().id(106L).name("계정").build(),
+				    EventEntity.builder().id(107L).name("기타").build()
 				};
 			
 			for (EventEntity eventEntity : types) {

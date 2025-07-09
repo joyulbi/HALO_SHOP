@@ -54,21 +54,36 @@ const Row = styled.div`
   display: flex;
   gap: 2.5rem;
   margin-bottom: 1.2rem;
-  align-items: center;
+  align-items: flex-start; /* 여기만 변경 */
 `;
 
 const InfoItem = styled.div`
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  flex-direction: column; /* 세로 정렬 */
+  gap: 0.25rem;
   font-size: 1.04rem;
   color: #444;
+
   & > strong {
     color: #7b7b7b;
     font-weight: 600;
     font-size: 0.98rem;
-    margin-right: 0.3rem;
+    margin: 0;
   }
+`;
+
+const Nickname = styled.span`
+  font-weight: 700;
+  color: #4f46e5;
+  font-size: 1.08rem;
+  margin-left: 0.2rem;
+`;
+
+const Email = styled.span`
+  font-weight: 400;
+  color: #7b7b7b;
+  font-size: 0.85rem;
+  margin-left: 0.4rem;
 `;
 
 const InfoValue = styled.span`
@@ -85,6 +100,16 @@ const Title = styled.h2`
   color: #22223b;
   letter-spacing: -0.5px;
   word-break: break-all;
+`;
+
+const WriterInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;        /* 줄바꿈 방지 */
+  overflow: hidden;           /* 넘칠 때 숨기기 */
+  text-overflow: ellipsis;    /* 넘칠 때 ... 표시 */
+  max-width: 200px;           /* 너비 제한, 필요시 조절 */
 `;
 
 const ReadOnlyTextArea = styled.textarea`
@@ -193,7 +218,7 @@ const InquiryModal = ({
   if (!inquiry) return null;
 
   const [localStatus, setLocalStatus] = useState(inquiry.status);
-
+  console.log("선택된 문의 : ", inquiry);
   useEffect(() => {
     setLocalStatus(inquiry.status);
   }, [inquiry]);
@@ -208,11 +233,14 @@ const InquiryModal = ({
           <Row>
             <InfoItem>
               <strong>카테고리</strong>
-              <InfoValue>{inquiry.categoryName}</InfoValue>
+              <InfoValue>{inquiry.entity.name}</InfoValue>
             </InfoItem>
             <InfoItem>
               <strong>작성자</strong>
-              <InfoValue>{inquiry.accountName || "익명"}</InfoValue>
+              <WriterInfo>
+                <Nickname>{inquiry.account.nickname}</Nickname>
+                <Email>({inquiry.account.email})</Email>
+              </WriterInfo>
             </InfoItem>
             <InfoItem>
               <strong>상태</strong>
