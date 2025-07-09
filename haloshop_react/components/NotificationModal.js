@@ -33,6 +33,7 @@ const ToastBox = styled.div`
   animation: ${fadeInUp} 0.35s ease-out;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 `;
 
 const Header = styled.div`
@@ -76,72 +77,86 @@ const CloseButton = styled.button`
   }
 `;
 
-const StyledLink = styled.a`
-  color: #3b82f6;
-  text-decoration: underline;
-  user-select: text; /* ✅ 드래그 가능하게 설정 */
-`;
-
-
 const NotificationModal = ({ visible, onClose, notification }) => {
   const [detailTitle, setDetailTitle] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !notification) return;
 
-    let timer = setTimeout(onClose, 100000000);
+    setLoading(true);
 
-    // notification.entity.id가 100일 때만 API 호출
-    if (notification.entity?.id === 100) {
-      axios
-        .get(`http://localhost:8080/api/inquiries/${notification.referenceId}`)
-        .then((res) => {
-          setDetailTitle(res.data.title); // content 추출해서 저장
-        })
-        .catch((err) => {
-          console.error("문의 상세 조회 실패:", err);
-          setDetailContent(null);
-        });
-    } else {
-      setDetailContent(null); // entity.id가 100이 아니면 초기화
+    const fetchDetail = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setDetailTitle(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        if (notification.entity?.id === 100) {
+          const res = await axios.get(
+            `http://localhost:8080/api/inquiries/${notification.referenceId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setDetailTitle(res.data.title);
+        } else if (notification.entity?.id === 201) {
+          const res = await axios.get(
+            `http://localhost:8080/api/auctions/${notification.referenceId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setDetailTitle(res.data.title);
+        } else {
+          setDetailTitle(null);
+        }
+      } catch (error) {
+        console.error("상세 조회 실패:", error);
+        setDetailTitle(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+
+    // 긴 타이머를 여기서는 제거하는게 좋아 보임 (기존 코드에 너무 길게 설정되어있음)
+    // 필요시 아래처럼 닫기 타이머 추가 가능
+    // const timer = setTimeout(onClose, 10000);
+    // return () => clearTimeout(timer);
+  }, [visible, notification]);
+
+  if (!visible || !notification) return null;
+
+  const handleClick = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      onClose();
+      return;
     }
 
-    return () => clearTimeout(timer);
-  }, [visible, onClose, notification?.referenceId, notification?.entity?.id]);
+    try {
+      await axios.patch(
+        `http://localhost:8080/api/notifications/${notification.id}/read?isRead=true`,
+        null,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error("알림 읽음 처리 실패", err);
+    }
 
-  if (!visible) return null;
+    if (notification.entity?.id === 100) {
+      window.location.href = "http://localhost:3000/contact?selectedTab=list";
+    } else if (notification.entity?.id === 201) {
+      window.location.href = "http://localhost:3000/mypage/auction-result";
+    }
+
+    onClose();
+  };
 
   return (
     <ToastContainer>
-      <ToastBox
-        onClick={async () => {
-          const token = localStorage.getItem("accessToken");
-          const notificationId = notification?.id;
-
-          if (notificationId && token) {
-            try {
-              await axios.patch(
-                `http://localhost:8080/api/notifications/${notificationId}/read?isRead=true`,
-                null,
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-            } catch (err) {
-              console.error("알림 읽음 처리 실패", err);
-            }
-          }
-
-          if (notification.entity?.id === 100) {
-            window.open("http://localhost:3000/contact?selectedTab=list", "_blank");
-          }
-
-          onClose(); // 항상 알림 닫기
-        }}
-        style={{ cursor: "pointer" }}
-      >
+      <ToastBox onClick={handleClick}>
         <Header>
           <svg
             width="20"
@@ -156,16 +171,31 @@ const NotificationModal = ({ visible, onClose, notification }) => {
           <h4>알림 도착</h4>
         </Header>
 
-        {notification.entity?.id === 100 && (
-          <Content>
-            <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
-          </Content>
+        {loading ? (
+          <Content>불러오는 중...</Content>
+        ) : (
+          <>
+            {notification.entity?.id === 100 && (
+              <Content>
+                <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            {notification.entity?.id === 201 && (
+              <Content>
+                <strong>경매품:</strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            <Content>
+              {notification.entity?.id === 201
+                ? "경매품을 낙찰 받으셨습니다."
+                : "문의가 답변되었습니다."}
+            </Content>
+          </>
         )}
-        <Content>문의가 답변되었습니다.</Content>
 
         <CloseButton
           onClick={(e) => {
-            e.stopPropagation(); // 부모 클릭 방지
+            e.stopPropagation();
             onClose();
           }}
         >
