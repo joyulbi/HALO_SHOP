@@ -1,17 +1,26 @@
 package com.company.haloshop.member.controller;
 
-import com.company.haloshop.dto.member.UserUpdateRequest;
-import com.company.haloshop.dto.member.AccountDto;
-import com.company.haloshop.dto.member.UserDto;
-import com.company.haloshop.member.service.UserService;
-import com.company.haloshop.member.service.UserService.UpdateResult;
-
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.company.haloshop.dto.member.AccountDto;
+import com.company.haloshop.dto.member.UserDto;
+import com.company.haloshop.dto.member.UserUpdateRequest;
+import com.company.haloshop.dto.shop.UserPointDto;
+import com.company.haloshop.member.service.UserService;
+import com.company.haloshop.member.service.UserService.UpdateResult;
+import com.company.haloshop.userpoint.UserPointService;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -19,9 +28,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserPointService userPointService;
+    
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,UserPointService userPointService) {
         this.userService = userService;
+        this.userPointService = userPointService;
     }
 
     /**
@@ -31,28 +43,31 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal(expression = "id") Long principalId) {
         if (principalId == null) {
-            // 인증 정보 없음: 401
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
         try {
             AccountDto accountDto = userService.getAccountById(principalId);
             if (accountDto == null) {
-                // DB에 없는 계정: 404
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "계정을 찾을 수 없습니다."));
             }
             UserDto userDto = userService.getUserByAccountId(principalId);
+
+            // ✅ userPointDto 추가
+            UserPointDto userPointDto = userPointService.findByAccountId(principalId);
+
             return ResponseEntity.ok(Map.of(
                 "account", accountDto,
-                "user", userDto
+                "user", userDto,
+                "userPointDto", userPointDto // ✅ 멤버십 및 포인트 함께 반환
             ));
         } catch (Exception e) {
-            // 서버 내부 에러
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
     }
+
 
     /**
      * 내정보 수정 API (PUT /user/me)
