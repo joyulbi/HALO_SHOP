@@ -1,47 +1,53 @@
 import React, { useEffect, useState } from "react";
 import NotificationIconModal from "./NotificationIconModal";
+import WebSocketClient from "./WebSocketClient";
 import axios from "axios";
 
 const NotificationIcon = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [hasNew, setHasNew] = useState(false); // 🔥 아이콘 표시용 상태
+  const [hasNew, setHasNew] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchNotifications = async () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
-    const fetchNotifications = async () => {
-      try {
-        const meRes = await axios.get("http://localhost:8080/user/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    try {
+      const meRes = await axios.get("http://localhost:8080/user/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const id = meRes.data?.account?.id;
+      if (!id) return;
 
-        const id = meRes.data?.account?.id;
-        if (!id) return;
+      const notiRes = await axios.get(`http://localhost:8080/api/notifications/receiver/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const notiRes = await axios.get(`http://localhost:8080/api/notifications/receiver/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      const list = notiRes.data || [];
+      const unread = list.filter(n => !n.isRead).length;
+      console.log("list :",list);
+      setNotifications(list);
+      setUnreadCount(unread);
+      setHasNew(unread > 0);
+    } catch (err) {
+      console.error("알림 가져오기 실패", err);
+    }
+  };
 
-        const list = notiRes.data || [];
-        const unread = list.filter(n => !n.isRead).length;
-
-        setNotifications(list);
-        setUnreadCount(unread);
-        setHasNew(unread > 0); // 아이콘 표시 여부
-      } catch (err) {
-        console.error("알림 가져오기 실패", err);
-      }
-    };
-
+  useEffect(() => {
     fetchNotifications();
   }, []);
 
+  // WebSocket에서 호출할 함수 (알림 새로고침)
+  const handleNewNotification = () => {
+    fetchNotifications();
+    setHasNew(true); // 푸시 도착 시 빨간 테두리 다시 표시
+  };
+
   const handleOpen = () => {
     setIsOpen(true);
-    setHasNew(false); // 🔥 테두리 & 뱃지 제거
+    setHasNew(false);
   };
 
   return (
@@ -65,10 +71,12 @@ const NotificationIcon = () => {
 
       {isOpen && (
         <NotificationIconModal
-          notifications={notifications}
+          notiData={notifications}
           onClose={() => setIsOpen(false)}
         />
       )}
+
+      <WebSocketClient onNewNotification={handleNewNotification} />
     </>
   );
 };
