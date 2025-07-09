@@ -12,7 +12,6 @@ import java.util.List;
 public class PointLogController {
 
     private final PointLogService pointLogService;
-
     @GetMapping
     public ResponseEntity<List<PointLogDto>> findAll() {
         return ResponseEntity.ok(pointLogService.findAll());

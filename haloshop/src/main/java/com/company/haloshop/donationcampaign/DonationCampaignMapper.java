@@ -25,4 +25,7 @@ public interface DonationCampaignMapper {
     
     List<Map<String, Object>> sumDonationAmountLastHour();
     int updateDonationCampaignTotal(@Param("campaignId") Long campaignId, @Param("total") Integer total);
+    
+    // total 최신화
+    void incrementDonationTotal(@Param("campaignId") Long campaignId, @Param("amount") int amount);
 }

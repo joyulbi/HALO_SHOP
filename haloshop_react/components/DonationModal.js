@@ -100,7 +100,9 @@ const ErrorMsg = styled.p`
   text-align: center;
 `;
 
-const DonationModal = ({ team, onClose }) => {
+const DonationModal = ({ team, campaignId, onClose }) => {
+
+  console.log("캠페인id : ", campaignId);
   useScrollLock();
 
   const ApiCallUrl = "http://localhost:8080";
@@ -161,7 +163,7 @@ const DonationModal = ({ team, onClose }) => {
     axios.post(
       `${ApiCallUrl}/api/donations/${accountId}`,
       {
-        campaignId: team?.id,
+        campaignId: campaignId,
         amount: Number(amount),
       },
       {
@@ -171,6 +173,7 @@ const DonationModal = ({ team, onClose }) => {
       .then(() => {
         alert(`"${amount}" 포인트를 ${team?.name} 팀에 기부했습니다!`);
         onClose();
+        window.location.reload();
       })
       .catch(() => {
         setError("기부 중 오류가 발생했습니다.");

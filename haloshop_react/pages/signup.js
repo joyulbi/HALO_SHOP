@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios"; // axios 임포트
+import axios from "axios";
+import { useRouter } from "next/router";
 
 export default function Signup() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -10,15 +12,13 @@ export default function Signup() {
     address: "",
     addressDetail: "",
     zipcode: "",
-    birth: "", // ISO 8601 형식 문자열로 저장될 예정
+    birth: "",
     gender: "",
   });
 
   const [message, setMessage] = useState("");
-  const [error, setError] = useState(""); // 에러 메시지 상태 추가
-
-  // 백엔드 API의 기본 URL (application.properties/yml에 설정된 포트 확인)
-  const API_BASE_URL = "http://localhost:8080"; // ✅ 백엔드 서버 URL에 맞게 수정해주세요
+  const [error, setError] = useState("");
+  const API_BASE_URL = "http://localhost:8080";
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -26,151 +26,253 @@ export default function Signup() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    setMessage(""); // 메시지 초기화
-    setError("");   // 에러 초기화
+    setMessage("");
+    setError("");
 
-    // 폼 데이터 준비
     const signupData = {
       ...formData,
-      // birth 필드를 ISO 8601 형식의 Date 객체 문자열로 변환
-      // input type="date"는 YYYY-MM-DD 형식의 문자열을 반환.
-      // 이를 Date 객체로 변환 후 toISOString()으로 백엔드 Date 타입에 맞춥니다.
       birth: formData.birth ? new Date(formData.birth).toISOString() : null,
-      // zipcode는 number 타입으로 잘 변환되지만, 확실하게 정수로 파싱 (선택사항)
       zipcode: formData.zipcode ? parseInt(formData.zipcode, 10) : null,
     };
 
     try {
-      // axios를 사용하여 POST 요청 전송
       const res = await axios.post(`${API_BASE_URL}/auth/signup`, signupData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
-      // 응답 상태가 2xx인 경우 성공으로 간주
       if (res.status === 200) {
-        setMessage("회원가입 성공! 이제 로그인 해주세요.");
-        // 폼 초기화
-        setFormData({
-          email: "",
-          password: "",
-          nickname: "",
-          phone: "",
-          address: "",
-          addressDetail: "",
-          zipcode: "",
-          birth: "",
-          gender: "",
-        });
-        // ✅ 성공 시 로그인 페이지로 리다이렉션 (Next.js router 사용)
-        // useRouter 훅을 임포트해서 사용해야 합니다:
-        // import { useRouter } from 'next/router';
-        // const router = useRouter();
-        // router.push('/login'); // /login 경로로 이동
-      } else {
-        // 백엔드에서 2xx가 아닌 상태 코드를 반환하더라도 에러가 아닌 메시지를 보내는 경우
-        // 여기서는 axios가 2xx가 아니면 throw error하므로 이 블록은 작동 안함
-        setMessage("회원가입 실패: 알 수 없는 응답");
+        setMessage("🎉 회원가입 성공! 로그인으로 이동합니다.");
+        setTimeout(() => router.push("/login"), 1800);
       }
     } catch (err) {
-      // axios는 2xx가 아닌 응답(4xx, 5xx)을 받으면 catch 블록으로 에러를 던집니다.
       if (err.response) {
-        // 서버가 응답을 보냈고, 그 응답이 2xx 범위 밖인 경우
-        // 백엔드에서 메시지를 Plain text로 보냈다면 err.response.data에 그대로 들어있음
         setError("회원가입 실패: " + err.response.data);
       } else if (err.request) {
-        // 요청이 전송되었지만 응답을 받지 못한 경우 (네트워크 문제)
         setError("네트워크 오류: 서버에 연결할 수 없습니다.");
       } else {
-        // 요청 설정 중 문제 발생
         setError("오류 발생: " + err.message);
       }
     }
   };
 
   return (
-    <div>
-      <h2>회원가입</h2>
-      <form onSubmit={handleSignup}>
-        <input
-          type="email"
-          name="email"
-          placeholder="이메일"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="password"
-          name="password"
-          placeholder="비밀번호"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="text"
-          name="nickname"
-          placeholder="닉네임"
-          value={formData.nickname}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="text"
-          name="phone"
-          placeholder="전화번호"
-          value={formData.phone}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="text"
-          name="address"
-          placeholder="주소"
-          value={formData.address}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="text"
-          name="addressDetail"
-          placeholder="상세주소"
-          value={formData.addressDetail}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="number" // type="number" 사용
-          name="zipcode"
-          placeholder="우편번호"
-          value={formData.zipcode}
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          type="date" // type="date" 사용
-          name="birth"
-          placeholder="생년월일"
-          value={formData.birth} // YYYY-MM-DD 형식으로 유지 (display용)
-          onChange={handleChange}
-          required
-        /><br />
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleChange}
-          required
-        >
-          <option value="">성별 선택</option>
-          <option value="M">남자</option>
-          <option value="F">여자</option>
-        </select><br />
-        <button type="submit">회원가입</button>
+    <div style={styles.container}>
+      <h2 style={styles.title}>🎈 Welcome to Halo Shop</h2>
+      <p style={styles.subtitle}>회원 정보를 입력해주세요</p>
+
+      <form onSubmit={handleSignup} style={styles.form}>
+        <div style={styles.group}>
+          <label style={styles.label}>이메일</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.group}>
+          <label style={styles.label}>비밀번호</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.groupRow}>
+          <div style={styles.group}>
+            <label style={styles.label}>닉네임</label>
+            <input
+              type="text"
+              name="nickname"
+              value={formData.nickname}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.group}>
+            <label style={styles.label}>전화번호</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+        </div>
+
+        <div style={styles.group}>
+          <label style={styles.label}>주소</label>
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.groupRow}>
+          <div style={styles.group}>
+            <label style={styles.label}>상세주소</label>
+            <input
+              type="text"
+              name="addressDetail"
+              value={formData.addressDetail}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.group}>
+            <label style={styles.label}>우편번호</label>
+            <input
+              type="number"
+              name="zipcode"
+              value={formData.zipcode}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+        </div>
+
+        <div style={styles.groupRow}>
+          <div style={styles.group}>
+            <label style={styles.label}>생년월일</label>
+            <input
+              type="date"
+              name="birth"
+              value={formData.birth}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.group}>
+            <label style={styles.label}>성별</label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            >
+              <option value="">성별 선택</option>
+              <option value="M">남자</option>
+              <option value="F">여자</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" style={styles.button}>회원가입 완료</button>
+
+        {message && <p style={styles.success}>{message}</p>}
+        {error && <p style={styles.error}>{error}</p>}
       </form>
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }
+
+const styles = {
+  container: {
+    maxWidth: "680px",
+    margin: "60px auto",
+    padding: "48px 40px",
+    backgroundColor: "#ffffff",
+    borderRadius: "20px",
+    boxShadow: "0 8px 30px rgba(0, 0, 0, 0.05)",
+    fontFamily: "'Noto Sans KR', sans-serif",
+    transition: "all 0.3s ease",
+  },
+  title: {
+    textAlign: "center",
+    fontSize: "28px",
+    marginBottom: "4px",
+    fontWeight: "700",
+    color: "#111",
+  },
+  subtitle: {
+    textAlign: "center",
+    fontSize: "15px",
+    marginBottom: "30px",
+    color: "#777",
+    letterSpacing: "-0.2px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+  },
+  group: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+  },
+  groupRow: {
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
+  },
+  label: {
+    marginBottom: "8px",
+    fontWeight: 500,
+    fontSize: "14px",
+    color: "#333",
+    letterSpacing: "-0.3px",
+  },
+  input: {
+    padding: "12px 14px",
+    border: "1px solid #d1d1d1",
+    borderRadius: "8px",
+    fontSize: "15px",
+    outline: "none",
+    transition: "all 0.2s ease",
+    backgroundColor: "#f9f9f9",
+  },
+  inputFocus: {
+    borderColor: "#c8102e",
+    backgroundColor: "#fff",
+    boxShadow: "0 0 0 3px rgba(200, 16, 46, 0.1)",
+  },
+  button: {
+    marginTop: "32px",
+    padding: "14px",
+    backgroundColor: "#c8102e",
+    color: "#fff",
+    fontSize: "16px",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.3s ease",
+    boxShadow: "0 6px 12px rgba(0,0,0,0.06)",
+  },
+  buttonHover: {
+    backgroundColor: "#a50c26",
+    transform: "translateY(-1px)",
+    boxShadow: "0 10px 16px rgba(0,0,0,0.1)",
+  },
+  success: {
+    color: "green",
+    marginTop: "24px",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  error: {
+    color: "red",
+    marginTop: "24px",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+};

@@ -1,5 +1,6 @@
 package com.company.haloshop.auction.service;
 
+import com.company.haloshop.auction.dto.Auction;
 import com.company.haloshop.auction.dto.AuctionResult;
 import com.company.haloshop.auction.mapper.AuctionMapper;
 import com.company.haloshop.auction.mapper.AuctionResultMapper;
@@ -20,6 +21,7 @@ public class AuctionResultService {
     private final AuctionResultMapper auctionResultMapper;
     private final AuctionResultCalculator calculator;
     private final AuctionMapper auctionMapper;
+    private final AuctionService auctionService;
 
     // 낙찰 결과 단건 조회
     public AuctionResult getByAuctionId(Long auctionId) {
@@ -98,6 +100,10 @@ public class AuctionResultService {
         result.setConfirmedAt(LocalDateTime.now());
         result.setCanceledReason(canceledReason);
         auctionResultMapper.update(result);
+        
+        Auction auction = auctionService.getById(auctionId);
+        auction.setStatus("CANCELED");
+        auctionService.update(auction);
     }
     
     // 관리자 메모

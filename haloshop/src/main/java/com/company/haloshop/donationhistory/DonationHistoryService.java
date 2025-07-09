@@ -71,8 +71,11 @@ public class DonationHistoryService {
         donationHistory.setPointLog(pl);
         donationHistory.setAmount((long) amount);
         donationHistory.setCreatedAt(LocalDateTime.now());
-
         donationHistoryMapper.insertDonationHistory(donationHistory);
+        
+        // total 최신화
+        donationCampaignMapper.incrementDonationTotal(campaignId, amount);
+        
     }
 
 

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import styled from "styled-components";
 import InquiryForm from "../components/InquiryForm";
 import InquiryHistory from "../components/InquiryHistory";
@@ -46,7 +47,18 @@ const MainPanel = styled.div`
 `;
 
 const contact = () => {
+
+  const router = useRouter(); // ✅ Next.js 라우터 훅
   const [selectedTab, setSelectedTab] = useState("write");
+
+  // 쿼리 파라미터는 useRouter().query 에 있음 (CSR 환경에서만 접근 가능)
+  useEffect(() => {
+    if (!router.isReady) return; // 쿼리 파라미터 준비될 때까지 대기
+    const tab = router.query.selectedTab;
+    if (tab === "list" || tab === "write") {
+      setSelectedTab(tab);
+    }
+  }, [router.isReady, router.query.selectedTab]);
 
   return (
     <Wrapper>

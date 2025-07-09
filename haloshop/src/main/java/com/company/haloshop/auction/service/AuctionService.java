@@ -9,6 +9,7 @@ import com.company.haloshop.auction.dto.Auction;
 import com.company.haloshop.auction.mapper.AuctionImageMapper;
 import com.company.haloshop.auction.mapper.AuctionLogMapper;
 import com.company.haloshop.auction.mapper.AuctionMapper;
+import com.company.haloshop.auction.mapper.AuctionResultMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ public class AuctionService {
     private final AuctionMapper auctionMapper;
     private final AuctionLogMapper auctionLogMapper;
     private final AuctionImageMapper auctionImageMapper;
+    private final AuctionResultMapper auctionResultMapper;
 
     // 경매 단건 조회
     public Auction getById(Long id) {
@@ -43,6 +45,7 @@ public class AuctionService {
     // 경매 삭제
     @Transactional
     public void delete(Long auctionId) {
+    	auctionResultMapper.delete(auctionId);
     	auctionImageMapper.deleteByAuctionId(auctionId);
         auctionLogMapper.deleteByAuctionId(auctionId);
         auctionMapper.delete(auctionId);

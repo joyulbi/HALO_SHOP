@@ -12,9 +12,10 @@ const CATEGORY_LIST = [
   { id: 101, label: "상품 문의" },
   { id: 102, label: "경매 문의" },
   { id: 103, label: "결제 문의" },
-  { id: 104, label: "배송 문의" },
-  { id: 105, label: "계정 문의" },
-  { id: 106, label: "기타 문의" },
+  { id: 104, label: "환불 문의" },
+  { id: 105, label: "배송 문의" },
+  { id: 106, label: "계정 문의" },
+  { id: 107, label: "기타 문의" },
 ];
 
 const PageBackground = styled.div`

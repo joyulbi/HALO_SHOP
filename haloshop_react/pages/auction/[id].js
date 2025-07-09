@@ -170,13 +170,28 @@ export default function AuctionRoomLayout() {
     setInputMsg("");
   };
 
+  // 재등록
+  const handleReRegister = () => {
+    router.push({
+      pathname: "/auction/regist",
+      query: {
+        title,
+        description: desc,
+        startPrice: String(startPrice), // 숫자 → 문자열 변환
+        imageUrls: JSON.stringify(images.map(img => img.url)), // 배열을 문자열로 변환
+      },
+    });
+  };
+
   const isOngoing = status === "ONGOING";
   const isFinished = status === "FINISHED";
+  const isCanceled = status === "CANCELED";
 
   if (!AUCTION_ID || typeof startPrice !== "number") return <div>로딩중...</div>;
 
 return (
   <div style={{ background: "#f9f9f9", minHeight: "100vh", padding: "60px 80px" }}>
+    
     <div style={{
       display: "grid",
       gridTemplateColumns: "2fr 1fr",
@@ -196,6 +211,27 @@ return (
         minHeight: "480px"
       }}>
         <AuctionInfo images={images} title={title} desc={desc} status={status} />
+        {isCanceled && (
+          <div style={{ textAlign: "right", marginBottom: "12px" }}>
+            <button
+              onClick={handleReRegister}
+              style={{
+                background: "#3d6fee",
+                color: "#fff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "10px 20px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#264dbd"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3d6fee"}
+            >
+              이 경매 다시 등록하기
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 채팅 or 낙찰자 */}
@@ -216,7 +252,7 @@ return (
             isFinished={false}
           />
         )}
-        {isFinished && (
+        {(isFinished || isCanceled) && (
           <AuctionWinnerInfo auctionId={AUCTION_ID} />
         )}
       </div>
@@ -244,12 +280,12 @@ return (
             currentUserId={user?.id}
           />
         )}
-        {isFinished && (
+        {(isFinished || isCanceled) && (
           <AuctionLog
             logs={logs}
             highest={highest}
             isFinished={true}
-            errorMsg={"경매가 종료되었습니다."}
+            errorMsg={isCanceled ? "이 경매는 취소되었습니다." : "경매가 종료되었습니다."}
             currentUserId={user?.id}
           />
         )}

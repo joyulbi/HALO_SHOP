@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from '../../utils/axios';
+import api from "../../utils/axios";
 import { useRouter } from "next/router";
 
 export default function AuctionForm() {
@@ -18,6 +18,25 @@ export default function AuctionForm() {
   const [previews, setPreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
 
+  // ✅ 등록모드일 경우 router.query 기반 preset 값 초기화
+  useEffect(() => {
+    if (!isEdit) {
+      const { title, description, startPrice, imageUrls } = router.query;
+      if (title) setTitle(title);
+      if (description) setDesc(description);
+      if (startPrice) setStartPrice(startPrice);
+      if (imageUrls) {
+        try {
+          const urls = JSON.parse(imageUrls); // ✅ 쿼리로 전달된 이미지 리스트 JSON 파싱
+          setPreviews(urls);
+        } catch (e) {
+          console.error("imageUrls 파싱 오류", e);
+        }
+      }
+    }
+  }, [isEdit, router.query]);
+
+  // ✅ 수정모드일 경우 DB에서 값 불러오기
   useEffect(() => {
     if (isEdit) {
       api.get(`/api/auctions/${auctionId}`).then(res => {
