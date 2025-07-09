@@ -208,7 +208,18 @@ public class SecurityConfig {
 
             // 7) CORS 설정 및 커스텀 필터 배치
             .cors().and()
-
+            
+            //로그아웃 추가
+            .logout(logout -> logout
+            	    .logoutUrl("/logout")                // 원하시는 로그아웃 URL
+            	    .permitAll()
+            	    .invalidateHttpSession(true)         // 세션 무효화
+            	    .clearAuthentication(true)           // authentication 객체 제거
+            	    .deleteCookies("JSESSIONID","SESSION") // 쿠키도 같이 삭제
+            	    .logoutSuccessHandler((req, res, auth) -> {
+            	       res.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            	    })
+            	  )
             // AttackDetectionFilter: 세션 로그인 필터 앞
 //            .addFilterBefore(attackDetectionFilter, UsernamePasswordAuthenticationFilter.class)
 

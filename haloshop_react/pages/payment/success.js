@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext';
 export default function KakaoSuccessPage() {
   const router = useRouter();
   const { pg_token, accountId } = router.query;
-  const { refreshCart } = useCart();
+  const { refreshCart, setCartCount } = useCart(); // ✅ setCartCount 추가
 
   const [loading, setLoading] = useState(true);
 
@@ -15,20 +15,23 @@ export default function KakaoSuccessPage() {
 
     const approvePayment = async () => {
       try {
-        await axios.post('/api/payment/approve', {
+        const res = await axios.post('/api/payment/approve', {
           pgToken: pg_token,
           accountId: Number(accountId),
         });
 
+        const orderId = res.data; // 백엔드에서 승인된 orderId 받기
+
         try {
           await refreshCart();
-          await new Promise(resolve => setTimeout(resolve, 100)); // ✅ 딜레이 추가
+          await new Promise(resolve => setTimeout(resolve, 100));
+          setCartCount(0); // ✅ 결제 완료 후 뱃지 강제 초기화
         } catch (e) {
           console.error('refreshCart() 실패:', e);
         }
 
         alert('결제 완료!');
-        router.push('/mypage/orders');
+        router.push(`/mypage/orders/${orderId}`);
       } catch (error) {
         console.error('결제 승인 실패 디버깅:', error.response?.data || error);
         alert('결제 승인 실패');
