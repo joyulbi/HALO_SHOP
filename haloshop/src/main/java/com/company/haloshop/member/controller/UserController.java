@@ -113,6 +113,7 @@ public class UserController {
                 ));
             }
         } catch (Exception e) {
+        	e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
