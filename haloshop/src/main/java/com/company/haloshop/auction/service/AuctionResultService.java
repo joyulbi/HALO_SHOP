@@ -36,6 +36,7 @@ public class AuctionResultService {
     // 낙찰 결과 등록
     public void create(AuctionResult auctionResult) {
         auctionResultMapper.insert(auctionResult);
+        
     }
 
     // 낙찰 결과 수정
