@@ -40,52 +40,49 @@ public class MemberAdminController {
     @GetMapping("/me")
     public ResponseEntity<?> getMyAdminInfo(
         @AuthenticationPrincipal(expression = "id") Long principalId,
-        Authentication authentication // 인증 객체도 받아서 로그 찍기
+        Authentication authentication
     ) {
-        System.out.println("====== /admin/me 진입 ======");
-        System.out.println("principalId: " + principalId);
-        System.out.println("Authentication: " + authentication);
-        if (authentication != null) {
-            System.out.println("Principal: " + authentication.getPrincipal());
-            System.out.println("Details: " + authentication.getDetails());
-            System.out.println("Authorities: " + authentication.getAuthorities());
-        }
-        System.out.println("==================================");
-
-        if (principalId == null) {
+        // 1. 인증 안 된 경우 즉시 차단 (세션 만료 등 포함)
+        if (principalId == null || authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
+
         try {
+            // 2. DB 접근 전에 조건 체크
             AccountDto accountDto = adminService.getAccountById(principalId);
-            if (accountDto == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "계정을 찾을 수 없습니다."));
+            if (accountDto == null || !Boolean.TRUE.equals(accountDto.getIsAdmin())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "관리자 권한이 없습니다."));
             }
+
             AdminDto adminDto = adminService.getAdminByAccountId(principalId);
             if (adminDto == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "관리자 정보를 찾을 수 없습니다."));
             }
 
-            // CSRF 토큰을 응답에 추가
+            // 3. CSRF 토큰 가져오기
             CsrfToken csrfToken = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
                 .getRequest().getAttribute(CsrfToken.class.getName()) instanceof CsrfToken
                 ? (CsrfToken) ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
                     .getRequest().getAttribute(CsrfToken.class.getName())
                 : null;
+
             String csrfTokenValue = csrfToken != null ? csrfToken.getToken() : "토큰 없음";
 
             return ResponseEntity.ok(Map.of(
                 "account", accountDto,
                 "admin", adminDto,
-                "csrfToken", csrfTokenValue // CSRF 토큰 응답에 포함
+                "csrfToken", csrfTokenValue
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
     }
+
+
 
     /**
      * 관리자 정보 수정 API

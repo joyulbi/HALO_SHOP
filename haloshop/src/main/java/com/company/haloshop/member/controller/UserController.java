@@ -48,19 +48,30 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "로그인이 필요합니다."));
         }
+
         Long principalId = user.getId();
+
         try {
-            // 1) 계정 정보
+            // 1. 계정 정보만 먼저 조회
             AccountDto accountDto = userService.getAccountById(principalId);
             if (accountDto == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "계정을 찾을 수 없습니다."));
             }
 
-            // 2) 프로필 정보
+            // 2. 관리자면 추가 쿼리 없이 바로 응답
+            if (Boolean.TRUE.equals(accountDto.getIsAdmin())) {
+                return ResponseEntity.ok(Map.of(
+                    "account", accountDto,
+                    "user", null,
+                    "userPointDto", null,
+                    "isAdmin", true
+                ));
+            }
+
+            // 3. 일반 유저는 기존대로 추가 정보 조회
             UserDto userDto = userService.getUserByAccountId(principalId);
 
-            // 3) 포인트 정보 조회 (없으면 기본값 생성)
             UserPointDto userPointDto = userPointService.findByAccountId(principalId);
             if (userPointDto == null) {
                 userPointDto = UserPointDto.builder()
@@ -73,17 +84,19 @@ public class UserController {
                     .build();
             }
 
-            // 4) 응답
             return ResponseEntity.ok(Map.of(
                 "account", accountDto,
                 "user", userDto,
                 "userPointDto", userPointDto
             ));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "서버 내부 오류: " + e.getMessage()));
         }
     }
+
+
 
     /**
      * 내정보 수정 API (PUT /user/me)
