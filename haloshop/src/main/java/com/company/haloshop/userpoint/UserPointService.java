@@ -257,6 +257,27 @@ public class UserPointService {
         }
         return savePoint;
     }
+    
+    @Transactional
+    public void addMembershipRewardPoint(Long accountId, int rewardPoint) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint != null) {
+            userPoint.setTotalPoint(userPoint.getTotalPoint() + rewardPoint);
+            userPoint.setUpdatedAt(LocalDateTime.now());
+            userPointMapper.update(userPoint);
+
+            // 포인트 적립 로그 기록
+            PointLogDto logDto = new PointLogDto();
+            logDto.setAccountId(accountId);
+            logDto.setAmount(rewardPoint);
+            logDto.setType("MEMBERSHIP_REWARD");
+            logDto.setCreatedAt(LocalDateTime.now());
+            pointLogService.insert(logDto);
+        } else {
+            throw new IllegalArgumentException("UserPoint not found for accountId=" + accountId);
+        }
+    }
+
 
 
 }
