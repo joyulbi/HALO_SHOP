@@ -76,13 +76,9 @@ public class ReviewService {
         }
     }
 
+    // ✅ 수정: 상품명 + 이미지 조인된 쿼리 사용
     public List<ReviewDTO> getReviewByUser(Long accountId) {
-        List<ReviewDTO> reviews = reviewMapper.findByAccountId(accountId);
-        for (ReviewDTO review : reviews) {
-            List<String> urls = reviewImageMapper.findUrlsByReviewId(review.getId());
-            review.setImages(urls);
-        }
-        return reviews;
+        return reviewMapper.findWithImagesByAccountId(accountId);
     }
 
     public ReviewDTO getReviewByOrderItem(Long orderItemsId) {

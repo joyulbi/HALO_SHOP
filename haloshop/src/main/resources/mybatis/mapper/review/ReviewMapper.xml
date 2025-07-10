@@ -5,121 +5,191 @@
 
 <mapper namespace="com.company.haloshop.review.ReviewMapper">
 
-	<resultMap id="ReviewResultMap"
-		type="com.company.haloshop.dto.shop.ReviewDTO">
-		<id property="id" column="id" />
-		<result property="orderItemsId" column="order_item_id" />
-		<result property="accountId" column="account_id" />
-		<result property="content" column="content" />
-		<result property="rating" column="rating" />
-		<result property="createdAt" column="created_at" />
-	</resultMap>
+    <resultMap id="ReviewResultMap"
+        type="com.company.haloshop.dto.shop.ReviewDTO">
+        <id property="id" column="id" />
+        <result property="orderItemsId" column="order_item_id" />
+        <result property="accountId" column="account_id" />
+        <result property="content" column="content" />
+        <result property="rating" column="rating" />
+        <result property="createdAt" column="created_at" />
+        <result property="productName" column="product_name" />
+    </resultMap>
 
-	<resultMap id="ReviewWithImageMap"
-		type="com.company.haloshop.dto.shop.ReviewDTO"
-		extends="ReviewResultMap">
-		<collection property="images"
-			ofType="com.company.haloshop.dto.shop.ReviewImageDTO">
-			<id property="id" column="image_id" />
-			<result property="reviewId" column="review_id" />
-			<result property="url" column="url" />
-			<result property="uploadedAt" column="uploaded_at" />
-		</collection>
-	</resultMap>
+    <resultMap id="ReviewWithImageMap"
+        type="com.company.haloshop.dto.shop.ReviewDTO"
+        extends="ReviewResultMap">
+        <collection property="images" ofType="java.lang.String">
+            <result property="url" column="url" />
+        </collection>
+    </resultMap>
 
-	<insert id="insertReview"
-		parameterType="com.company.haloshop.dto.shop.ReviewDTO"
-		useGeneratedKeys="true" keyProperty="id">
-		INSERT INTO review (order_item_id, account_id, content, rating, created_at)
-		VALUES (#{orderItemsId}, #{accountId}, #{content}, #{rating},
-		#{createdAt})
-	</insert>
+    <insert id="insertReview"
+        parameterType="com.company.haloshop.dto.shop.ReviewDTO"
+        useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO review (order_item_id, account_id, content, rating, created_at)
+        VALUES (#{orderItemsId}, #{accountId}, #{content}, #{rating}, #{createdAt})
+    </insert>
 
-	<select id="existsByOrderItemId" resultType="boolean">
-		SELECT COUNT(*) > 0 FROM review WHERE order_item_id = #{orderItemsId}
-	</select>
+    <select id="existsByOrderItemId" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM review WHERE order_item_id = #{orderItemsId}
+    </select>
 
-	<select id="findByAccountId" resultMap="ReviewResultMap">
-		SELECT * FROM review WHERE account_id = #{accountId}
-	</select>
+    <select id="findByAccountId" resultMap="ReviewWithImageMap">
+        SELECT
+            r.*,
+            ri.id AS image_id,
+            ri.review_id,
+            ri.url,
+            ri.uploaded_at,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        LEFT JOIN review_image ri ON r.id = ri.review_id
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        WHERE r.account_id = #{accountId}
+    </select>
 
-	<select id="findByOrderItemsId" resultMap="ReviewResultMap">
-		SELECT * FROM review WHERE order_item_id = #{orderItemsId}
-	</select>
+    <select id="findByOrderItemsId" resultMap="ReviewResultMap">
+        SELECT
+            r.*,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        WHERE r.order_item_id = #{orderItemsId}
+    </select>
 
-	<select id="findAll" resultMap="ReviewResultMap">
-		SELECT * FROM review
-	</select>
+    <select id="findAll" resultMap="ReviewResultMap">
+        SELECT
+            r.*,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+    </select>
 
-	<select id="findWithImagesByAccountId"
-		resultMap="ReviewWithImageMap">
-		SELECT
-		r.*,
-		i.id AS image_id,
-		i.review_id,
-		i.url,
-		i.uploaded_at
-		FROM review r
-		LEFT JOIN review_image i ON r.id = i.review_id
-		WHERE r.account_id = #{accountId}
-	</select>
+    <select id="findWithImagesByAccountId" resultMap="ReviewWithImageMap">
+        SELECT
+            r.*,
+            ri.id AS image_id,
+            ri.review_id,
+            ri.url,
+            ri.uploaded_at,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        LEFT JOIN review_image ri ON r.id = ri.review_id
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        WHERE r.account_id = #{accountId}
+    </select>
 
-	<select id="findById" resultMap="ReviewResultMap">
-		SELECT * FROM review WHERE id = #{id}
-	</select>
+    <select id="findById" resultMap="ReviewResultMap">
+        SELECT
+            r.*,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        WHERE r.id = #{id}
+    </select>
 
-	<update id="updateReview"
-		parameterType="com.company.haloshop.dto.shop.ReviewDTO">
-		UPDATE review
-		SET content = #{content}, rating = #{rating}
-		WHERE id = #{id}
-	</update>
-	
-	<delete id="deleteReview">
-	    DELETE FROM review WHERE id = #{id}
-	</delete>
-	
-	<select id="findByItemId" parameterType="long" resultType="com.company.haloshop.dto.shop.ReviewDTO">
-	    SELECT r.id, r.content, r.rating, r.created_at, r.account_id, a.nickname AS authorName
-	    FROM review r
-	    JOIN account a ON r.account_id = a.id
-	    JOIN order_items oi ON r.order_item_id = oi.id
-	    WHERE oi.item_id = #{itemId}
-	    ORDER BY r.created_at DESC
-	</select>
-	
-	<!-- 관리자용 유저 리뷰 -->
-	<select id="findAllWithProduct" resultType="com.company.haloshop.dto.shop.ReviewDTO">
-	    SELECT 
-	        r.id,
-	        r.content,
-	        r.rating,
-	        r.created_at,
-	        r.account_id,
-	        a.nickname AS authorName,
-	        i.name AS productName,
-	        (
-	            SELECT url
-	            FROM review_image
-	            WHERE review_id = r.id
-	            LIMIT 1
-	        ) AS imageUrl
-	    FROM review r
-	    JOIN account a ON r.account_id = a.id
-	    JOIN order_items oi ON r.order_item_id = oi.id
-	    JOIN items i ON oi.item_id = i.id
-	    ORDER BY r.created_at DESC
-	</select>
-	
-	<update id="addPointsToUser">
-	    UPDATE user_point
-	    SET total_point = total_point + #{point},
-	    	updated_at = NOW()
-	    WHERE account_id = #{accountId}
-	</update>
-	
-	<insert id="insertPointLog">
-	    INSERT INTO point_log (account_id, amount, type, created_at)
-	    VALUES (#{accountId}, #{amount}, 'REVIEW', NOW())
-	</insert>
+    <update id="updateReview"
+        parameterType="com.company.haloshop.dto.shop.ReviewDTO">
+        UPDATE review
+        SET content = #{content}, rating = #{rating}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteReview">
+        DELETE FROM review WHERE id = #{id}
+    </delete>
+
+    <select id="findByItemId" parameterType="long" resultType="com.company.haloshop.dto.shop.ReviewDTO">
+        SELECT
+            r.id,
+            r.content,
+            r.rating,
+            r.created_at,
+            r.account_id,
+            a.nickname AS authorName,
+            i.name AS product_name,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS thumbnail_url
+        FROM review r
+        JOIN account a ON r.account_id = a.id
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        WHERE oi.item_id = #{itemId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findAllWithProduct" resultType="com.company.haloshop.dto.shop.ReviewDTO">
+        SELECT 
+            r.id,
+            r.content,
+            r.rating,
+            r.created_at,
+            r.account_id,
+            a.nickname AS authorName,
+            i.name AS productName,
+            (
+                SELECT url
+                FROM review_image
+                WHERE review_id = r.id
+                LIMIT 1
+            ) AS imageUrl
+        FROM review r
+        JOIN account a ON r.account_id = a.id
+        JOIN order_items oi ON r.order_item_id = oi.id
+        JOIN items i ON oi.item_id = i.id
+        ORDER BY r.created_at DESC
+    </select>
+
+    <update id="addPointsToUser">
+        UPDATE user_point
+        SET total_point = total_point + #{point},
+            updated_at = NOW()
+        WHERE account_id = #{accountId}
+    </update>
+
+    <insert id="insertPointLog">
+        INSERT INTO point_log (account_id, amount, type, created_at)
+        VALUES (#{accountId}, #{amount}, 'REVIEW', NOW())
+    </insert>
+
 </mapper>

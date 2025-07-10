@@ -6,13 +6,21 @@ const ItemReviews = ({ itemId }) => {
   const [reviews, setReviews] = useState([]);
   const SERVER_URL = 'http://localhost:8080';
 
-  console.log("itemId: ", itemId);
+  console.log('itemId: ', itemId);
+
+  // ✅ 이미지 URL 처리 함수
+  const getImageUrl = (url) =>
+    url ? `${SERVER_URL}${url}` : '/default.png';
 
   useEffect(() => {
     axios
       .get(`${SERVER_URL}/api/reviews/item/${itemId}`)
-      .then((res) => setReviews(res.data))
-      .catch((err) => console.error('상품 리뷰 불러오기 실패', err));
+      .then((res) => {
+        console.log('📦 상품 리뷰 데이터:', res.data);
+        setReviews(res.data);
+        console.log('리뷰 데이터 확인: ', res.data);
+      })
+      .catch((err) => console.error('❌ 상품 리뷰 불러오기 실패', err));
   }, [itemId]);
 
   // ✅ 날짜 포맷 함수
@@ -25,64 +33,47 @@ const ItemReviews = ({ itemId }) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <h3 style={{ marginBottom: '16px', fontSize: '20px', fontWeight: 'bold' }}>상품 후기</h3>
+    <div style={styles.container}>
+      <h3 style={styles.title}>상품 후기</h3>
 
       {reviews.length === 0 ? (
-        <p style={{ color: '#777' }}>등록된 리뷰가 없습니다.</p>
+        <p style={styles.noReviews}>등록된 리뷰가 없습니다.</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={styles.reviewList}>
           {reviews.map((review) => (
-            <div
-              key={review.id}
-              style={{
-                display: 'flex',
-                gap: '16px',
-                borderBottom: '1px solid #e0e0e0',
-                paddingBottom: '16px',
-              }}
-            >
+            <div key={review.id} style={styles.reviewCard}>
               {/* 리뷰 이미지 */}
-              <div style={{ minWidth: '100px' }}>
-                {review.images?.length > 0 ? (
+              <div style={styles.imageContainer}>
+                {review.images?.[0] ? (
                   <img
-                    src={`${SERVER_URL}${review.images[0]}`}
-                    alt="리뷰 이미지"
-                    style={{ width: '100px', height: '100px', borderRadius: '8px', objectFit: 'cover' }}
+                    src={getImageUrl(review.images[0])}
+                    alt={review.productName ?? '리뷰 이미지'}
+                    style={styles.image}
+                    onError={(e) => {
+                      if (!e.target.src.includes('default.png')) {
+                        e.target.src = '/default.png';
+                      }
+                    }}
                   />
                 ) : (
-                  <div
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '8px',
-                      backgroundColor: '#f0f0f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#aaa',
-                      fontSize: '14px',
-                    }}
-                  >
-                    이미지 없음
-                  </div>
+                  <div style={styles.noImageBox}>이미지 없음</div>
                 )}
               </div>
 
               {/* 리뷰 내용 */}
-              <div style={{ flexGrow: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={styles.reviewContent}>
+                <div style={styles.meta}>
                   <StarRating rating={review.rating} readOnly={true} />
-                  <span style={{ fontSize: '14px', color: '#555' }}>
+                  <span style={styles.metaText}>
                     {review.authorName} · {formatDate(review.createdAt)}
                   </span>
                 </div>
-                <p style={{ marginTop: '8px', lineHeight: '1.5', color: '#333' }}>{review.content}</p>
+                <p style={styles.reviewText}>{review.content}</p>
               </div>
             </div>
           ))}
@@ -90,6 +81,68 @@ const ItemReviews = ({ itemId }) => {
       )}
     </div>
   );
+};
+
+const styles = {
+  container: {
+    padding: '24px',
+  },
+  title: {
+    marginBottom: '16px',
+    fontSize: '20px',
+    fontWeight: 'bold',
+  },
+  noReviews: {
+    color: '#777',
+  },
+  reviewList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  reviewCard: {
+    display: 'flex',
+    gap: '16px',
+    borderBottom: '1px solid #e0e0e0',
+    paddingBottom: '16px',
+  },
+  imageContainer: {
+    minWidth: '100px',
+  },
+  image: {
+    width: '100px',
+    height: '100px',
+    borderRadius: '8px',
+    objectFit: 'cover',
+  },
+  noImageBox: {
+    width: '100px',
+    height: '100px',
+    borderRadius: '8px',
+    backgroundColor: '#f0f0f0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#aaa',
+    fontSize: '14px',
+  },
+  reviewContent: {
+    flexGrow: 1,
+  },
+  meta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  metaText: {
+    fontSize: '14px',
+    color: '#555',
+  },
+  reviewText: {
+    marginTop: '8px',
+    lineHeight: '1.5',
+    color: '#333',
+  },
 };
 
 export default ItemReviews;

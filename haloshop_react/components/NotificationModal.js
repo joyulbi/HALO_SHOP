@@ -77,8 +77,22 @@ const CloseButton = styled.button`
   }
 `;
 
+// 숫자포매팅
+const formatNumber = (num) => {
+  if (typeof num === "number") {
+    return new Intl.NumberFormat().format(num);
+  }
+
+  if (typeof num === "string" && /^\d+$/.test(num)) {
+    return new Intl.NumberFormat().format(Number(num));
+  }
+
+  return num; // 숫자가 아니면 그대로 반환
+};
+
 const NotificationModal = ({ visible, onClose, notification }) => {
   const [detailTitle, setDetailTitle] = useState(null);
+  const [amount, setAmount] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -88,6 +102,7 @@ const NotificationModal = ({ visible, onClose, notification }) => {
       const token = localStorage.getItem("accessToken");
       if (!token) {
         setDetailTitle(null);
+        setAmount(null);
         setLoading(false);
         return;
       }
@@ -95,6 +110,24 @@ const NotificationModal = ({ visible, onClose, notification }) => {
       setLoading(true);
       const result = await notificationUtil(notification, token);
       setDetailTitle(result.title);
+
+      // 👇 600번대 포인트 로그 amount 가져오기
+      if (notification.entity?.id === 601 || notification.entity?.id === 602) {
+        try {
+          const res = await fetch(
+            `http://localhost:8080/api/pointlog/${notification.referenceId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const data = await res.json();
+          setAmount(data.amount);
+        } catch (err) {
+          console.error("포인트 로그 조회 실패:", err);
+          setAmount(null);
+        }
+      }
+
       setLoading(false);
     };
 
@@ -157,49 +190,67 @@ const NotificationModal = ({ visible, onClose, notification }) => {
           <>
             {notification.entity?.id === 100 && (
               <Content>
-                <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
+                <strong>문의 제목:</strong> {detailTitle}
               </Content>
             )}
             {(notification.entity?.id === 201 || notification.entity?.id === 203) && (
               <Content>
-                <strong>경매품:</strong> {detailTitle || "불러오는 중..."}
+                <strong>경매품:</strong> {detailTitle}
               </Content>
             )}
             {notification.entity?.id === 301 && (
               <Content>
-                <strong>시즌 : </strong> {detailTitle || "불러오는 중..."}
+                <strong>시즌:</strong> {detailTitle}
               </Content>
             )}
-            {notification.entity?.id === 401 && (
+            {[401, 402, 403].includes(notification.entity?.id) && (
               <Content>
                 <strong>배송품:</strong> {detailTitle}
               </Content>
             )}
-            {notification.entity?.id === 402 && (
+            {(notification.entity?.id === 601 || notification.entity?.id === 602) && (
               <Content>
-                <strong>배송품:</strong> {detailTitle}
+                <strong>현재 포인트: </strong>
+                <span style={{ fontWeight: "700", color: "#111827" }}>
+                  {formatNumber(amount) ?? "??"}
+                </span>{" "}
+                <span style={{ color: "#10b981", fontWeight: 600 }}>Pt</span>
               </Content>
             )}
-            {notification.entity?.id === 403 && (
-              <Content>
-                <strong>배송품:</strong> {detailTitle}
-              </Content>
-            )}
-            <Content>
-              {notification.entity?.id === 203
-                ? "낙찰을 확정하지 않아 취소 되었습니다."
-                : notification.entity?.id === 201
-                ? "경매품을 낙찰 받으셨습니다."
-                : notification.entity?.id === 301
-                ? "새 시즌이 시작되었습니다."
-                : notification.entity?.id === 401
-                ? "출고 준비중입니다."
-                : notification.entity?.id === 402
-                ? "배송이 시작되었습니다."
-                : notification.entity?.id === 403
-                ? "배송이 완료됐습니다."
-                : "문의가 답변되었습니다."}
-            </Content>
+
+          <Content>
+            {notification.entity?.id === 203
+              ? "낙찰을 확정하지 않아 취소되었습니다."
+              : notification.entity?.id === 201
+              ? "경매품을 낙찰 받으셨습니다."
+              : notification.entity?.id === 301
+              ? "새 시즌이 시작되었습니다."
+              : notification.entity?.id === 401
+              ? "출고 준비중입니다."
+              : notification.entity?.id === 402
+              ? "배송이 시작되었습니다."
+              : notification.entity?.id === 403
+              ? "배송이 완료됐습니다."
+              : notification.entity?.id === 601
+              ? (
+                <>
+                  <span style={{ fontWeight: "700", color: "#111827" }}>
+                    {formatNumber(amount) ?? "??"}
+                  </span>{" "}
+                  <span style={{ color: "#10b981", fontWeight: 600 }}>Pt</span>가 적립되었습니다.
+                </>
+              )
+              : notification.entity?.id === 602
+              ? (
+                <>
+                  <span style={{ fontWeight: "700", color: "#111827" }}>
+                    {formatNumber(amount) ?? "??"}
+                  </span>{" "}
+                  <span style={{ color: "#10b981", fontWeight: 600 }}>Pt</span>를 사용하였습니다.
+                </>
+              )
+              : "문의가 답변되었습니다."}
+          </Content>
           </>
         )}
 
