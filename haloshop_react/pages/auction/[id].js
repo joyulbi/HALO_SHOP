@@ -173,7 +173,7 @@ export default function AuctionRoomLayout() {
   // 재등록
   const handleReRegister = () => {
     router.push({
-      pathname: "/auctions/regist",
+      pathname: "/auction/regist",
       query: {
         title,
         description: desc,
@@ -252,7 +252,7 @@ return (
             isFinished={false}
           />
         )}
-        {isFinished && (
+        {(isFinished || isCanceled) && (
           <AuctionWinnerInfo auctionId={AUCTION_ID} />
         )}
       </div>
@@ -280,12 +280,12 @@ return (
             currentUserId={user?.id}
           />
         )}
-        {isFinished && (
+        {(isFinished || isCanceled) && (
           <AuctionLog
             logs={logs}
             highest={highest}
             isFinished={true}
-            errorMsg={"경매가 종료되었습니다."}
+            errorMsg={isCanceled ? "이 경매는 취소되었습니다." : "경매가 종료되었습니다."}
             currentUserId={user?.id}
           />
         )}

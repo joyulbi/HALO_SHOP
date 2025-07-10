@@ -29,7 +29,7 @@
 	</select>
 
   <select id="findById" parameterType="long" resultMap="DonationCampaignResultMap">
-    SELECT * FROM donation_campaign WHERE id = #{id}
+    SELECT * FROM donation_campaign WHERE id=#{id}
   </select>
 
 	<update id="updateDonationCampaign" parameterType="com.company.haloshop.donationcampaign.DonationCampaign">
@@ -70,6 +70,13 @@
 		  SET total = #{total}
 		  WHERE id = #{campaignId}
 		</update>
+		
+		    <!-- total 최신화 -->
+    <update id="incrementDonationTotal">
+	    UPDATE donation_campaign
+	    SET total = total + #{amount}
+	    WHERE id = #{campaignId}
+	</update>
 
 </mapper>
 

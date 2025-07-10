@@ -116,7 +116,11 @@ const RankDescription = ({ team, amount }) => (
 const CampaignRank = ({ top3 }) => {
 
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const handleOpenModal = (team) => { setSelectedTeam(team); };
+  const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+  const handleOpenModal = (team, campaignId) => {
+    setSelectedTeam(team);
+    setSelectedCampaignId(campaignId);
+  };
   const handleCloseModal = () => { setSelectedTeam(null); };
 
   return (
@@ -126,7 +130,7 @@ const CampaignRank = ({ top3 }) => {
         <CircleWrapper order={2}>
           <CircleBorder
             $colors="#e0e0e0, #c0c0c0, #f0f0f0"
-            onClick={() => handleOpenModal(top3?.[1]?.team)}
+            onClick={() => handleOpenModal(top3?.[1]?.team, top3?.[1]?.id)}
           >
             <RankCircle  
               $width="225px" 
@@ -143,7 +147,7 @@ const CampaignRank = ({ top3 }) => {
         <CircleWrapper order={1}>
           <CircleBorder
             $colors="#FFD86E , #FFBB00 , #E4D098"
-            onClick={() => handleOpenModal(top3?.[0]?.team)}
+            onClick={() => handleOpenModal(top3?.[0]?.team, top3?.[0]?.id)}
           >
             <RankCircle  
               $width="250px" 
@@ -160,7 +164,7 @@ const CampaignRank = ({ top3 }) => {
         <CircleWrapper order={3}>
           <CircleBorder
             $colors="#D3917A  , #AE4D08  , #8C4600"
-            onClick={() => handleOpenModal(top3?.[2]?.team)}
+            onClick={() => handleOpenModal(top3?.[2]?.team, top3?.[2]?.id)}
           >
             <RankCircle 
               $width="200px" 
@@ -175,8 +179,12 @@ const CampaignRank = ({ top3 }) => {
       </CircleContainer>
 
       {/* 모달 렌더링 */}
-      {selectedTeam && (
-        <DonationModal team={selectedTeam} onClose={handleCloseModal} />
+      {selectedTeam && selectedCampaignId && (
+        <DonationModal
+          team={selectedTeam}
+          campaignId={selectedCampaignId}
+          onClose={handleCloseModal}
+        />
       )}
     </>
   );

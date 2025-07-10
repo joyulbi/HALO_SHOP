@@ -113,7 +113,35 @@ const NotificationModal = ({ visible, onClose, notification }) => {
 
   return (
     <ToastContainer>
-      <ToastBox>
+      <ToastBox
+        onClick={async () => {
+          const token = localStorage.getItem("accessToken");
+          const notificationId = notification?.id;
+
+          if (notificationId && token) {
+            try {
+              await axios.patch(
+                `http://localhost:8080/api/notifications/${notificationId}/read?isRead=true`,
+                null,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+            } catch (err) {
+              console.error("알림 읽음 처리 실패", err);
+            }
+          }
+
+          if (notification.entity?.id === 100) {
+            window.open("http://localhost:3000/contact?selectedTab=list", "_blank");
+          }
+
+          onClose(); // 항상 알림 닫기
+        }}
+        style={{ cursor: "pointer" }}
+      >
         <Header>
           <svg
             width="20"
@@ -128,7 +156,6 @@ const NotificationModal = ({ visible, onClose, notification }) => {
           <h4>알림 도착</h4>
         </Header>
 
-        {/* entity.id가 100이면 API에서 받은 content 출력 */}
         {notification.entity?.id === 100 && (
           <Content>
             <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
@@ -136,21 +163,14 @@ const NotificationModal = ({ visible, onClose, notification }) => {
         )}
         <Content>문의가 답변되었습니다.</Content>
 
-
-        {notification.entity?.id === 1 && (
-          <Content>
-            👉{" "}
-            <StyledLink
-              href="http://localhost:3000/contact"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              문의 페이지로 이동
-            </StyledLink>
-          </Content>
-        )}
-
-        <CloseButton onClick={onClose}>닫기</CloseButton>
+        <CloseButton
+          onClick={(e) => {
+            e.stopPropagation(); // 부모 클릭 방지
+            onClose();
+          }}
+        >
+          닫기
+        </CloseButton>
       </ToastBox>
     </ToastContainer>
   );

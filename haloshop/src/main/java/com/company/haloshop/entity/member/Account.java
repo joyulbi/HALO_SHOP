@@ -23,6 +23,9 @@ import com.company.haloshop.attendance.Attendance;
 import com.company.haloshop.cart.CartEntity;
 import com.company.haloshop.entity.delivery.Delivery;
 import com.company.haloshop.entity.review.Review;
+import com.company.haloshop.order.Orders;
+import com.company.haloshop.pointlog.PointLog;
+import com.company.haloshop.userpoint.UserPoint;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -120,4 +123,16 @@ public class Account {
     
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartEntity> carts = new ArrayList<>();
+    
+    // ✅ 추가: 1:1 UserPoint 연관관계
+    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserPoint userPoint;
+
+    // ✅ 추가: 1:N PointLog 연관관계
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PointLog> pointLogs = new ArrayList<>();
+    
+    // 1:N Orders 연관관계 추가
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Orders> orders;
 }

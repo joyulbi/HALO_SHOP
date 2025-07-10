@@ -91,6 +91,7 @@ public class DummyDataLoader implements CommandLineRunner {
         account.setIsAdmin(true);  // 관리자 플래그
         account.setPassword(adminPasswordEncoder.encode("1234"));  // Argon2로 암호 해싱
         account.setCreatedAt(new Date());
+        account.setEmailChk(true);
         account.setSocialId(1);
         account.setUserStatusId(1);
         accountMapper.insertAccount(account);
@@ -128,6 +129,7 @@ public class DummyDataLoader implements CommandLineRunner {
             account.setIsAdmin(false);
             account.setPassword(userPasswordEncoder.encode("1234"));  // BCrypt로 암호 해싱
             account.setCreatedAt(new Date());
+            account.setEmailChk(true);
             account.setSocialId(1);
             account.setUserStatusId(1);
             accountMapper.insertAccount(account);

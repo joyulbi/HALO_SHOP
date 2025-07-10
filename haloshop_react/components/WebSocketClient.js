@@ -4,7 +4,7 @@ import { Client } from "@stomp/stompjs";
 import NotificationModal from "./NotificationModal";
 import { useAuth } from "../hooks/useAuth";
 
-const WebSocketClient = () => {
+const WebSocketClient = ({ onNewNotification }) => {
   const client = useRef(null);
   const [notification, setNotification] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,14 +33,13 @@ const WebSocketClient = () => {
   });
 
   client.current.onConnect = () => {
-    console.log("웹소켓 연결 성공");
-
     client.current.subscribe(`/user/${user?.id}/queue/notifications`, (message) => {
       if (message.body) {
         try {
           const data = JSON.parse(message.body);
           setNotification(data);
           setModalVisible(true);
+          if (onNewNotification) onNewNotification();
         } catch (err) {
           console.error("메시지 파싱 에러:", err);
         }

@@ -27,6 +27,7 @@
 - **Ant Design**
 - **Axios**
 - **Framer Motion**
+- **Styled-Components**
 
 ---
 

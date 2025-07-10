@@ -103,14 +103,27 @@ const CartOrderFormPage = () => {
         console.log('결제 payload:', payload);
         const res = await api.post('/api/orders', payload);
         console.log('주문 완료 응답:', res.data);
+
         // ✅ 주문 생성 후 곧바로 결제 승인 (자동 PAID 처리)
         await api.post('/api/payment/mock/approve', null, {
           params: { orderId: res.data.orderId }
         });
 
+        try {
+          // ✅ 장바구니 비우기
+          await api.delete('/api/cart/clear'); // 백엔드 비우기
+          setCartItems([]);                    // 현재 페이지 상태 비우기
+          if (typeof refreshCart === 'function') await refreshCart(); // 전역 상태도 비우기
+          if (typeof setCartCount === 'function') setCartCount(0);    // 뱃지도 0으로
+        } catch (e) {
+          console.error('장바구니 비우기 실패:', e);
+        }
+
         alert('주문이 완료되었습니다!');
-        router.push(`/mypage/orders/${res.data.orderId}`);
+        router.push(`/payment/success?orderId=${res.data.orderId}&accountId=${user.id}`);
+
       }
+
     } catch (error) {
       console.error('결제 처리 중 오류:', error);
       alert('결제 처리 중 오류가 발생했습니다.');
