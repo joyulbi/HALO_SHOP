@@ -1,6 +1,7 @@
 package com.company.haloshop.delivery;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ public class DeliveryService {
     		throw new IllegalArgumentException("주문 항목이 존재하지 않습니다.");
     	}
     	
-    	if (delivery.getDeliveryStatus().equals(status)) {
+    	if (Objects.equals(delivery.getDeliveryStatus(), status)) {
     		throw new IllegalArgumentException("이미 배송 상태가 " + status + "입니다.");
     	}
         deliveryMapper.updateDeliveryStatus(orderItemId, status);

@@ -22,5 +22,6 @@ public class DeliveryTrackingDTO {
     private String status;  // enum : 배송준비중, 출고됨, 배송중, 배송완료
     private String trackingNumber;
     private String carrier;
+    private String imageUrl;  // 이미지 URL 추가
     private LocalDateTime updatedAt;
 }

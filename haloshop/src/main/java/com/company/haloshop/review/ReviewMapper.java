@@ -16,6 +16,8 @@ public interface ReviewMapper {
 
     List<ReviewDTO> findByAccountId(@Param("accountId") Long accountId);
 
+    List<ReviewDTO> findWithImagesByAccountId(@Param("accountId") Long accountId); // ✅ 추가
+
     List<ReviewDTO> findAll();
 
     void updateReview(ReviewDTO reviewDTO);
@@ -30,5 +32,5 @@ public interface ReviewMapper {
 
     void addPointsToUser(@Param("accountId") Long accountId, @Param("point") int point);
 
-    void insertPointLog(@Param("accountId") Long accountId, @Param("amount") int amount, @Param("type") String type);
+    void insertPointLog(@Param("accountId") Long accountId, @Param("amount") int amount, @Param("type") String type); // 그대로 유지
 }

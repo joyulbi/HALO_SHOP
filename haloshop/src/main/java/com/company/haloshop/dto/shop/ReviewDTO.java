@@ -25,9 +25,8 @@ public class ReviewDTO {
     private Integer rating;
     private LocalDateTime createdAt;
     
-    @JsonIgnore
     private List<String> images;
-    
-    private String authorName;
     private String productName;
+    private String authorName;
+    private String imageUrl;
 }
