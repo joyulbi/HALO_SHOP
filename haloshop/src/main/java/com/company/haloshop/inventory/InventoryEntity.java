@@ -2,6 +2,9 @@ package com.company.haloshop.inventory;
 
 import lombok.*;
 import javax.persistence.*;
+
+import com.company.haloshop.items.ItemsEntity;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,8 +20,9 @@ public class InventoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "items_id", nullable = false)
-    private Long itemsId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "items_id", nullable = false)
+    private ItemsEntity item;
 
     @Column(name = "stock_volume", nullable = false)
     private int stockVolume;

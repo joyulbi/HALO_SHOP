@@ -67,10 +67,11 @@ const categories = [
   };
 
   // 팀 필터 선택
-  const handleSelectTeam = (teamId) => {
-    setSelectedTeam(teamId);
-    applyFilters(teamId, selectedCategory, searchKeyword);
-  };
+const handleSelectTeam = (teamId) => {
+  const newTeamId = teamId === selectedTeam ? null : teamId;  // 👈 같으면 null로 토글
+  setSelectedTeam(newTeamId);
+  applyFilters(newTeamId, selectedCategory, searchKeyword);
+};
 
   // 카테고리 필터 선택
   const handleSelectCategory = (categoryId) => {

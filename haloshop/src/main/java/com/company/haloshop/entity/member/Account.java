@@ -1,5 +1,6 @@
 package com.company.haloshop.entity.member;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.company.haloshop.attendance.Attendance;
+import com.company.haloshop.cart.CartEntity;
 import com.company.haloshop.entity.delivery.Delivery;
 import com.company.haloshop.entity.review.Review;
 
@@ -115,4 +117,7 @@ public class Account {
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attendance> attendances;
     public Account(Long id) { this.id = id; }
+    
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartEntity> carts = new ArrayList<>();
 }
