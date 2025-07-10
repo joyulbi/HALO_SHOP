@@ -4,11 +4,19 @@ import com.company.haloshop.auction.dto.Auction;
 import com.company.haloshop.auction.dto.AuctionResult;
 import com.company.haloshop.auction.mapper.AuctionMapper;
 import com.company.haloshop.auction.mapper.AuctionResultMapper;
+import com.company.haloshop.dto.member.AccountDto;
+import com.company.haloshop.notification.NotificationDto;
+import com.company.haloshop.notification.NotificationRequestDto;
+import com.company.haloshop.notification.NotificationService;
+import com.company.haloshop.notificationEvent.AuctionCanceledEvent;
+import com.company.haloshop.notificationEvent.AuctionResultCreatedEvent;
+
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +30,8 @@ public class AuctionResultService {
     private final AuctionResultCalculator calculator;
     private final AuctionMapper auctionMapper;
     private final AuctionService auctionService;
+    // 알림 이벤트 발행
+    private final ApplicationEventPublisher eventPublisher;
 
     // 낙찰 결과 단건 조회
     public AuctionResult getByAuctionId(Long auctionId) {
@@ -36,7 +46,6 @@ public class AuctionResultService {
     // 낙찰 결과 등록
     public void create(AuctionResult auctionResult) {
         auctionResultMapper.insert(auctionResult);
-        
     }
 
     // 낙찰 결과 수정
@@ -65,6 +74,8 @@ public class AuctionResultService {
 
         auctionResultMapper.insert(result);
         System.out.println("[결과 저장 완료] auctionId=" + auctionId + " → 낙찰자 ID=" + result.getAccountId() + ", 금액=" + result.getFinalPrice());
+        // 알림 이벤트 발행
+        eventPublisher.publishEvent(new AuctionResultCreatedEvent(this, auctionId, result.getAccountId()));
     }
     
     
@@ -105,6 +116,8 @@ public class AuctionResultService {
         Auction auction = auctionService.getById(auctionId);
         auction.setStatus("CANCELED");
         auctionService.update(auction);
+        // 취소 이벤트 발행
+        eventPublisher.publishEvent(new AuctionCanceledEvent(this, auctionId));
     }
     
     // 관리자 메모
@@ -115,4 +128,5 @@ public class AuctionResultService {
         result.setAdminMemo(adminMemo);
         auctionResultMapper.update(result);
     }
+    
 }
