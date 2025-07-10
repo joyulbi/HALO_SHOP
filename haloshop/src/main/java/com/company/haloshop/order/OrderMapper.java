@@ -1,5 +1,6 @@
 package com.company.haloshop.order;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -7,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
+import com.company.haloshop.dto.shop.UserPaymentSummaryDto;
 
 @Mapper
 public interface OrderMapper {
@@ -33,5 +35,11 @@ public interface OrderMapper {
     void updateStatus(@Param("id") Long id, @Param("paymentStatus") String paymentStatus);
     
     OrderDto findLatestPendingByAccountId(@Param("accountId") Long accountId);
+    
+    List<UserPaymentSummaryDto> getMonthlyPaymentSummary(
+    	    @Param("startDate") String startDate,
+    	    @Param("endDate") String endDate);
+
+
 
 }

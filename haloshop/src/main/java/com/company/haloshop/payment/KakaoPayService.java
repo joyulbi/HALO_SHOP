@@ -155,7 +155,8 @@ public class KakaoPayService {
             log.info("✅ 포인트 사용 완료: {}P, User ID={}", order.getAmount(), order.getAccountId());
         }
 
-        int savePoint = userPointService.updateUserPointAndGrade(order.getAccountId(), order.getPayAmount());
+        int savePoint = userPointService.updateUserPoint(order.getAccountId(), order.getPayAmount());
+
         pointLogService.saveLog(order.getAccountId(), "SAVE", savePoint);
         log.info("✅ 포인트 적립 완료: {}P, User ID={}", savePoint, order.getAccountId());
         return order.getId();

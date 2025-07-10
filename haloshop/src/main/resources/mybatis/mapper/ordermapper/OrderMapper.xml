@@ -5,113 +5,128 @@
 
 <mapper namespace="com.company.haloshop.order.OrderMapper">
 
-	<!-- ✅ 명시적 매핑 설정 (DATETIME -> LocalDateTime) -->
-	<resultMap id="orderResultMap"
-		type="com.company.haloshop.dto.shop.OrderDto">
-		<id property="id" column="id" />
-		<result property="accountId" column="account_id" />
-		<result property="deliveryId" column="delivery_id" />
-		<result property="totalPrice" column="total_price" />
-		<result property="used" column="used" />
-		<result property="paymentStatus" column="payment_status" />
-		<result property="amount" column="amount" />
-		<result property="payAmount" column="pay_amount" />
-		<result property="tid" column="tid" />
-		<result property="createdAt" column="created_at"
-			jdbcType="TIMESTAMP" />
-		<result property="updatedAt" column="updated_at"
-			jdbcType="TIMESTAMP" />
-	</resultMap>
+   <!-- ✅ 명시적 매핑 설정 (DATETIME -> LocalDateTime) -->
+   <resultMap id="orderResultMap"
+      type="com.company.haloshop.dto.shop.OrderDto">
+      <id property="id" column="id" />
+      <result property="accountId" column="account_id" />
+      <result property="deliveryId" column="delivery_id" />
+      <result property="totalPrice" column="total_price" />
+      <result property="used" column="used" />
+      <result property="paymentStatus" column="payment_status" />
+      <result property="amount" column="amount" />
+      <result property="payAmount" column="pay_amount" />
+      <result property="tid" column="tid" />
+      <result property="createdAt" column="created_at"
+         jdbcType="TIMESTAMP" />
+      <result property="updatedAt" column="updated_at"
+         jdbcType="TIMESTAMP" />
+   </resultMap>
 
-	<!-- OrderRequestDto 기반 insert -->
-	<insert id="insertOrderWithItems"
-		parameterType="com.company.haloshop.dto.shop.OrderRequestDto"
-		useGeneratedKeys="true" keyProperty="id">
-		INSERT INTO orders (
-		account_id, delivery_id, total_price, used,
-		payment_status, amount, pay_amount, tid, created_at, updated_at
-		) VALUES (
-		#{accountId}, #{deliveryId}, #{totalPrice}, #{used},
-		#{paymentStatus}, #{amount}, #{payAmount}, #{tid}, NOW(), NOW()
-		)
-	</insert>
+   <!-- OrderRequestDto 기반 insert -->
+   <insert id="insertOrderWithItems"
+      parameterType="com.company.haloshop.dto.shop.OrderRequestDto"
+      useGeneratedKeys="true" keyProperty="id">
+      INSERT INTO orders (
+      account_id, delivery_id, total_price, used,
+      payment_status, amount, pay_amount, tid, created_at, updated_at
+      ) VALUES (
+      #{accountId}, #{deliveryId}, #{totalPrice}, #{used},
+      #{paymentStatus}, #{amount}, #{payAmount}, #{tid}, NOW(), NOW()
+      )
+   </insert>
 
 
 
-	<!-- 기존 CRUD용 -->
-	<select id="findAll" resultMap="orderResultMap">
-		SELECT * FROM orders
-	</select>
+   <!-- 기존 CRUD용 -->
+   <select id="findAll" resultMap="orderResultMap">
+      SELECT * FROM orders
+   </select>
 
-	<select id="findById" parameterType="long"
-		resultMap="orderResultMap">
-		SELECT * FROM orders WHERE id = #{id}
-	</select>
+   <select id="findById" parameterType="long"
+      resultMap="orderResultMap">
+      SELECT * FROM orders WHERE id = #{id}
+   </select>
 
-	<select id="findLatestPendingByAccountId" parameterType="long"
-		resultType="com.company.haloshop.dto.shop.OrderDto">
-		SELECT * FROM orders
-		WHERE account_id = #{accountId} AND
-		payment_status = 'PENDING'
-		ORDER BY created_at DESC
-		LIMIT 1
-	</select>
+   <select id="findLatestPendingByAccountId" parameterType="long"
+      resultType="com.company.haloshop.dto.shop.OrderDto">
+      SELECT * FROM orders
+      WHERE account_id = #{accountId} AND
+      payment_status = 'PENDING'
+      ORDER BY created_at DESC
+      LIMIT 1
+   </select>
 
-	<select id="findByAccountId" parameterType="long"
-		resultMap="orderResultMap">
-		SELECT * FROM orders WHERE account_id = #{accountId} ORDER BY created_at
-		DESC
-	</select>
+   <select id="findByAccountId" parameterType="long"
+      resultMap="orderResultMap">
+      SELECT * FROM orders WHERE account_id = #{accountId} ORDER BY created_at
+      DESC
+   </select>
+   
+<select id="getMonthlyPaymentSummary" resultType="com.company.haloshop.dto.shop.UserPaymentSummaryDto">
+    SELECT account_id AS accountId,
+           COALESCE(SUM(pay_amount), 0) AS totalPayment
+    FROM orders
+    WHERE payment_status = 'PAID'
+<!--
+<![CDATA[
+         AND created_at >= #{startDate}
+         AND created_at < #{endDate}
+]]>
+-->
+    GROUP BY account_id
+</select>
 
-	<insert id="insert"
-		parameterType="com.company.haloshop.dto.shop.OrderDto"
-		useGeneratedKeys="true" keyProperty="id">
-		INSERT INTO orders (
-		account_id,
-		delivery_id, total_price, used,
-		payment_status, amount, pay_amount,
-		tid, created_at, updated_at
-		) VALUES (
-		#{accountId}, #{deliveryId},
-		#{totalPrice}, #{used},
-		#{paymentStatus}, #{amount}, #{payAmount},
-		#{tid}, NOW(), NOW()
-		)
-	</insert>
 
-	<update id="update"
-		parameterType="com.company.haloshop.dto.shop.OrderDto">
-		UPDATE orders
-		SET
-		account_id = #{accountId},
-		delivery_id =
-		#{deliveryId},
-		total_price = #{totalPrice},
-		used = #{used},
-		payment_status = #{paymentStatus},
-		updated_at = NOW()
-		WHERE id = #{id}
-	</update>
+   <insert id="insert"
+      parameterType="com.company.haloshop.dto.shop.OrderDto"
+      useGeneratedKeys="true" keyProperty="id">
+      INSERT INTO orders (
+      account_id,
+      delivery_id, total_price, used,
+      payment_status, amount, pay_amount,
+      tid, created_at, updated_at
+      ) VALUES (
+      #{accountId}, #{deliveryId},
+      #{totalPrice}, #{used},
+      #{paymentStatus}, #{amount}, #{payAmount},
+      #{tid}, NOW(), NOW()
+      )
+   </insert>
 
-	<delete id="delete" parameterType="long">
-		DELETE FROM orders WHERE id =
-		#{id}
-	</delete>
+   <update id="update"
+      parameterType="com.company.haloshop.dto.shop.OrderDto">
+      UPDATE orders
+      SET
+      account_id = #{accountId},
+      delivery_id =
+      #{deliveryId},
+      total_price = #{totalPrice},
+      used = #{used},
+      payment_status = #{paymentStatus},
+      updated_at = NOW()
+      WHERE id = #{id}
+   </update>
 
-	<!-- 카카오페이 연동용 TID 업데이트 -->
-	<update id="updateTid">
-		UPDATE orders
-		SET tid = #{tid},
-		updated_at = NOW()
-		WHERE id = #{id}
-	</update>
+   <delete id="delete" parameterType="long">
+      DELETE FROM orders WHERE id =
+      #{id}
+   </delete>
 
-	<!-- 카카오페이 연동용 결제 상태 업데이트 -->
-	<update id="updateStatus">
-		UPDATE orders
-		SET payment_status = #{paymentStatus},
-		updated_at = NOW()
-		WHERE id = #{id}
-	</update>
+   <!-- 카카오페이 연동용 TID 업데이트 -->
+   <update id="updateTid">
+      UPDATE orders
+      SET tid = #{tid},
+      updated_at = NOW()
+      WHERE id = #{id}
+   </update>
+
+   <!-- 카카오페이 연동용 결제 상태 업데이트 -->
+   <update id="updateStatus">
+      UPDATE orders
+      SET payment_status = #{paymentStatus},
+      updated_at = NOW()
+      WHERE id = #{id}
+   </update>
 
 </mapper>
