@@ -10,10 +10,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.company.haloshop.dto.shop.Items;
+
 
 import com.company.haloshop.entity.delivery.DeliveryTracking;
 import com.company.haloshop.entity.review.Review;
+import com.company.haloshop.items.ItemsEntity;
 import com.company.haloshop.order.Orders;
 
 import lombok.Getter;
@@ -35,7 +36,7 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
-    private Items item;
+    private ItemsEntity item;
     
     private String itemName;
     private Integer productPrice;
