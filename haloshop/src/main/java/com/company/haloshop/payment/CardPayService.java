@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.company.haloshop.cart.CartService;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.order.OrderMapper;
-import com.company.haloshop.order.OrderService; // ✅ 추가
+import com.company.haloshop.order.OrderService;
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
 
@@ -19,11 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CardPayService {
 
     private final OrderMapper orderMapper;
-    private final OrderService orderService; // ✅ 추가
+    private final OrderService orderService;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
-    private final CartService cartService;  // 필드 주입
-
+    private final CartService cartService;
 
     /**
      * CARD(mock) 결제 승인 처리
@@ -42,15 +41,14 @@ public class CardPayService {
         cartService.clearCartByAccountId(order.getAccountId());
 
         if ("MOCK".equals(order.getUsed()) || "CARD".equals(order.getUsed())) {
-            // 다시 조회하여 상태 확인 후 포인트 적립
             OrderDto updatedOrder = orderMapper.findById(orderId);
             if ("PAID".equals(updatedOrder.getPaymentStatus())) {
-                Long accountId = updatedOrder.getAccountId();    // 추가
+                Long accountId = updatedOrder.getAccountId();
                 Long payAmount = updatedOrder.getPayAmount();
-            	int savePoint = userPointService.updateUserPoint(accountId, payAmount);
+                int savePoint = userPointService.updateUserPoint(accountId, payAmount);
 
                 if (savePoint > 0) {
-                    pointLogService.saveLog(updatedOrder.getAccountId(), "SAVE", savePoint);
+                    pointLogService.saveLog(accountId, "SAVE", savePoint);
                 }
             }
         }
@@ -77,13 +75,11 @@ public class CardPayService {
 
         // 2️⃣ 적립된 포인트 회수
         int refundPoint = userPointService.deductPointByOrder(order.getAccountId(), order.getPayAmount());
-        pointLogService.saveLog(order.getAccountId(), "REFUND_DEDUCT", refundPoint);
         log.info("포인트 회수 완료: {}P, User ID={}", refundPoint, order.getAccountId());
 
         // 3️⃣ 사용한 포인트 복원
         if (order.getAmount() != null && order.getAmount() > 0) {
             userPointService.restorePoint(order.getAccountId(), order.getAmount());
-            pointLogService.saveLog(order.getAccountId(), "REFUND_RESTORE", order.getAmount());
             log.info("사용 포인트 복원 완료: {}P, User ID={}", order.getAmount(), order.getAccountId());
         }
     }

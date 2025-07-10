@@ -101,10 +101,10 @@ public class OrderService {
 
         Long accountId = orderRequestDto.getAccountId();
 
-        // ✅ 4) 포인트 사용 처리 및 사용 로그 기록
+         //✅ 4) 포인트 사용 처리 및 사용 로그 기록
         if (orderRequestDto.getAmount() != null && orderRequestDto.getAmount() > 0) {
             userPointService.usePoint(accountId, orderRequestDto.getAmount());
-            pointLogService.saveLog(accountId, "USE", orderRequestDto.getAmount());
+           // pointLogService.saveLog(accountId, "USE", orderRequestDto.getAmount());
         }
 
         // ✅ 5) 포인트 적립 및 멤버십 갱신 (결제금액(payAmount) 기준으로 적립)

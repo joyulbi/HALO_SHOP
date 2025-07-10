@@ -20,21 +20,27 @@ const AdminPointLogPage = () => {
   const [userId, setUserId] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const res = await api.get('/api/pointlog', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
-        });
-        setLogs(res.data.data ?? res.data);
-      } catch (error) {
-        console.error('포인트 로그 가져오기 실패:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchLogs();
-  }, []);
+useEffect(() => {
+  const fetchLogs = async () => {
+    try {
+      const res = await api.get('/api/pointlog', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
+      });
+      const data = res.data.data ?? res.data;
+
+      // ✅ createdAt 기준으로 내림차순 정렬 (최신순 위로)
+      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setLogs(data);
+    } catch (error) {
+      console.error('포인트 로그 가져오기 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchLogs();
+}, []);
+
 
   const handleUserFilter = () => {
     if (userId.trim()) {
