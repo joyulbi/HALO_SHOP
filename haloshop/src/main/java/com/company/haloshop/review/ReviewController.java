@@ -57,7 +57,10 @@ public class ReviewController {
 
     @GetMapping("/user/{accountId}")
     public List<ReviewDTO> getMyReviews(@PathVariable Long accountId) {
-        return reviewService.getReviewByUser(accountId);
+        System.out.println("📦 getMyReviews 요청 accountId=" + accountId);
+        List<ReviewDTO> reviews = reviewService.getReviewByUser(accountId);
+        System.out.println("📦 가져온 리뷰 개수: " + reviews.size());
+        return reviews;
     }
 
     @GetMapping("/{id}")

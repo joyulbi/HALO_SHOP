@@ -19,6 +19,8 @@
         <result property="trackingNumber" column="tracking_number" />
         <result property="carrier" column="carrier" />
         <result property="updatedAt" column="updated_at" />
+        <result property="imageUrl" column="imageUrl" />
+        <result property="orderDate" column="order_date" />
     </resultMap>
 
     <!-- ✅ 사용자용: 특정 계정의 배송 조회 -->
@@ -60,7 +62,7 @@
         ii.url AS imageUrl,
         dt.status AS deliveryStatus
       FROM delivery d
-      JOIN order_items oi ON d.order_items_id = oi.id
+      JOIN order_items oi ON d.order_item_id = oi.id
       JOIN items i ON oi.item_id = i.id
       LEFT JOIN items_image ii ON ii.items_id = i.id
       JOIN delivery_tracking dt ON d.id = dt.delivery_id
@@ -70,13 +72,13 @@
     <select id="findAllDeliveriesWithOrderInfo" resultType="com.company.haloshop.dto.shop.DeliveryDTO">
         SELECT
             dt.id AS id,
+            o.account_id AS accountId,
             dt.order_item_id AS orderItemId,
+            oi.item_name AS productName,
             dt.status AS deliveryStatus,
             dt.tracking_number AS trackingNumber,
             dt.carrier AS carrier,
             dt.updated_at AS updatedAt,
-            oi.item_name AS productName,
-            o.account_id AS accountId,
             o.created_at AS orderDate
         FROM delivery_tracking dt
         JOIN order_items oi ON dt.order_item_id = oi.id

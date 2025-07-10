@@ -68,7 +68,7 @@ const DeliveryTrackingList = ({ accountId }) => {
                   {/* 상품 정보 */}
                   <div style={styles.productInfo}>
                     <img
-                      src="/sample-product.png"
+                      src={item.imageUrl ? `http://localhost:8080${item.imageUrl}` : '/default.png'}
                       alt={item.itemName}
                       style={styles.productImage}
                     />
