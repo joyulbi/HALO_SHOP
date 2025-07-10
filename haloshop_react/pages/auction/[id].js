@@ -211,7 +211,7 @@ return (
         minHeight: "480px"
       }}>
         <AuctionInfo images={images} title={title} desc={desc} status={status} />
-        {isCanceled && (
+        {isCanceled && user?.admin && (
           <div style={{ textAlign: "right", marginBottom: "12px" }}>
             <button
               onClick={handleReRegister}

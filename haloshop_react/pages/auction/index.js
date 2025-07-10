@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import api from '../../utils/axios';
 import AuctionList from "../../components/auction/AuctionList";
 import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function AuctionListPage() {
   const [auctions, setAuctions] = useState([]);
   const [images, setImages] = useState({});
+  const { user } = useAuth();
 
   const loadAuctions = () => {
     api.get("/api/auctions")
@@ -44,24 +46,26 @@ export default function AuctionListPage() {
     <div style={{ maxWidth: 1600, margin: "80px auto", padding: "0 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: "bold" }}>경매 목록</h1>
-        <Link href="/auction/regist">
-          <button style={{
-            background: "#3d6fee",
-            color: "#fff",
-            padding: "12px 24px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "16px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            transition: "all 0.3s"
-          }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#264dbd"}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3d6fee"}
-          >
-            + 새 경매 등록
-          </button>
-        </Link>
+        {user?.admin && (
+          <Link href="/auction/regist">
+            <button style={{
+              background: "#3d6fee",
+              color: "#fff",
+              padding: "12px 24px",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "16px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              transition: "all 0.3s"
+            }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#264dbd"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3d6fee"}
+            >
+              + 새 경매 등록
+            </button>
+          </Link>
+        )}
       </div>
 
       <div style={{
@@ -92,7 +96,7 @@ export default function AuctionListPage() {
                 key={auction.id}
                 auction={auction}
                 imageUrl={images[auction.id]}
-                onDelete={handleDelete}
+                onDelete={user?.admin ? handleDelete : undefined}
               />
             ))}
           </tbody>

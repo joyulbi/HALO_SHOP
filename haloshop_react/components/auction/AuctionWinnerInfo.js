@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Input, message } from "antd";
+import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/axios";
 
 export default function AuctionWinnerInfo({ auctionId }) {
@@ -7,6 +8,7 @@ export default function AuctionWinnerInfo({ auctionId }) {
   const [account, setAccount] = useState(null);
   const [memoModal, setMemoModal] = useState(false);
   const [adminMemo, setAdminMemo] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!auctionId) return;
@@ -60,29 +62,35 @@ export default function AuctionWinnerInfo({ auctionId }) {
       {winner.confirmed === false && (
         <>
           <p style={{ color: "red" }}>❌ 구매 취소됨</p>
-          <p><strong>거부사유:</strong> {winner.canceledReason}</p>
+          {user?.admin && (
+            <p><strong>거부사유:</strong> {winner.canceledReason}</p>
+          )}
         </>
       )}
-      <div style={{ marginTop: 18 }}>
-        <Button type="primary" onClick={() => setMemoModal(true)}>
-          어드민 메모 {winner.adminMemo ? "(수정)" : "작성"}
-        </Button>
-        <Modal
-          open={memoModal}
-          onCancel={() => setMemoModal(false)}
-          onOk={handleSaveMemo}
-          okText="저장"
-          title="어드민 메모 입력"
-        >
-          <Input.TextArea
-            rows={4}
-            value={adminMemo}
-            onChange={e => setAdminMemo(e.target.value)}
-            placeholder="관리자 메모 입력"
-          />
-        </Modal>
-      </div>
-      {winner.adminMemo && (
+
+      {user?.admin && (
+        <div style={{ marginTop: 18 }}>
+          <Button type="primary" onClick={() => setMemoModal(true)}>
+            어드민 메모 {winner.adminMemo ? "(수정)" : "작성"}
+          </Button>
+          <Modal
+            open={memoModal}
+            onCancel={() => setMemoModal(false)}
+            onOk={handleSaveMemo}
+            okText="저장"
+            title="어드민 메모 입력"
+          >
+            <Input.TextArea
+              rows={4}
+              value={adminMemo}
+              onChange={e => setAdminMemo(e.target.value)}
+              placeholder="관리자 메모 입력"
+            />
+          </Modal>
+        </div>
+      )}
+      
+      {user?.admin && winner.adminMemo && (
         <div style={{ marginTop: 12, color: "#555" }}>
           <b>관리자 메모:</b> {winner.adminMemo}
         </div>
