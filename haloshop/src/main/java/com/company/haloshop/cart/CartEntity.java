@@ -2,6 +2,10 @@ package com.company.haloshop.cart;
 
 import lombok.*;
 import javax.persistence.*;
+
+import com.company.haloshop.entity.member.Account;
+import com.company.haloshop.items.ItemsEntity;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,11 +21,13 @@ public class CartEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "account_id", nullable = false)
-    private Long accountId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
-    @Column(name = "items_id", nullable = false)
-    private Long itemsId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "items_id", nullable = false)
+    private ItemsEntity item;
 
     @Column(nullable = false)
     private int quantity;
