@@ -33,6 +33,12 @@ public class NotificationController {
         notificationService.markAsRead(id, isRead);
         return ResponseEntity.ok().build();
     }
+    
+    // 3-2. 특정 유저 알림 읽음 처리
+    @PutMapping("/mark-all-as-read/{receiverId}")
+    public int markAllAsRead(@PathVariable Long receiverId, @RequestParam Boolean isRead) {
+        return notificationService.markAllAsRead(receiverId, isRead);
+    }
 
     // 4. 알림 삭제
     @DeleteMapping("/{id}")

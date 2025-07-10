@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import axios from "axios";
+import { notificationUtil } from "./NotificiationUtil"; // 경로 맞게 조정
 
 const fadeInUp = keyframes`
   from {
@@ -84,8 +84,6 @@ const NotificationModal = ({ visible, onClose, notification }) => {
   useEffect(() => {
     if (!visible || !notification) return;
 
-    setLoading(true);
-
     const fetchDetail = async () => {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -94,36 +92,13 @@ const NotificationModal = ({ visible, onClose, notification }) => {
         return;
       }
 
-      try {
-        if (notification.entity?.id === 100) {
-          const res = await axios.get(
-            `http://localhost:8080/api/inquiries/${notification.referenceId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setDetailTitle(res.data.title);
-        } else if (notification.entity?.id === 201) {
-          const res = await axios.get(
-            `http://localhost:8080/api/auctions/${notification.referenceId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setDetailTitle(res.data.title);
-        } else {
-          setDetailTitle(null);
-        }
-      } catch (error) {
-        console.error("상세 조회 실패:", error);
-        setDetailTitle(null);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const result = await notificationUtil(notification, token);
+      setDetailTitle(result.title);
+      setLoading(false);
     };
 
     fetchDetail();
-
-    // 긴 타이머를 여기서는 제거하는게 좋아 보임 (기존 코드에 너무 길게 설정되어있음)
-    // 필요시 아래처럼 닫기 타이머 추가 가능
-    // const timer = setTimeout(onClose, 10000);
-    // return () => clearTimeout(timer);
   }, [visible, notification]);
 
   if (!visible || !notification) return null;
@@ -136,10 +111,12 @@ const NotificationModal = ({ visible, onClose, notification }) => {
     }
 
     try {
-      await axios.patch(
+      await fetch(
         `http://localhost:8080/api/notifications/${notification.id}/read?isRead=true`,
-        null,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
     } catch (err) {
       console.error("알림 읽음 처리 실패", err);
@@ -149,6 +126,10 @@ const NotificationModal = ({ visible, onClose, notification }) => {
       window.location.href = "http://localhost:3000/contact?selectedTab=list";
     } else if (notification.entity?.id === 201) {
       window.location.href = "http://localhost:3000/mypage/auction-result";
+    } else if (notification.entity?.id === 301) {
+      window.location.href = "http://localhost:3000/campaign";
+    } else if ([401, 402, 403].includes(notification.entity?.id)) {
+      window.location.href = "http://localhost:3000/delivery";
     }
 
     onClose();
@@ -165,8 +146,7 @@ const NotificationModal = ({ visible, onClose, notification }) => {
             fill="#10b981"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
-            10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
           </svg>
           <h4>알림 도착</h4>
         </Header>
@@ -180,14 +160,44 @@ const NotificationModal = ({ visible, onClose, notification }) => {
                 <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
               </Content>
             )}
-            {notification.entity?.id === 201 && (
+            {(notification.entity?.id === 201 || notification.entity?.id === 203) && (
               <Content>
                 <strong>경매품:</strong> {detailTitle || "불러오는 중..."}
               </Content>
             )}
+            {notification.entity?.id === 301 && (
+              <Content>
+                <strong>시즌 : </strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            {notification.entity?.id === 401 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
+            {notification.entity?.id === 402 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
+            {notification.entity?.id === 403 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
             <Content>
-              {notification.entity?.id === 201
+              {notification.entity?.id === 203
+                ? "낙찰을 확정하지 않아 취소 되었습니다."
+                : notification.entity?.id === 201
                 ? "경매품을 낙찰 받으셨습니다."
+                : notification.entity?.id === 301
+                ? "새 시즌이 시작되었습니다."
+                : notification.entity?.id === 401
+                ? "출고 준비중입니다."
+                : notification.entity?.id === 402
+                ? "배송이 시작되었습니다."
+                : notification.entity?.id === 403
+                ? "배송이 완료됐습니다."
                 : "문의가 답변되었습니다."}
             </Content>
           </>

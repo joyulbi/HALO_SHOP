@@ -1,14 +1,28 @@
 package com.company.haloshop.notification;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.company.haloshop.auction.dto.AuctionLog;
+import com.company.haloshop.auction.mapper.AuctionLogMapper;
+import com.company.haloshop.dto.member.AccountDto;
+import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
+import com.company.haloshop.dto.shop.OrderDto;
+import com.company.haloshop.dto.shop.OrderItemDto;
+import com.company.haloshop.member.mapper.AccountMapper;
 import com.company.haloshop.notificationEvent.AuctionCanceledEvent;
 import com.company.haloshop.notificationEvent.AuctionResultCreatedEvent;
+import com.company.haloshop.notificationEvent.DeliveryTrackingUpdateEvent;
 import com.company.haloshop.notificationEvent.InquiryAnsweredEvent;
+import com.company.haloshop.notificationEvent.SeasonStartEvent;
+import com.company.haloshop.order.OrderMapper;
+import com.company.haloshop.orderitem.OrderItemMapper;
+import com.company.haloshop.season.Season;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +33,9 @@ public class NotificationEventListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
     private final AuctionLogMapper auctionLogMapper;
+    private final AccountMapper accountMapper;
+    private final OrderItemMapper orderItemMapper;
+    private final OrderMapper orderMapper;
 
     // 옥션 결과 이벤트
     @EventListener
@@ -31,30 +48,71 @@ public class NotificationEventListener {
         notificationService.createNotification(dto); // DB 저장 + NotificationEvent 발행
     }
     
-    // 옥션 취소 이벤트
-//    @EventListener
-//    public void handleAuctionCanceled(AuctionCanceledEvent event) {
-//        Long auctionId = event.getAuctionId();
-//
-//        // 1. 낙찰자 조회
-//        Long highestPriceAccountId = auctionLogMapper.selectHighestPriceAccountId(auctionId);
-//
-//        // 2. 참여자 전체 조회
-//        List<Long> participantAccountIds = auctionLogMapper.selectAccountIdsByAuctionId(auctionId);
-//
-//        // 3. 낙찰자 제외
-//        participantAccountIds.remove(highestPriceAccountId);
-//
-//        // 4. 알림 생성 및 발행
-//        for (Long accountId : participantAccountIds) {
-//            NotificationRequestDto dto = new NotificationRequestDto();
-//            dto.setReceiverId(accountId);
-//            dto.setEntityId(202L); // 예: 경매 취소 알림 엔티티 ID (별도 정의)
-//            dto.setReferenceId(auctionId);
-//
-//            notificationService.createNotification(dto);
-//        }
-//    }
+    //옥션 취소 이벤트
+    @EventListener
+    public void handleAuctionCanceled(AuctionCanceledEvent event) {
+        Long auctionId = event.getAuctionId();
+
+        // 참여자 전체 조회
+        List<AuctionLog> participants = auctionLogMapper.selectByAuctionId(auctionId);
+
+        // 참여자의 accountId만 추출 후 중복 제거
+        Set<Long> uniqueAccountIds = participants.stream()
+                .map(AuctionLog::getAccountId)
+                .collect(Collectors.toSet());
+
+        // 알림 생성 및 발행
+        for (Long accountId : uniqueAccountIds) {
+            NotificationRequestDto dto = new NotificationRequestDto();
+            dto.setReceiverId(accountId);
+            dto.setEntityId(203L); // 예: 경매 취소 알림 엔티티 ID
+            dto.setReferenceId(auctionId);
+
+            notificationService.createNotification(dto);
+        }
+    }
+    
+    // 시즌 시작 발행
+    @EventListener
+    public void handleSeasonStart(SeasonStartEvent event) {
+    	Season season = event.getSeason();
+    	List<AccountDto> allAccounts = accountMapper.selectAll();
+    	
+    	 for (AccountDto account : allAccounts) {
+	    	NotificationRequestDto dto = new NotificationRequestDto();
+	    	dto.setReceiverId(account.getId());
+	    	dto.setEntityId(301L);
+	    	dto.setReferenceId(season.getId());
+	    	
+	    	notificationService.createNotification(dto);
+    	 }
+    }
+    
+    // 배송 상태 발행
+    @EventListener
+    public void handleDeliveryTrackingUpdate(DeliveryTrackingUpdateEvent event) {
+    	DeliveryTrackingDTO tracking = event.getDeliveryTrackingDTO();    	
+    	NotificationRequestDto dto = new NotificationRequestDto();
+    	
+    	// 배송 상태에 따른 분기
+    	Long statusCode;
+    	switch (tracking.getStatus()) {
+    	    case "출고됨": statusCode = 401L; break;
+    	    case "배송중": statusCode = 402L; break;
+    	    case "배송완료": statusCode = 403L; break;
+    	    default:
+    	        throw new IllegalArgumentException("알 수 없는 배송 상태");
+    	}
+    	
+    	OrderItemDto orderItem = orderItemMapper.findById(tracking.getOrderItemsId());
+    	OrderDto order = orderMapper.findById(orderItem.getOrdersId());
+    	
+    	dto.setReceiverId(order.getAccountId());
+    	dto.setEntityId(statusCode);
+    	dto.setReferenceId(orderItem.getId());
+    	
+    	notificationService.createNotification(dto);
+    }
     
     
     // 문의 답변 이벤트

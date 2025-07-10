@@ -106,6 +106,11 @@ public class NotificationService {
             "isRead", isRead
         ));
     }
+    
+    // 특정 유저 알림 모두 읽음 처리
+    public int markAllAsRead(Long receiverId, Boolean isRead) {
+        return notificationMapper.updateAllByAccountId(receiverId, isRead);
+    }
 
     // 알림 삭제
     public void deleteNotification(Long id) {
