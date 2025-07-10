@@ -126,6 +126,7 @@ const formatTimeAgo = (createdAt) => {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
+  // 날짜 포매팅
   if (diffMinutes < 1) {
     return `방금`;
   } else if (diffMinutes < 60) {
@@ -139,6 +140,13 @@ const formatTimeAgo = (createdAt) => {
     const day = created.getDate();
     return `${month}월 ${day}일`;
   }
+};
+
+// 숫자포매팅
+const formatNumber = (num) => {
+  if (typeof num === "number") return new Intl.NumberFormat().format(num);
+  if (typeof num === "string" && /^\d+$/.test(num)) return new Intl.NumberFormat().format(Number(num));
+  return num;
 };
 
 const NotificationIconModal = ({ onClose, notiData, me }) => {
@@ -269,7 +277,9 @@ const NotificationIconModal = ({ onClose, notiData, me }) => {
             >
               <DeleteOutlined />
             </DeleteButton>
-            <strong>{n.title || `ID: ${n.referenceId}`}</strong>
+            {(n.entityId !== 601 && n.entityId !== 602) && (
+              <strong>{n.title || `ID: ${n.referenceId}`}</strong>
+            )}
             <p>
               {n.entityId === 203
                 ? "낙찰을 확정하지 않아 취소 되었습니다."
@@ -283,6 +293,16 @@ const NotificationIconModal = ({ onClose, notiData, me }) => {
                 ? "배송이 시작되었습니다."
                 : n.entityId === 403
                 ? "배송이 완료됐습니다."
+                : n.entityId === 601
+                ? <>
+                    <span style={{ fontWeight: "700", color: "#111827" }}>{formatNumber(n.amount)}</span>{" "}
+                    <span style={{ color: "#10b981", fontWeight: 600 }}>Pt</span>가 적립되었습니다.
+                  </>
+                : n.entityId === 602
+                ? <>
+                    <span style={{ fontWeight: "700", color: "#111827" }}>{formatNumber(n.amount)}</span>{" "}
+                    <span style={{ color: "#10b981", fontWeight: 600 }}>Pt</span>를 사용하였습니다.
+                  </>
                 : n.message || "문의가 답변되었습니다."}
             </p>
             <small style={{ color: "#9ca3af", fontSize: "0.75rem" }}>

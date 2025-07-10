@@ -3,12 +3,15 @@ package com.company.haloshop.membership;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.company.haloshop.dto.shop.MembershipDto;
 import com.company.haloshop.dto.shop.UserPaymentSummaryDto;
 import com.company.haloshop.dto.shop.UserPointDto;
+import com.company.haloshop.notificationEvent.MembershipUpdatedEvent;
+import com.company.haloshop.notificationEvent.PointLogCreatedEvent;
 import com.company.haloshop.order.OrderMapper;
 import com.company.haloshop.userpoint.UserPointMapper;
 import com.company.haloshop.userpoint.UserPointService;
@@ -25,6 +28,8 @@ public class MembershipGradeScheduler {
     private final MembershipMapper membershipMapper;
     private final UserPointMapper userPointMapper;
     private final UserPointService userPointService;
+    // 이벤트 발행
+    private final ApplicationEventPublisher eventPublisher;
     
     
     //@Scheduled(cron = "0 * * * * *")
@@ -65,12 +70,16 @@ public class MembershipGradeScheduler {
                     userPoint.setGrade(membership.getName());
                     userPointMapper.update(userPoint);
                     log.info("✅ {}번 사용자 등급 {}로 갱신 완료 (전월 사용 금액: {})", accountId, membership.getName(), totalPayment);
+                    // 등급변동 이벤트 발행
+                    eventPublisher.publishEvent(new MembershipUpdatedEvent(this, userPoint));
 
                     // ✅ 멤버십 포인트 지급 로직 추가
                     int rewardPoint = membership.getPricePoint();
                     if (rewardPoint > 0) {
                         userPointService.addMembershipRewardPoint(accountId, rewardPoint);
                         log.info("✅ {}번 사용자에게 멤버십 등급 갱신 포인트 {}P 지급 완료", accountId, rewardPoint);
+                       
+                        
                     }
                 }
             }
