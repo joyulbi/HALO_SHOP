@@ -3,6 +3,7 @@ package com.company.haloshop.userpoint;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +11,8 @@ import com.company.haloshop.dto.shop.MembershipDto;
 import com.company.haloshop.dto.shop.PointLogDto;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.membership.MembershipMapper;
+import com.company.haloshop.notificationEvent.MembershipUpdatedEvent;
+import com.company.haloshop.notificationEvent.PointLogCreatedEvent;
 import com.company.haloshop.pointlog.PointLogService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ public class UserPointService {
     private final UserPointMapper userPointMapper;
     private final MembershipMapper membershipMapper;
     private final PointLogService pointLogService;
+    // 이벤트 발행
+    private final ApplicationEventPublisher eventPublisher;
 
     // 관리자용 전체 조회
     public List<UserPointDto> findAll() {
@@ -273,6 +278,8 @@ public class UserPointService {
             logDto.setType("MEMBERSHIP_REWARD");
             logDto.setCreatedAt(LocalDateTime.now());
             pointLogService.insert(logDto);
+            // 포인트 적립 알림 이벤트 발행
+            eventPublisher.publishEvent(new PointLogCreatedEvent(this, logDto));
         } else {
             throw new IllegalArgumentException("UserPoint not found for accountId=" + accountId);
         }

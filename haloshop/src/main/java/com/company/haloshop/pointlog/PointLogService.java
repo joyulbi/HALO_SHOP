@@ -3,10 +3,12 @@ package com.company.haloshop.pointlog;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.company.haloshop.dto.shop.PointLogDto;
+import com.company.haloshop.notificationEvent.PointLogCreatedEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 public class PointLogService {
 
     private final PointLogMapper pointLogMapper;
+    // 이벤트 발행
+    private final ApplicationEventPublisher eventPublisher;
     
     @Transactional
     public void saveLog(Long userId, String type, int amount) {
@@ -24,6 +28,8 @@ public class PointLogService {
         log.setAmount(amount);
         log.setCreatedAt(LocalDateTime.now());
         pointLogMapper.insert(log);
+        // 알림 이벤트 발행
+        eventPublisher.publishEvent(new PointLogCreatedEvent(this, log));
     }
 
     public List<PointLogDto> findAll() {

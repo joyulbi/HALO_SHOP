@@ -14,11 +14,15 @@ import com.company.haloshop.dto.member.AccountDto;
 import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
+import com.company.haloshop.dto.shop.PointLogDto;
+import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.member.mapper.AccountMapper;
 import com.company.haloshop.notificationEvent.AuctionCanceledEvent;
 import com.company.haloshop.notificationEvent.AuctionResultCreatedEvent;
 import com.company.haloshop.notificationEvent.DeliveryTrackingUpdateEvent;
 import com.company.haloshop.notificationEvent.InquiryAnsweredEvent;
+import com.company.haloshop.notificationEvent.MembershipUpdatedEvent;
+import com.company.haloshop.notificationEvent.PointLogCreatedEvent;
 import com.company.haloshop.notificationEvent.SeasonStartEvent;
 import com.company.haloshop.order.OrderMapper;
 import com.company.haloshop.orderitem.OrderItemMapper;
@@ -37,6 +41,36 @@ public class NotificationEventListener {
     private final OrderItemMapper orderItemMapper;
     private final OrderMapper orderMapper;
 
+    // 포인트 내역 생성 이벤트
+    @EventListener
+    public void handlePointLogCreated(PointLogCreatedEvent event) {
+    	PointLogDto pointLogDto = event.getPointLogDto();
+    	NotificationRequestDto dto = new NotificationRequestDto();
+    	
+    	Long statusCode;
+    	switch (pointLogDto.getType()) {
+    	
+    		case "SAVE" : case "REVIEW" : case "MEMBERSHIP_REWARD" :
+    			statusCode = 601L; break;
+    			
+    		case "DONATE" :
+    			statusCode = 602L; break;
+    			
+    		case "USE" : return;
+    			
+    		default:
+    	        throw new IllegalArgumentException("Type 값 불명");	
+    	}
+    	
+    	    	
+    	dto.setReceiverId(pointLogDto.getAccountId());
+    	dto.setEntityId(statusCode);
+    	dto.setReferenceId(pointLogDto.getId());
+    	
+    	notificationService.createNotification(dto);
+    }
+    
+    
     // 옥션 결과 이벤트
     @EventListener
     public void handleAuctionResultCreated(AuctionResultCreatedEvent event) {
@@ -112,6 +146,14 @@ public class NotificationEventListener {
     	dto.setReferenceId(orderItem.getId());
     	
     	notificationService.createNotification(dto);
+    }
+    
+    @EventListener
+    public void handleMembershipUpdated(MembershipUpdatedEvent event) {
+    	UserPointDto userpointDto = event.getUserPointDto();
+    	NotificationRequestDto dto = new NotificationRequestDto();
+    	
+    	
     }
     
     

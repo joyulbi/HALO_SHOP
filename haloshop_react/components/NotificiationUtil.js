@@ -40,6 +40,20 @@ export const notificationUtil = async (notification, token) => {
       return { ...notification, title: res.data.itemName };  // itemName 값을 title에 설정
     }
 
+    // 포인트 관련 알림 (600번대)
+    if (notification.entityId === 601 || notification.entityId === 602) {
+      const pointLogRes = await axios.get(
+        `http://localhost:8080/api/pointlog/${notification.referenceId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return {
+        ...notification,
+        amount: pointLogRes.data.amount,
+        title: null, // 총 포인트는 모달에서 안 쓰므로 null 또는 생략 가능
+      };
+    }
+
     // 기본 fallback
     return { ...notification, title: null };
   } catch (err) {
