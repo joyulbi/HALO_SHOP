@@ -69,6 +69,13 @@ export default function MyAuctionResultManager() {
           {result.canceledReason && (
             <div style={{ color: "#c00" }}>거부사유: {result.canceledReason}</div>
           )}
+
+          {result.adminMemo && (
+            <div style={{ marginTop: 8, color: "#666" }}>
+              <b>관리자 메모:</b> {result.adminMemo}
+            </div>
+          )}
+                    
           <div style={{ marginTop: 12 }}>
             {result.confirmed == null && (
               <>
