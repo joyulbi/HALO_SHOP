@@ -52,19 +52,25 @@ public class AdminService {
         // 4. 새 비밀번호 argon2 암호화
         String encodedPassword = argon2PasswordEncoder.encode(newPassword);
 
-        // 5. account 테이블에 password, is_admin 업데이트
+        // 5. roleId가 유효한지 확인 (Role enum을 이용해 검증)
+        Role role = Role.fromId(roleId);
+        if (role == null) {
+            throw new RuntimeException("유효하지 않은 역할입니다.");
+        }
+
+        // 6. account 테이블에 password, is_admin 업데이트
         targetUser.setPassword(encodedPassword);
-        targetUser.setIsAdmin(true);
+        targetUser.setIsAdmin(true);  // 어드민 승격
         accountMapper.updateAccount(targetUser);
 
-        // 6. admin 테이블에 관리자 정보 insert 또는 update
+        // 7. admin 테이블에 관리자 정보 insert 또는 update
         AdminDto adminDto = new AdminDto();
         adminDto.setAccountId(targetAccountId);
-        adminDto.setRole(roleId);
+        adminDto.setRole(roleId); // 유효한 roleId로 승격
         adminDto.setAssignedBy(masterAdminId);
         adminDto.setLastIp(lastIp);
         adminDto.setUpdatedAt(new Date());
-        adminDto.setIsLocked(false);
+        adminDto.setIsLocked(false); // 잠금 여부
 
         insertOrUpdateAdmin(adminDto);
     }
@@ -93,6 +99,4 @@ public class AdminService {
         }
         return adminDto.getRole();
     }
-
-
 }
