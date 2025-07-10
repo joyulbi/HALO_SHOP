@@ -16,7 +16,6 @@
 - **MyBatis (쿼리 매핑)**
 - **MySQL**
 - **WebSocket (실시간 입찰/채팅)**
-- **FCM (푸시 알림)**
 - **KakaoPay 결제 연동**
 - **OpenAI 연동 (AI 챗봇/요약)**
 

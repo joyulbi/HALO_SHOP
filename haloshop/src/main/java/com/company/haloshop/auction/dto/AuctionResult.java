@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public class AuctionResult {
     private Long auctionId;
     private Long accountId;
+    private String accountNickname;
     private Integer finalPrice;
     private LocalDateTime createdAt;
     private Boolean confirmed;

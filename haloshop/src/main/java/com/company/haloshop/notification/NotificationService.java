@@ -28,6 +28,36 @@ public class NotificationService {
     // 알림 생성
     public Long createNotification(NotificationRequestDto dto) {
     	
+    	// 알림 생성 기본값
+        Notification notification = new Notification();
+        notification.setIsRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+        
+        // 수신자 accountDto에서 추출
+        AccountDto accountDto = accountMapper.selectById(dto.getReceiverId());
+        Account receiver = new Account();
+        receiver.setId(accountDto.getId());
+        notification.setReceiver(receiver);
+        
+        // 이벤트 엔티티 설정
+        EventEntity eventEntity = eventEntityMapper.findById(dto.getEntityId());
+        notification.setEntity(eventEntity);
+        
+        // 참조 테이블 Id 설정
+        notification.setReferenceId(dto.getReferenceId());
+        
+        // 알림 생성 후 이벤트 푸쉬
+        notificationMapper.insert(notification);
+        Notification saved = notificationMapper.findById(notification.getId());
+        applicationEventPublisher.publishEvent(new NotificationEvent(this, saved));
+        sendNotificationToUser(saved);
+        
+        return saved.getId();
+    }
+    
+    // 문의 답변용 (구) 알림 로직
+    /*
+        	
     	AccountDto accountDto = accountMapper.selectById(dto.getReceiverId());
     	Account receiver = new Account();
     	receiver.setId(accountDto.getId());
@@ -45,8 +75,9 @@ public class NotificationService {
 
         applicationEventPublisher.publishEvent(new NotificationEvent(this, saved)); // 여기서 발행
         sendNotificationToUser(saved);
-        return saved.getId();
-    }
+        return saved.getId(); 
+     
+     */
 
     // 수신자 기준 알림 조회
     public List<NotificationDto> getNotificationsForUser(Long receiverId) {
@@ -74,6 +105,11 @@ public class NotificationService {
             "id", notificationId,
             "isRead", isRead
         ));
+    }
+    
+    // 특정 유저 알림 모두 읽음 처리
+    public int markAllAsRead(Long receiverId, Boolean isRead) {
+        return notificationMapper.updateAllByAccountId(receiverId, isRead);
     }
 
     // 알림 삭제

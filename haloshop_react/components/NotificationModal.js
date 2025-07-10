@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import axios from "axios";
+import { notificationUtil } from "./NotificiationUtil"; // 경로 맞게 조정
 
 const fadeInUp = keyframes`
   from {
@@ -33,6 +33,7 @@ const ToastBox = styled.div`
   animation: ${fadeInUp} 0.35s ease-out;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 `;
 
 const Header = styled.div`
@@ -76,72 +77,67 @@ const CloseButton = styled.button`
   }
 `;
 
-const StyledLink = styled.a`
-  color: #3b82f6;
-  text-decoration: underline;
-  user-select: text; /* ✅ 드래그 가능하게 설정 */
-`;
-
-
 const NotificationModal = ({ visible, onClose, notification }) => {
   const [detailTitle, setDetailTitle] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || !notification) return;
 
-    let timer = setTimeout(onClose, 100000000);
+    const fetchDetail = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setDetailTitle(null);
+        setLoading(false);
+        return;
+      }
 
-    // notification.entity.id가 100일 때만 API 호출
-    if (notification.entity?.id === 100) {
-      axios
-        .get(`http://localhost:8080/api/inquiries/${notification.referenceId}`)
-        .then((res) => {
-          setDetailTitle(res.data.title); // content 추출해서 저장
-        })
-        .catch((err) => {
-          console.error("문의 상세 조회 실패:", err);
-          setDetailContent(null);
-        });
-    } else {
-      setDetailContent(null); // entity.id가 100이 아니면 초기화
+      setLoading(true);
+      const result = await notificationUtil(notification, token);
+      setDetailTitle(result.title);
+      setLoading(false);
+    };
+
+    fetchDetail();
+  }, [visible, notification]);
+
+  if (!visible || !notification) return null;
+
+  const handleClick = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      onClose();
+      return;
     }
 
-    return () => clearTimeout(timer);
-  }, [visible, onClose, notification?.referenceId, notification?.entity?.id]);
+    try {
+      await fetch(
+        `http://localhost:8080/api/notifications/${notification.id}/read?isRead=true`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (err) {
+      console.error("알림 읽음 처리 실패", err);
+    }
 
-  if (!visible) return null;
+    if (notification.entity?.id === 100) {
+      window.location.href = "http://localhost:3000/contact?selectedTab=list";
+    } else if (notification.entity?.id === 201) {
+      window.location.href = "http://localhost:3000/mypage/auction-result";
+    } else if (notification.entity?.id === 301) {
+      window.location.href = "http://localhost:3000/campaign";
+    } else if ([401, 402, 403].includes(notification.entity?.id)) {
+      window.location.href = "http://localhost:3000/delivery";
+    }
+
+    onClose();
+  };
 
   return (
     <ToastContainer>
-      <ToastBox
-        onClick={async () => {
-          const token = localStorage.getItem("accessToken");
-          const notificationId = notification?.id;
-
-          if (notificationId && token) {
-            try {
-              await axios.patch(
-                `http://localhost:8080/api/notifications/${notificationId}/read?isRead=true`,
-                null,
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-            } catch (err) {
-              console.error("알림 읽음 처리 실패", err);
-            }
-          }
-
-          if (notification.entity?.id === 100) {
-            window.open("http://localhost:3000/contact?selectedTab=list", "_blank");
-          }
-
-          onClose(); // 항상 알림 닫기
-        }}
-        style={{ cursor: "pointer" }}
-      >
+      <ToastBox onClick={handleClick}>
         <Header>
           <svg
             width="20"
@@ -150,22 +146,66 @@ const NotificationModal = ({ visible, onClose, notification }) => {
             fill="#10b981"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10
-            10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
           </svg>
           <h4>알림 도착</h4>
         </Header>
 
-        {notification.entity?.id === 100 && (
-          <Content>
-            <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
-          </Content>
+        {loading ? (
+          <Content>불러오는 중...</Content>
+        ) : (
+          <>
+            {notification.entity?.id === 100 && (
+              <Content>
+                <strong>문의 제목:</strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            {(notification.entity?.id === 201 || notification.entity?.id === 203) && (
+              <Content>
+                <strong>경매품:</strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            {notification.entity?.id === 301 && (
+              <Content>
+                <strong>시즌 : </strong> {detailTitle || "불러오는 중..."}
+              </Content>
+            )}
+            {notification.entity?.id === 401 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
+            {notification.entity?.id === 402 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
+            {notification.entity?.id === 403 && (
+              <Content>
+                <strong>배송품:</strong> {detailTitle}
+              </Content>
+            )}
+            <Content>
+              {notification.entity?.id === 203
+                ? "낙찰을 확정하지 않아 취소 되었습니다."
+                : notification.entity?.id === 201
+                ? "경매품을 낙찰 받으셨습니다."
+                : notification.entity?.id === 301
+                ? "새 시즌이 시작되었습니다."
+                : notification.entity?.id === 401
+                ? "출고 준비중입니다."
+                : notification.entity?.id === 402
+                ? "배송이 시작되었습니다."
+                : notification.entity?.id === 403
+                ? "배송이 완료됐습니다."
+                : "문의가 답변되었습니다."}
+            </Content>
+          </>
         )}
-        <Content>문의가 답변되었습니다.</Content>
 
         <CloseButton
           onClick={(e) => {
-            e.stopPropagation(); // 부모 클릭 방지
+            e.stopPropagation();
             onClose();
           }}
         >

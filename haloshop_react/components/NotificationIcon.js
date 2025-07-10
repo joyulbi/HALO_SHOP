@@ -8,6 +8,7 @@ const NotificationIcon = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasNew, setHasNew] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [id, setId] = useState(null);
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem("accessToken");
@@ -17,10 +18,11 @@ const NotificationIcon = () => {
       const meRes = await axios.get("http://localhost:8080/user/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const id = meRes.data?.account?.id;
-      if (!id) return;
+      const userId  = meRes.data?.account?.id;
+      if (!userId ) return;
+      setId(userId);
 
-      const notiRes = await axios.get(`http://localhost:8080/api/notifications/receiver/${id}`, {
+      const notiRes = await axios.get(`http://localhost:8080/api/notifications/receiver/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -50,6 +52,11 @@ const NotificationIcon = () => {
     setHasNew(false);
   };
 
+  const handleClose = () => {
+    setIsOpen(false);
+    fetchNotifications(); // 알림 데이터를 다시 받아옴
+  };
+
   return (
     <>
       <button
@@ -72,7 +79,8 @@ const NotificationIcon = () => {
       {isOpen && (
         <NotificationIconModal
           notiData={notifications}
-          onClose={() => setIsOpen(false)}
+          onClose={handleClose}
+          me={id}
         />
       )}
 

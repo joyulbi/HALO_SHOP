@@ -70,6 +70,13 @@
         SET is_read = #{isRead}
         WHERE id = #{id}
     </update>
+    
+    <!-- 3-2. 유저 알림 모두 읽음 상태 업데이트 -->
+    <update id="updateAllByAccountId" parameterType="map">
+    	UPDATE notification
+    	SET is_read = #{isRead}
+    	WHERE receiver_id=#{receiverId}
+    </update>
 
     <!-- 4. 알림 삭제 -->
     <delete id="deleteById" parameterType="long">
