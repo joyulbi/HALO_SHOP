@@ -4,8 +4,11 @@ const CategoryFilter = ({ categories, selectedCategory, onSelectCategory }) => {
   return (
     <div style={{ marginBottom: '30px', textAlign: 'center' }}>
       <select
-        value={selectedCategory || ''}
-        onChange={(e) => onSelectCategory(Number(e.target.value))}
+        value={selectedCategory ?? ''}  // null일 경우 빈 문자열로 표시
+        onChange={(e) => {
+          const val = e.target.value;
+          onSelectCategory(val === '' ? null : Number(val));
+        }}
         style={{
           padding: '8px 12px',
           fontSize: '16px',

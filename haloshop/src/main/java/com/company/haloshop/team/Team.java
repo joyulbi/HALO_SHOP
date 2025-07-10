@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import com.company.haloshop.donationcampaign.DonationCampaign;
+import com.company.haloshop.items.ItemsEntity;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -41,5 +42,8 @@ public class Team {
 
     @OneToMany(mappedBy = "team")
     private List<DonationCampaign> campaigns = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "team")  // 🔥 아이템 연관관계
+    private List<ItemsEntity> items = new ArrayList<>();
     
 }

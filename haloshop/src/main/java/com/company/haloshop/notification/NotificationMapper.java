@@ -20,6 +20,9 @@ public interface NotificationMapper {
 
     // 3. 알림 읽음 상태 업데이트
     int updateById(Map<String, Object> params);
+    
+    // 3-2. 특정 유저의 알림 모두 읽음 처리
+    int updateAllByAccountId(@Param("receiverId") Long receiverId, @Param("isRead") Boolean isRead);
 
     // 4. 알림 삭제
     int deleteById(@Param("id") Long id);

@@ -44,20 +44,21 @@ useEffect(() => {
     });
 }, [id]);
 
-  const handleMouseMove = (e) => {
-    let x = e.nativeEvent.offsetX;
-    let y = e.nativeEvent.offsetY;
+const handleMouseMove = (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  let y = e.clientY - rect.top;
 
-    const width = e.currentTarget.offsetWidth;
-    const height = e.currentTarget.offsetHeight;
+  const width = e.currentTarget.offsetWidth;
+  const height = e.currentTarget.offsetHeight;
 
-    if (x < lensSize / 2) x = lensSize / 2;
-    if (x > width - lensSize / 2) x = width - lensSize / 2;
-    if (y < lensSize / 2) y = lensSize / 2;
-    if (y > height - lensSize / 2) y = height - lensSize / 2;
+  if (x < lensSize / 2) x = lensSize / 2;
+  if (x > width - lensSize / 2) x = width - lensSize / 2;
+  if (y < lensSize / 2) y = lensSize / 2;
+  if (y > height - lensSize / 2) y = height - lensSize / 2;
 
-    setLensPosition({ x, y });
-  };
+  setLensPosition({ x, y });
+};
 
 
   const handleNextImage = () => {
@@ -261,7 +262,19 @@ console.log('🔥 isSoldOut:', isSoldOut);
         </div>
 
         {/* 상품 정보 */}
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '20px' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            gap: '20px',
+            padding: '36px',
+            backgroundColor: '#fffdfc',
+            borderRadius: '16px',
+            border: '1px solid #ddd', // ✅ 테두리 추가
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)', // ✅ 그림자 강화
+            minWidth: '440px',
+            transition: 'box-shadow 0.3s ease',
+          }}>
           <p style={{ fontSize: '16px', color: '#555', lineHeight: '1.6' }}>{item.description}</p>
           <p style={{ fontSize: '24px', color: '#c8102e', fontWeight: 'bold' }}>가격: {item.price.toLocaleString()}원</p>
         {item.inventory_volume <= 10 && item.inventory_volume > 0 && (
@@ -337,23 +350,26 @@ console.log('🔥 isSoldOut:', isSoldOut);
       </div>
 
       {/* 확대 뷰 */}
-      {showLens && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '120px',
-            left: '500px',
-            width: '400px',
-            height: '400px',
-            border: '1px solid #ccc',
-            backgroundImage: `url(${item.images[currentIndex] ? `http://localhost:8080${item.images[currentIndex].url}` : '/images/no-image.png'})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: `${400 * zoom}px ${400 * zoom}px`,
-            backgroundPosition: `-${(lensPosition.x * zoom - lensSize / 2)}px -${(lensPosition.y * zoom - lensSize / 2)}px`,
-            zIndex: 1000
-          }}
-        />
-      )}
+{showLens && productImageRef.current && (
+  <div
+    style={{
+      position: 'absolute',
+      top: '120px',
+      left: '500px',
+      width: '400px',
+      height: '400px',
+      border: '1px solid #ccc',
+      backgroundImage: `url(${item.images[currentIndex] ? `http://localhost:8080${item.images[currentIndex].url}` : '/images/no-image.png'})`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: `${productImageRef.current.offsetWidth * zoom}px ${productImageRef.current.offsetHeight * zoom}px`,
+      backgroundPosition: `-${lensPosition.x * zoom - 200}px -${lensPosition.y * zoom - 200}px`, // 200 = 400(확대 박스 너비)/2
+      borderRadius: '12px',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+      backgroundColor: '#fff',
+      zIndex: 1000
+    }}
+  />
+)}
 
       {/* 플라잉 이미지 */}
       {isFlying && (

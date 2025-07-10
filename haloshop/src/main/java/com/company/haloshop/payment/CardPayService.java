@@ -45,10 +45,10 @@ public class CardPayService {
             // 다시 조회하여 상태 확인 후 포인트 적립
             OrderDto updatedOrder = orderMapper.findById(orderId);
             if ("PAID".equals(updatedOrder.getPaymentStatus())) {
-                int savePoint = userPointService.updateUserPointAndGrade(
-                        updatedOrder.getAccountId(),
-                        updatedOrder.getPayAmount()
-                );
+                Long accountId = updatedOrder.getAccountId();    // 추가
+                Long payAmount = updatedOrder.getPayAmount();
+            	int savePoint = userPointService.updateUserPoint(accountId, payAmount);
+
                 if (savePoint > 0) {
                     pointLogService.saveLog(updatedOrder.getAccountId(), "SAVE", savePoint);
                 }

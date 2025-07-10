@@ -1,6 +1,7 @@
 package com.company.haloshop.items;
 
 import lombok.*;
+
 import javax.persistence.*;
 
 @Entity
@@ -16,8 +17,9 @@ public class ItemsImageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "items_id", nullable = false)
-    private Long itemsId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "items_id", nullable = false)
+    private ItemsEntity item;
 
     @Column(nullable = false)
     private String url;

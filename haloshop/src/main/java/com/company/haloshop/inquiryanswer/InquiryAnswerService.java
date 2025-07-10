@@ -11,6 +11,7 @@ import com.company.haloshop.inquiry.InquiryService;
 import com.company.haloshop.inquiry.InquiryStatus;
 import com.company.haloshop.notification.NotificationRequestDto;
 import com.company.haloshop.notification.NotificationService;
+import com.company.haloshop.notificationEvent.InquiryAnsweredEvent;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,17 +20,17 @@ import lombok.RequiredArgsConstructor;
 public class InquiryAnswerService {
 
     private final InquiryAnswerMapper inquiryAnswerMapper;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final InquiryService inquiryService;
 
     // 답변 등록
     @Transactional
     public void createAnswer(InquiryAnswer answer) {
         if (answer.getInquiryId() == null) {
-            throw new IllegalArgumentException("Inquiry ID must be provided");
+            throw new IllegalArgumentException("존재하지 않는 문의입니다");
         }
         if (answer.getAccountId() == null) {
-            throw new IllegalArgumentException("Answer must have accountId of the responder");
+            throw new IllegalArgumentException("존재하지 않는 사용자입니다");
         }
 
         // 답변 등록
@@ -54,12 +55,7 @@ public class InquiryAnswerService {
 
         // 알림 생성
         if (!inquiryOwnerId.equals(answer.getAccountId())) {
-            NotificationRequestDto notificationDto = new NotificationRequestDto();
-            notificationDto.setReceiverId(inquiryOwnerId);
-            notificationDto.setEntityId(eventEntity);
-            notificationDto.setReferenceId(inquiryId);
-
-            notificationService.createNotification(notificationDto);
+        	applicationEventPublisher.publishEvent(new InquiryAnsweredEvent(this, inquiryId, inquiryOwnerId, eventEntity));
         }
     }
 
