@@ -11,6 +11,7 @@ import com.company.haloshop.dto.shop.UserPaymentSummaryDto;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.order.OrderMapper;
 import com.company.haloshop.userpoint.UserPointMapper;
+import com.company.haloshop.userpoint.UserPointService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ public class MembershipGradeScheduler {
     private final OrderMapper orderMapper;
     private final MembershipMapper membershipMapper;
     private final UserPointMapper userPointMapper;
+    private final UserPointService userPointService;
+    
+    
     //@Scheduled(cron = "0 * * * * *")
     @Scheduled(cron = "0 0 0 1 * *") 
     public void updateMembershipGrades() {
@@ -36,7 +40,7 @@ public class MembershipGradeScheduler {
                 firstDayOfLastMonth.toString(),
                 firstDayOfThisMonth.toString()
         );
-        /*LocalDate now = LocalDate.now();
+       /* LocalDate now = LocalDate.now();
         LocalDate firstDayOfThisMonth = now.withDayOfMonth(1);
         LocalDate firstDayOfNextMonth = now.plusMonths(1).withDayOfMonth(1);
 
@@ -61,10 +65,17 @@ public class MembershipGradeScheduler {
                     userPoint.setGrade(membership.getName());
                     userPointMapper.update(userPoint);
                     log.info("✅ {}번 사용자 등급 {}로 갱신 완료 (전월 사용 금액: {})", accountId, membership.getName(), totalPayment);
+
+                    // ✅ 멤버십 포인트 지급 로직 추가
+                    int rewardPoint = membership.getPricePoint();
+                    if (rewardPoint > 0) {
+                        userPointService.addMembershipRewardPoint(accountId, rewardPoint);
+                        log.info("✅ {}번 사용자에게 멤버십 등급 갱신 포인트 {}P 지급 완료", accountId, rewardPoint);
+                    }
                 }
             }
-        }
+
 
         log.info("✅ 멤버십 등급 갱신 스케줄러 완료");
     }
-}
+    }}
