@@ -227,4 +227,36 @@ public class UserPointService {
         logDto.setCreatedAt(LocalDateTime.now());
         pointLogService.insert(logDto);
     }
+    @Transactional
+    public void updateUserGrade(Long accountId, String grade) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        if (userPoint == null) {
+            throw new IllegalArgumentException("UserPoint not found for accountId=" + accountId);
+        }
+        userPoint.setGrade(grade);
+        userPoint.setUpdatedAt(LocalDateTime.now());
+        userPointMapper.update(userPoint);
+    }
+    public int updateUserPoint(Long accountId, Long payAmount) {
+        UserPointDto userPoint = userPointMapper.findByAccountId(accountId);
+        int savePoint = (int)(payAmount * 0.01); // 1% 적립
+
+        if (userPoint != null) {
+            userPoint.setTotalPayment(userPoint.getTotalPayment() + payAmount);
+            userPoint.setTotalPoint(userPoint.getTotalPoint() + savePoint);
+            // ❌ 등급은 건드리지 않음
+            userPointMapper.update(userPoint);
+        } else {
+            // 첫 구매 시 user_point row 생성
+            UserPointDto newUserPoint = new UserPointDto();
+            newUserPoint.setAccountId(accountId);
+            newUserPoint.setTotalPayment(payAmount);
+            newUserPoint.setTotalPoint((long) savePoint);
+            //newUserPoint.setGrade("기본"); // 표준화하여 추가
+            userPointMapper.insert(newUserPoint);
+        }
+        return savePoint;
+    }
+
+
 }
