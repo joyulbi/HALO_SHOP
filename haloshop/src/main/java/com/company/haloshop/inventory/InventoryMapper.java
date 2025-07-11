@@ -30,4 +30,7 @@ public interface InventoryMapper {
     
  // 재고 차감
     void decreaseInventoryVolume(@Param("itemsId") Long itemsId, @Param("quantity") int quantity);
+    //재고 롤백
+    void increaseInventoryVolume(@Param("itemsId") Long itemsId, @Param("quantity") int quantity);
+
 }

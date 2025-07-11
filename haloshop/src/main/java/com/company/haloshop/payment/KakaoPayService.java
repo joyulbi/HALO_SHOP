@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import com.company.haloshop.cart.CartService;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
+import com.company.haloshop.inventory.InventoryService;
 import com.company.haloshop.order.OrderMapper;
 import com.company.haloshop.order.OrderService;
 import com.company.haloshop.orderitem.OrderItemMapper;
@@ -43,7 +44,8 @@ public class KakaoPayService {
     private final OrderItemMapper orderItemMapper;
     private final CartService cartService;
     private final RestTemplate restTemplate = new RestTemplate();
-
+    private final InventoryService inventoryService;
+    
     @Value("${kakao.pay.admin-key}")
     private String adminKey;
 
@@ -196,5 +198,13 @@ public class KakaoPayService {
             pointLogService.saveLog(order.getAccountId(), "REFUND_RESTORE", order.getAmount());
             log.info("✅ 사용 포인트 복원 완료: {}P, User ID: {}", order.getAmount(), order.getAccountId());
         }
+        //재고복구
+        List<OrderItemDto> orderItems = orderItemMapper.findByOrderId(order.getId());
+        for (OrderItemDto item : orderItems) {
+            inventoryService.increaseInventory(item.getItemId(), item.getQuantity());
+            log.info("✅ 환불 재고 복구 완료: itemId={}, quantity={}", item.getItemId(), item.getQuantity());
+        }
+
+        log.info("✅ 환불 전체 처리 완료: orderId={}", order.getId());
     }
 }

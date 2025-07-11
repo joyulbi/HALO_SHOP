@@ -1,5 +1,6 @@
 package com.company.haloshop.payment;
 
+import com.company.haloshop.inventory.InventoryService;
 import com.company.haloshop.payment.dto.PaymentApproveRequest;
 import com.company.haloshop.payment.dto.PaymentReadyRequest; // ✅ 추가
 import com.company.haloshop.payment.dto.PaymentCancelRequest; // ✅ 추가
@@ -18,6 +19,7 @@ public class PaymentController {
 
     private final KakaoPayService kakaoPayService;
     private final CardPayService cardPayService;
+    private final InventoryService inventoryService;
     
     @PostMapping("/mock/ready")
     public ResponseEntity<?> readyMockPayment(@RequestBody PaymentReadyRequest request) {

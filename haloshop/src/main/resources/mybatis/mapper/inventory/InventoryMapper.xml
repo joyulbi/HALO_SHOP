@@ -8,8 +8,10 @@
 
 	<!-- 입고 등록 -->
 	<insert id="insertInventory">
-		INSERT INTO inventory (items_id, stock_volume, inventory_volume, created_at)
-		VALUES (#{itemsId}, #{stockVolume}, #{inventoryVolume}, NOW())
+		INSERT INTO inventory (items_id, stock_volume,
+		inventory_volume, created_at)
+		VALUES (#{itemsId}, #{stockVolume},
+		#{inventoryVolume}, NOW())
 	</insert>
 
 	<!-- 입고 내역 전체 조회 (상품명 조인) -->
@@ -22,14 +24,17 @@
 		i.created_at
 		FROM inventory i
 		JOIN items it ON i.items_id = it.id
-		ORDER BY i.created_at DESC
+		ORDER
+		BY i.created_at DESC
 	</select>
 
 	<!-- 🔥 현재 총 재고량 조회 -->
 	<select id="getCurrentInventoryVolume" resultType="int">
-		SELECT IFNULL(SUM(inventory_volume), 0)
+		SELECT
+		IFNULL(SUM(inventory_volume), 0)
 		FROM inventory
-		WHERE items_id = #{itemsId}
+		WHERE items_id =
+		#{itemsId}
 	</select>
 
 	<!-- 🔥 입고 내역 단건 조회 -->
@@ -37,7 +42,8 @@
 		resultType="map">
 		SELECT stock_volume, inventory_volume
 		FROM inventory
-		WHERE id = #{id}
+		WHERE id
+		= #{id}
 	</select>
 
 	<!-- 입고 내역 수정 -->
@@ -46,15 +52,23 @@
 		SET stock_volume = #{stockVolume},
 		inventory_volume = #{inventoryVolume},
 		created_at = NOW()
-		WHERE id = #{id}
+		WHERE id =
+		#{id}
 	</update>
 
 
 	<update id="decreaseInventoryVolume">
-	    UPDATE inventory
-	    SET inventory_volume = inventory_volume - #{quantity}
-	    WHERE items_id = #{itemsId}
+		UPDATE inventory
+		SET inventory_volume = inventory_volume - #{quantity}
+		WHERE items_id = #{itemsId}
 	</update>
+
+	<update id="increaseInventoryVolume">
+		UPDATE inventory
+		SET inventory_volume = inventory_volume + #{quantity}
+		WHERE items_id = #{itemsId}
+	</update>
+
 
 
 	<!-- 입고 내역 삭제 -->

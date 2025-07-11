@@ -63,6 +63,12 @@ public class InventoryService {
         int currentVolume = inventoryMapper.getCurrentInventoryVolume(itemsId);
         return currentVolume >= quantity;
     }
+    @Transactional
+    public void increaseInventory(Long itemsId, int quantity) {
+        log.info("🚩 Inventory 복구 실행: itemsId={}, quantity={}", itemsId, quantity);
+        inventoryMapper.increaseInventoryVolume(itemsId, quantity);
+    }
+
 
 
 

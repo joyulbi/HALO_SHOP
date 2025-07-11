@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react';
 import axios from '../../utils/axios';
 import { useCart } from '../../context/CartContext';
 
-export default function SuccessPage() { // 이름도 KakaoSuccessPage -> SuccessPage로 변경 권장
+export default function SuccessPage() {
   const router = useRouter();
   const { pg_token, accountId, orderId: orderIdParam } = router.query; // ✅ orderIdParam 추가
   const { refreshCart, setCartCount } = useCart();
 
   const [loading, setLoading] = useState(true);
+  const [executed, setExecuted] = useState(false); // ✅ 중복 실행 방지용 상태
 
   useEffect(() => {
-    if (!accountId) return;
+    if (!router.isReady || !accountId || executed) return; // ✅ router 준비 여부 및 중복 실행 방지
+    setExecuted(true); // ✅ 최초 한 번만 실행
 
     const approvePayment = async () => {
       try {
@@ -54,7 +56,7 @@ export default function SuccessPage() { // 이름도 KakaoSuccessPage -> Success
     };
 
     approvePayment();
-  }, [pg_token, accountId, orderIdParam, refreshCart, setCartCount, router]);
+  }, [router.isReady, pg_token, accountId, orderIdParam, refreshCart, setCartCount, router, executed]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
