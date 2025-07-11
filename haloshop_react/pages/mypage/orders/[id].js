@@ -89,10 +89,22 @@ const OrderDetailPage = () => {
               {order.paymentStatus === 'PAID' ? '결제 완료' : '결제 대기'}
             </span>
           </div>
+          {order.amount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <span>사용한 포인트</span>
+              <span style={{ color: '#fa541c', fontWeight: 'bold' }}>
+                {order.amount?.toLocaleString()}P
+              </span>
+            </div>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span>총 결제 금액</span>
-            <span style={{ color: '#1890ff', fontWeight: 'bold' }}>{order.payAmount?.toLocaleString()}원</span>
+            <span style={{ color: '#1890ff', fontWeight: 'bold' }}>
+              {order.payAmount?.toLocaleString()}원
+            </span>
           </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#555' }}>
             <span>주문일</span>
             <span>{new Date(order.createdAt).toLocaleDateString()}</span>

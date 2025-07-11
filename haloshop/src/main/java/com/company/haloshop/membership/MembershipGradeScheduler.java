@@ -32,27 +32,27 @@ public class MembershipGradeScheduler {
     private final ApplicationEventPublisher eventPublisher;
     
     
-    //@Scheduled(cron = "0 * * * * *")
-    @Scheduled(cron = "0 0 0 1 * *") 
+    @Scheduled(cron = "0 * * * * *")
+    //@Scheduled(cron = "0 0 0 1 * *") 
     public void updateMembershipGrades() {
         log.info("🔄 멤버십 등급 갱신 스케줄러 시작");
 
-        LocalDate now = LocalDate.now();
+        /*LocalDate now = LocalDate.now();
         LocalDate firstDayOfLastMonth = now.minusMonths(1).withDayOfMonth(1);
         LocalDate firstDayOfThisMonth = now.withDayOfMonth(1);
 
         List<UserPaymentSummaryDto> paymentSummaries = orderMapper.getMonthlyPaymentSummary(
                 firstDayOfLastMonth.toString(),
                 firstDayOfThisMonth.toString()
-        );
-       /* LocalDate now = LocalDate.now();
+        );*/
+        LocalDate now = LocalDate.now();
         LocalDate firstDayOfThisMonth = now.withDayOfMonth(1);
         LocalDate firstDayOfNextMonth = now.plusMonths(1).withDayOfMonth(1);
 
         List<UserPaymentSummaryDto> paymentSummaries = orderMapper.getMonthlyPaymentSummary(
             firstDayOfThisMonth.toString(),
             firstDayOfNextMonth.toString()
-        );*/
+        );
 
         for (UserPaymentSummaryDto summary : paymentSummaries) {
             Long accountId = summary.getAccountId();
