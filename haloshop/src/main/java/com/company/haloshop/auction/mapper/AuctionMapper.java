@@ -12,6 +12,7 @@ public interface AuctionMapper {
     void insert(Auction auction);
     void update(Auction auction);
     void delete(Long id);
+    void updateStatusToOngoing(Long auctionId);
     void updateStatusToOngoingIfStartTimePassed();
     void updateStatusToFinishedIfEndTimePassed();
     void updateStatusToFinished(Long auctionId);

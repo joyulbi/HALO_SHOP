@@ -102,8 +102,15 @@ export default function AuctionRoomLayout() {
     client.onConnect = () => {
       // 실시간 입찰 로그 수신
       client.subscribe(`/topic/auction/${AUCTION_ID}`, (msg) => {
-        const log = JSON.parse(msg.body);
-        setLogs(prev => [...prev, log]);
+        try {
+          // ① 입찰 로그(JSON일 때)
+          const log = JSON.parse(msg.body);
+          setLogs(prev => [...prev, log]);
+        } catch {
+          // ② 문자열 이벤트일 때: 경매 시작/종료
+          if (msg.body === "경매 시작")   setStatus("ONGOING");
+          if (msg.body === "경매 종료")   setStatus("FINISHED");
+        }
         setErrorMsg("");
       });
 
