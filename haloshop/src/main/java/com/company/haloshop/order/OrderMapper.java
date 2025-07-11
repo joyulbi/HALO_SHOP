@@ -17,6 +17,8 @@ public interface OrderMapper {
     List<OrderDto> findAll();
     List<OrderDto> findByAccountId(@Param("accountId") Long accountId);
 
+    List<OrderDto> findRecentPaidOrders(@Param("accountId") Long accountId, @Param("limit") int limit);
+    
     OrderDto findById(Long id);
 
     void insert(OrderDto orderDto);

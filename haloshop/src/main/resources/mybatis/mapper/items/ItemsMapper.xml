@@ -54,11 +54,42 @@
         DELETE FROM items WHERE id = #{id}
     </delete>
 
-    <!-- ✅ 추가: 특정 상품의 총 재고량 조회 -->
+    <!-- ✅ 특정 상품의 총 재고량 조회 -->
     <select id="getTotalInventoryByItemId" parameterType="long" resultType="int">
         SELECT COALESCE(SUM(inventory_volume), 0)
         FROM inventory
         WHERE items_id = #{itemId}
+    </select>
+
+    <!-- ✅ 상품명 리스트로 조회 -->
+    <select id="findByNames" resultType="com.company.haloshop.dto.shop.Items">
+        SELECT id,
+               name,
+               description,
+               price,
+               team_id AS teamId,
+               category_id AS categoryId,
+               created_at AS createdAt
+        FROM items
+        WHERE name IN
+        <foreach item="name" collection="names" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </select>
+
+    <!-- ✅ 카테고리 ID로 상품 조회 -->
+    <select id="findByCategoryId" parameterType="long" resultType="com.company.haloshop.dto.shop.Items">
+        SELECT id,
+               name,
+               description,
+               price,
+               team_id AS teamId,
+               category_id AS categoryId,
+               created_at AS createdAt
+        FROM items
+        WHERE category_id = #{categoryId}
+        ORDER BY RAND()
+        LIMIT 10
     </select>
 
 </mapper>

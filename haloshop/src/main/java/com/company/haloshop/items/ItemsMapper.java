@@ -1,10 +1,11 @@
 package com.company.haloshop.items;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.company.haloshop.dto.shop.Items;
-
-import java.util.List;
 
 @Mapper
 public interface ItemsMapper {
@@ -18,6 +19,10 @@ public interface ItemsMapper {
     void update(Items item);
 
     void delete(Long id);
-    
+
     int getTotalInventoryByItemId(Long itemId);
+
+    List<Items> findByNames(@Param("names") List<String> names);
+    
+    List<Items> findByCategoryId(@Param("categoryId") Long categoryId);
 }

@@ -3,8 +3,10 @@ package com.company.haloshop.order;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
@@ -12,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.company.haloshop.delivery.DeliveryTrackingMapper;
 import com.company.haloshop.dto.shop.DeliveryTrackingDTO;
+import com.company.haloshop.dto.shop.Items;
 import com.company.haloshop.dto.shop.OrderDto;
 import com.company.haloshop.dto.shop.OrderItemDto;
 import com.company.haloshop.dto.shop.OrderRequestDto;
 import com.company.haloshop.inventory.InventoryService;
+import com.company.haloshop.items.ItemsMapper;
 import com.company.haloshop.orderitem.OrderItemMapper;
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
@@ -33,6 +37,7 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final ItemsMapper itemsMapper;
     private final InventoryService inventoryService;
     private final DeliveryTrackingMapper deliveryTrackingMapper;
 
@@ -176,5 +181,28 @@ public class OrderService {
             }
         }
     }
+    
+    public List<Items> getRecentPurchasedItems(Long accountId, int limit) {
+        List<OrderDto> orders = orderMapper.findRecentPaidOrders(accountId, 10); // 최근 10건 주문
+        List<Items> result = new ArrayList<>();
+        Set<Long> seenItemIds = new HashSet<>();
+
+        for (OrderDto order : orders) {
+            List<OrderItemDto> orderItems = orderItemMapper.findByOrderId(order.getId());
+            for (OrderItemDto item : orderItems) {
+                if (seenItemIds.contains(item.getItemId())) continue;
+
+                Items fullItem = itemsMapper.findById(item.getItemId());
+                if (fullItem != null) {
+                    result.add(fullItem);
+                    seenItemIds.add(fullItem.getId());
+                }
+                if (result.size() >= limit) return result;
+            }
+        }
+
+        return result;
+    }
+
 
 }
