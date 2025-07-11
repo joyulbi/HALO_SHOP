@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
+import AdminLayout from '../AdminLayout';
 import {
   Table,
   Button,
@@ -201,9 +202,9 @@ const openRoleModal = () => {
         return loadingActive ? (
           <Spin size="small" />
         ) : activeIds.has(r.id) ? (
-          <Badge status="success" text="온라인" />
+          <Badge status="success" text="Online" />
         ) : (
-          <Badge status="default" text="오프라인" />
+          <Badge status="default" text="Offline" />
         );
       }
     },
@@ -213,23 +214,24 @@ const openRoleModal = () => {
       width: 200,
       render: (_, r) => (
         <Space>
-          {activeIds.has(r.id) && (
-            <Button size="small" danger onClick={() => handleForceLogout(r.id)}>
-              강제 로그아웃
-            </Button>
-          )}
           <Button size="small" onClick={() => openEditModal(r)}>
             수정
           </Button>
           <Button size="small" onClick={() => setRoleModalVisible(true)}>
             권한 승격
           </Button>
+          {activeIds.has(r.id) && (
+          <Button size="small" danger onClick={() => handleForceLogout(r.id)}>
+              강제 로그아웃
+          </Button>
+          )}
         </Space>
       )
     }
   ];
 
   return (
+    <AdminLayout>
     <>
       <Head>
         <title>시스템 관리자</title>
@@ -335,6 +337,7 @@ const openRoleModal = () => {
         </Modal>
       </Wrapper>
     </>
+    </AdminLayout>
   );
 }
 

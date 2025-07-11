@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 
 const menuItems = [
   { label: '관리자 메인', path: '/admin' },
+  { label: '시스템 관리', path: '/admin/system' },
+  { label: '보안', path: '/admin/security/logs' },
+  { label: '유저 관리', path: '/admin/user' },
   { label: '상품 등록', path: '/admin/items' },
   { label: '재고 관리', path: '/admin/inventory' },
   { label: '멤버십 관리', path: '/admin/membership' },

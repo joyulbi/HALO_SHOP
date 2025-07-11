@@ -7,9 +7,9 @@ const AdminMainPage = () => {
     {
       title: '시스템 관리자',
       buttons: [
-        { label: '시스템 관리자', path: '/admin/system' },
-        { label: '보안 관리자', path: '/admin/security' },
-        { label: '유저 관리자', path: '/admin/users' },
+        { label: '시스템 관리자 페이지', path: '/admin/system' },
+        { label: '보안 관리 페이지', path: '/admin/security/logs' },
+        { label: '유저 관리 페이지', path: '/admin/user' },
       ]
     },
     {
