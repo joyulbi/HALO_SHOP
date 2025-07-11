@@ -65,7 +65,7 @@ const ReviewPage = () => {
       });
 
       alert('리뷰 작성 완료');
-      router.push('/delivery');
+      router.push('/my-reviews');
     } catch (err) {
       console.error('[리뷰 작성 실패]', err);
       if (err.response?.status === 409) {

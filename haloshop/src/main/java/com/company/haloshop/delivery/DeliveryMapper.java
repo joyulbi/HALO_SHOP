@@ -36,4 +36,19 @@ public interface DeliveryMapper {
 
     // ✅ 주문 항목 ID로 배송 추적 조회
     DeliveryDTO findByOrderItemId(@Param("orderItemId") Long orderItemId);
+
+    // ✅ 기본 배송지 등록 (회원가입 시)
+    void insertDefaultDeliveryAddress(DeliveryDTO deliveryDTO);
+
+    // ✅ 기본 배송지 조회 (상품 추가 시)
+    DeliveryDTO findDefaultDeliveryByAccountId(@Param("accountId") Long accountId);
+
+    // ✅ 기존 기본 배송지 업데이트 (기본 배송지가 이미 있으면 업데이트)
+    void updateDefaultDeliveryAddress(DeliveryDTO deliveryDTO);
+
+    // ✅ 기존 기본 배송지 삭제 (기존 기본 배송지를 삭제하고 새로 추가)
+    void deleteDefaultDeliveryAddress(@Param("accountId") Long accountId);
+
+    // ✅ 기존 기본 배송지 삭제 (기존 기본 배송지를 삭제)
+    void removeExistsingDefaultDelivery(@Param("accountId") Long accountId);
 }
