@@ -54,11 +54,10 @@ public class AuctionSocketController {
     /**
      * 경매 상세 입장 시 타이머 등록
      * - 클라이언트가 페이지 입장하면 호출됨
-     * - 서버에서 endTime 기준으로 타이머 예약
      */
     @GetMapping("/auction/{id}/enter")
     public void enterAuctionRoom(@PathVariable Long id) {
         Auction auction = auctionService.getById(id);
-        timerManager.registerAuctionTimer(auction.getId(), auction.getEndTime());
+        timerManager.registerAuctionTimers(auction.getId(), auction.getStartTime(), auction.getEndTime());
     }
 }
