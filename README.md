@@ -48,7 +48,7 @@
 ---
 
 ## 🗂️ 프로젝트 구조
-
+```
 ### Backend
 src/main/java/com/company/haloshop
 │
@@ -69,7 +69,7 @@ halo_react/
 ├── store/ # Redux Store 구성
 ├── utils/ # Axios, 인증 유틸
 └── public/ # 정적 파일
-
+```
 
 ## 🚀 실행 방법
 
