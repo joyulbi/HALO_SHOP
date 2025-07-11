@@ -54,4 +54,11 @@ public interface AdminMapper {
      */
     int updateAdminTimestamp(@Param("accountId") Long accountId, @Param("updatedAt") java.util.Date updatedAt);
 
+    /**
+     * Admin의 role 업데이트 (role 컬럼 업데이트)
+     * @param accountId 업데이트할 account의 ID
+     * @param role 새로운 role 값
+     * @return 업데이트 성공 행 개수
+     */
+    int updateRole(@Param("accountId") Long accountId, @Param("role") int role);
 }

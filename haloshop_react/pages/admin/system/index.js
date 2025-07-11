@@ -29,7 +29,7 @@ const STATUS_MAP = {
   4: { text: '탈퇴', color: '#8c8c8c' },
 };
 
-export default function SystemAdminPage() {
+const SystemAdminPage = () => {
   const [data, setData] = useState([]);
   const [activeIds, setActiveIds] = useState(new Set());
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,17 @@ export default function SystemAdminPage() {
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   const [roleModalVisible, setRoleModalVisible] = useState(false); // 권한 승격 모달 상태
-  const [roles, setRoles] = useState([]); // 역할 목록 상태
+  const [roles, setRoles] = useState([ // 하드코딩된 역할 목록 상태
+    { roleId: 0, description: '마스터 관리자' },
+    { roleId: 200, description: '상품 관리자' },
+    { roleId: 300, description: '멤버십 관리자' },
+    { roleId: 400, description: '리뷰 관리자' },
+    { roleId: 500, description: '보안 관리자' },
+    { roleId: 1000, description: '일반 사용자' }
+  ]);
+
+  const [password, setPassword] = useState(''); // 비밀번호 상태 관리
+  const [role, setRole] = useState(null); // 선택된 역할 상태
 
   // 관리자 목록 조회
   const fetchList = async ({ current, size } = pageInfo) => {
@@ -124,46 +134,33 @@ export default function SystemAdminPage() {
   const handleRolePromote = async (roleId) => {
     if (selectedAdmin) {
       try {
-        await api.post('/admin/promote', {
+        // 권한 승격 API 호출
+        const response = await api.post('/admin/promote', {
           targetAccountId: selectedAdmin.account.id,
-          roleId,
-          newPassword: 'temporaryPassword'
+          roleId: roleId,
+          newPassword: password // 비밀번호 전달
         });
-        message.success('권한 승격 완료');
+        
+        // 성공 메시지
+        message.success(response.data || '권한 승격 완료');
         setRoleModalVisible(false);
-        fetchList(pageInfo);
+        fetchList(pageInfo); // 유저 목록 갱신
       } catch (error) {
-        message.error('권한 승격에 실패했습니다.');
+        // 실패 메시지
+        message.error(error.response?.data || '권한 승격에 실패했습니다.');
       }
     }
   };
 
-// 역할 리스트 조회
-const fetchRoles = async () => {
-  try {
-    const res = await api.get('/admin/roles');
-    console.log(res.data); // 역할 목록을 콘솔로 확인
-    setRoles(res.data);  // 백엔드에서 제공된 역할 목록 설정
-  } catch (error) {
-    message.error('권한 리스트를 불러오는 데 실패했습니다.');
-  }
-};
-
-// 권한 승격 버튼 클릭 시 모달 열기
-const openRoleModal = () => {
-  if (roles.length === 0) {
-    message.warning('역할 목록을 불러오는 데 실패했습니다.');
-    return;
-  }
-  setRoleModalVisible(true);
-};
-
-
   useEffect(() => {
     fetchList();
     fetchActive();
-    fetchRoles();  // 역할 리스트를 가져옵니다.
-    const iv = setInterval(() => fetchActive(), 500);
+
+    // 1초마다 활성 세션 목록 자동 갱신
+    const iv = setInterval(() => {
+      fetchActive();
+    }, 1000);
+
     return () => clearInterval(iv);
   }, []);
 
@@ -197,7 +194,7 @@ const openRoleModal = () => {
     {
       title: '활동 상태',
       key: 'activityStatus',
-      width: 5000, // 너비를 늘려줌
+      width: 160, // 너비를 늘려줌
       render: (_, r) => {
         return loadingActive ? (
           <Spin size="small" />
@@ -221,9 +218,9 @@ const openRoleModal = () => {
             권한 승격
           </Button>
           {activeIds.has(r.id) && (
-          <Button size="small" danger onClick={() => handleForceLogout(r.id)}>
+            <Button size="small" danger onClick={() => handleForceLogout(r.id)}>
               강제 로그아웃
-          </Button>
+            </Button>
           )}
         </Space>
       )
@@ -232,7 +229,6 @@ const openRoleModal = () => {
 
   return (
     <AdminLayout>
-    <>
       <Head>
         <title>시스템 관리자</title>
       </Head>
@@ -292,15 +288,13 @@ const openRoleModal = () => {
               <Form.Item
                 name="email"
                 label="이메일"
-                rules={[{ required: true, message: '이메일을 입력하세요.' }]}
-              >
+                rules={[{ required: true, message: '이메일을 입력하세요.' }]}>
                 <Input />
               </Form.Item>
               <Form.Item
                 name="nickname"
                 label="닉네임"
-                rules={[{ required: true, message: '닉네임을 입력하세요.' }]}
-              >
+                rules={[{ required: true, message: '닉네임을 입력하세요.' }]}>
                 <Input />
               </Form.Item>
               <Form.Item name="status" label="회원 상태" rules={[{ required: true, message: '상태를 선택하세요.' }]}>
@@ -321,25 +315,46 @@ const openRoleModal = () => {
           visible={roleModalVisible}
           onCancel={() => setRoleModalVisible(false)}
           footer={null}
+          style={{ maxWidth: '500px', margin: 'auto' }} // Set modal width to center
         >
           <Space direction="vertical" style={{ width: '100%' }}>
-            {roles.map(role => (
-              <Button
-                key={role.roleId}
-                type="default"
-                block
-                onClick={() => handleRolePromote(role.roleId)} // 해당 역할로 승격
+            <Form
+              name="passwordForm"
+              onFinish={handleRolePromote}
+              layout="vertical"
+            >
+              <Form.Item
+                name="password"
+                label="새 비밀번호"
+                rules={[{ required: true, message: '비밀번호를 입력하세요.' }]}>
+                <Input.Password
+                  placeholder="새 비밀번호 입력"
+                  onChange={(e) => setPassword(e.target.value)} // 비밀번호 상태 변경
+                />
+              </Form.Item>
+              <Select
+                style={{ width: '100%', marginBottom: '10px' }}
+                placeholder="관리자 역할을 선택하세요"
+                onChange={(value) => setRole(value)}
               >
-                {role.description}
-              </Button>
-            ))}
+                {roles.map(role => (
+                  <Option key={role.roleId} value={role.roleId}>
+                    {role.description}
+                  </Option>
+                ))}
+              </Select>
+              <Form.Item>
+                <Button type="primary" block htmlType="submit" style={{ borderRadius: '8px' }}>
+                  승격 처리
+                </Button>
+              </Form.Item>
+            </Form>
           </Space>
         </Modal>
       </Wrapper>
-    </>
     </AdminLayout>
   );
-}
+};
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -358,3 +373,5 @@ const LoadingWrapper = styled.div`
   text-align: center;
   padding: 4rem;
 `;
+
+export default SystemAdminPage;

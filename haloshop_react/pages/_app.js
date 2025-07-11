@@ -20,7 +20,7 @@ function AppContent({ Component, pageProps }) {
   const { isLoggedIn } = useAuth();       // 로그인 상태
   const isMyPage = router.pathname.startsWith('/mypage');
 
-  // 로그인 돼 있을 때만 0.5초마다 세션 체크 폴링
+  // 로그인 돼 있을 때만 1초마다 세션 체크 폴링
   useEffect(() => {
     if (!isLoggedIn) return;               // false 면 폴링 시작 안 함
     const iv = setInterval(async () => {
@@ -32,7 +32,7 @@ function AppContent({ Component, pageProps }) {
           window.location.href = '/member/login?timeout=true';
         }
       }
-    }, 500);
+    }, 1000);
 
     // 언마운트 혹은 isLoggedIn 변경 시 interval 정리
     return () => clearInterval(iv);
