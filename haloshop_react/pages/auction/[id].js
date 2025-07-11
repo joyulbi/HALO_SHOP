@@ -33,6 +33,7 @@ export default function AuctionRoomLayout() {
   useEffect(() => {
     if (!AUCTION_ID) return;
 
+    api.get(`/auction/${AUCTION_ID}/enter`).catch(() => {});
     // 경매 정보
     api.get(`/api/auctions/${AUCTION_ID}`).then(res => {
       const data = res.data;
