@@ -1,5 +1,6 @@
 // pages/admin/user/index.js
 import React, { useEffect, useState } from 'react';
+import AdminLayout from '../AdminLayout';
 import Head from 'next/head';
 import {
   Table,
@@ -185,6 +186,7 @@ export default function UserListPage() {
   ];
 
   return (
+    <AdminLayout>
     <>
       <Head>
         <link
@@ -398,6 +400,7 @@ export default function UserListPage() {
         </Modal>
       </Wrapper>
     </>
+    </AdminLayout>
   );
 }
 
