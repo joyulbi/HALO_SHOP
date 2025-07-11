@@ -11,6 +11,7 @@ import com.company.haloshop.member.mapper.AccountMapper;
 import com.company.haloshop.member.mapper.AdminMapper;
 import com.company.haloshop.security.Role;
 
+
 @Service
 public class AdminService {
 
@@ -25,53 +26,48 @@ public class AdminService {
     }
 
     /**
-     * 마스터 관리자만 권한 승격 가능
-     * 승격 대상 유저의 비밀번호를 argon2로 새로 암호화하여 변경
-     * admin 테이블 role 정보 insert or update 처리
+     * 승격 처리
      */
-    public void promoteToAdmin(Long masterAdminId, Long targetAccountId, int roleId, String newPassword, String lastIp) {
+    public void promoteToAdmin(Long masterAdminId, Long targetAccountId, int role, String newPassword, String email, String lastIp) {
 
-        // 1. 마스터 관리자 account 존재 및 is_admin 체크
+        // 1. 마스터 관리자 존재 여부 및 권한 확인
         AccountDto masterAdmin = accountMapper.selectById(masterAdminId);
         if (masterAdmin == null || !masterAdmin.getIsAdmin()) {
             throw new RuntimeException("마스터 관리자 권한이 없습니다.");
         }
 
-        // 2. 마스터 관리자 admin 정보 조회 및 role 체크
-        AdminDto masterAdminInfo = adminMapper.selectByAccountId(masterAdminId);
-        if (masterAdminInfo == null || Role.fromId(masterAdminInfo.getRole()) != Role.MASTER_ADMIN) {
-            throw new RuntimeException("마스터 관리자만 권한 승격이 가능합니다.");
-        }
-
-        // 3. 승격 대상 유저 존재 확인
+        // 2. 승격 대상 유저 존재 확인
         AccountDto targetUser = accountMapper.selectById(targetAccountId);
         if (targetUser == null) {
             throw new RuntimeException("승격 대상 유저가 존재하지 않습니다.");
         }
 
-        // 4. 새 비밀번호 argon2 암호화
+        // 3. 비밀번호 암호화
         String encodedPassword = argon2PasswordEncoder.encode(newPassword);
 
-        // 5. account 테이블에 password, is_admin 업데이트
+        // 4. 이메일 값 업데이트
+        targetUser.setEmail(email); // 전달받은 email 값을 세팅
+
+        // 5. role 설정
+        targetUser.setIsAdmin(true);  // 어드민 승격
+
+        // 6. Account 업데이트
         targetUser.setPassword(encodedPassword);
-        targetUser.setIsAdmin(true);
         accountMapper.updateAccount(targetUser);
 
-        // 6. admin 테이블에 관리자 정보 insert 또는 update
+        // 7. Admin 테이블에 권한 업데이트
         AdminDto adminDto = new AdminDto();
         adminDto.setAccountId(targetAccountId);
-        adminDto.setRole(roleId);
+        adminDto.setRole(role); // 승격할 role
         adminDto.setAssignedBy(masterAdminId);
         adminDto.setLastIp(lastIp);
-        adminDto.setUpdatedAt(new Date());
-        adminDto.setIsLocked(false);
+        adminDto.setUpdatedAt(new java.util.Date());
+        adminDto.setIsLocked(false); // 잠금 여부
 
+        // 8. Admin 테이블에 정보 삽입/수정
         insertOrUpdateAdmin(adminDto);
     }
 
-    /**
-     * admin 테이블에 이미 계정이 존재하면 update, 없으면 insert 처리
-     */
     private void insertOrUpdateAdmin(AdminDto adminDto) {
         AdminDto existingAdmin = adminMapper.selectByAccountId(adminDto.getAccountId());
         if (existingAdmin == null) {
@@ -80,6 +76,7 @@ public class AdminService {
             adminMapper.updateAdmin(adminDto);
         }
     }
+
 
     /**
      * 주어진 accountId에 대한 Role 객체 반환
@@ -93,6 +90,4 @@ public class AdminService {
         }
         return adminDto.getRole();
     }
-
-
 }

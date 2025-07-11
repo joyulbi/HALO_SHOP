@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import AdminLayout from '../AdminLayout';
 import Head from 'next/head';
 import axios from 'axios';
 import moment from 'moment';
@@ -72,6 +73,7 @@ export default function AdminSecurityLogsPage() {
   ];
 
   return (
+    <AdminLayout>
     <>
       <Head>
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
@@ -140,6 +142,7 @@ export default function AdminSecurityLogsPage() {
         </Spin>
       </PageContainer>
     </>
+    </AdminLayout>
   );
 }
 

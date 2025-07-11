@@ -13,4 +13,5 @@ public class Items {
     private Long teamId;      // 팀 테이블 FK
     private Long categoryId;  // 카테고리 테이블 FK
     private LocalDateTime createdAt;
+    private String imageUrl;
 }

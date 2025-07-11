@@ -1,9 +1,12 @@
 package com.company.haloshop.membership;
 
-import com.company.haloshop.dto.shop.MembershipDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.company.haloshop.dto.shop.MembershipDto;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class MembershipService {
     // 생성
     public void insert(MembershipDto dto) {
         membershipMapper.insert(dto);
+        
     }
 
     // 수정

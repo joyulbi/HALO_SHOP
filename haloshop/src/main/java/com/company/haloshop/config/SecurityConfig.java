@@ -159,7 +159,8 @@ public class SecurityConfig {
             // 2) 세션 정책: IF_REQUIRED + 세션 레지스트리 등록
             .sessionManagement(sm -> sm
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(-1)
+                .maximumSessions(1)                // 한 계정당 최대 1개 세션만 허용
+                .maxSessionsPreventsLogin(true)  // 새 로그인 차단, 기존 세션 유지
                 .sessionRegistry(sessionRegistry())
             )
 

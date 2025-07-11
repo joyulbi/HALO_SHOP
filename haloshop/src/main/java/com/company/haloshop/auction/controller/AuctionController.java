@@ -18,11 +18,7 @@ public class AuctionController {
     // 경매 단건 조회
     @GetMapping("/{id}")
     public Auction getById(@PathVariable Long id) {
-        Auction auction = auctionService.getById(id);
-        if (auction != null) {
-            auctionTimerManager.registerAuctionTimer(auction.getId(), auction.getEndTime());
-        }
-        return auction;
+        return auctionService.getById(id);
     }
 
     // 전체 경매 목록 조회
@@ -35,9 +31,15 @@ public class AuctionController {
     @PostMapping
     public Auction create(@RequestBody Auction auction) {
         auctionService.create(auction);
+        auctionTimerManager.registerAuctionTimers(
+            auction.getId(),
+            auction.getStartTime(),
+            auction.getEndTime()
+        );
+        System.out.println("[경매 등록 완료] id=" + auction.getId());
         return auction;
     }
-
+    
     // 경매 수정
     @PutMapping("/{id}")
     public void update(@PathVariable Long id, @RequestBody Auction auction) {

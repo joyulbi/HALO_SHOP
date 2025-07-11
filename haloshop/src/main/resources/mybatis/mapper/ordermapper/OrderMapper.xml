@@ -77,6 +77,13 @@
     GROUP BY account_id
 </select>
 
+<select id="findRecentPaidOrders" resultMap="orderResultMap">
+    SELECT * FROM orders
+    WHERE account_id = #{accountId}
+      AND payment_status = 'PAID'
+    ORDER BY created_at DESC
+    LIMIT #{limit}
+</select>
 
    <insert id="insert"
       parameterType="com.company.haloshop.dto.shop.OrderDto"

@@ -50,8 +50,12 @@ public class EventEntityService {
 				    EventEntity.builder().id(500L).name("결제").build(),
 				    EventEntity.builder().id(501L).name("완료").build(),
 				    EventEntity.builder().id(502L).name("실패").build(),
-				    EventEntity.builder().id(503L).name("적립").build(),
-				    EventEntity.builder().id(504L).name("등급").build(),
+				    EventEntity.builder().id(503L).name("등급").build(),
+				    				    
+				    // 포인트 타입 600-699
+				    EventEntity.builder().id(600L).name("포인트").build(),
+				    EventEntity.builder().id(601L).name("적립").build(),
+				    EventEntity.builder().id(602L).name("사용").build(),
 				};
 			
 			for (EventEntity eventEntity : types) {

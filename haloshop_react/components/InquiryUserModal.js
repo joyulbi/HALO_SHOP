@@ -161,6 +161,8 @@ const InquiryUserModal = ({
 }) => {
   if (!inquiry) return null;
 
+  const [answer, setAnswer] = useState("");
+
   // 문의 삭제 API 불러오기
   const handleDelete = async () => {
     const token = localStorage.getItem("accessToken");
@@ -182,6 +184,23 @@ const InquiryUserModal = ({
       alert("삭제에 실패했습니다.");
     }
   };
+
+  // 답변 불러오기
+  useEffect(() => {
+    const fetchAnswer = async () => {
+      if (inquiry.status === "ANSWERED") {
+        try {
+          const res = await axios.get(`${ApiCallUrl}/api/inquiry-answers/${inquiry.id}`);
+          setAnswer(res.data.answer || ""); // 예외 처리
+        } catch (e) {
+          console.error("답변 조회 실패", e);
+          setAnswer("답변을 불러오는 데 실패했습니다.");
+        }
+      }
+    };
+
+    fetchAnswer();
+  }, [inquiry]);
 
   return (
     <Overlay onClick={onClose}>
@@ -231,7 +250,7 @@ const InquiryUserModal = ({
           <AnswerPanel>
             <div>
               <Label htmlFor="reply">답변 확인</Label>
-              <ReadOnlyTextArea value={inquiry.answer || ""} readOnly />
+              <ReadOnlyTextArea value={answer} readOnly />
             </div>
             <Button onClick={onClose}>닫기</Button>
           </AnswerPanel>

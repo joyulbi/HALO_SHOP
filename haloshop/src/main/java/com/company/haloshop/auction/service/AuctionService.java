@@ -64,5 +64,12 @@ public class AuctionService {
     // [타이머] 단일 경매 종료 처리 (WebSocket용)
     public void finishAuction(Long auctionId) {
         auctionMapper.updateStatusToFinished(auctionId);
+        System.out.println("[경매 종료 처리] id=" + auctionId);
+    }
+    
+ // [타이머] 단일 경매 시작 처리 (WebSocket용)
+    public void startAuction(Long auctionId) {
+        auctionMapper.updateStatusToOngoing(auctionId);
+        System.out.println("[경매 시작 처리] id=" + auctionId);
     }
 }

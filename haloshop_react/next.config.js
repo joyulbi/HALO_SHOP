@@ -18,7 +18,7 @@ module.exports = {
       },
 
       // ─────────────────────────────────────────────────
-      // 3) **오직** /admin/logs (보안 로그) 만 백엔드로!
+      // 3) 백엔드!
       {
         source: '/admin/logs/:path*',       // 하위 경로 포함
         destination: 'http://localhost:8080/admin/logs/:path*',
@@ -26,6 +26,11 @@ module.exports = {
       {
         source: '/admin/logs',              // /admin/logs (exact) 도
         destination: 'http://localhost:8080/admin/logs',
+      },
+      // 권한 승격 API 추가
+      {
+        source: '/admin/promote',
+        destination: 'http://localhost:8080/admin/promote', // 백엔드 권한 승격 API
       },
       // ─────────────────────────────────────────────────
 

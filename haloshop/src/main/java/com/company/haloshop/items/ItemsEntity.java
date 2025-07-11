@@ -83,4 +83,8 @@ public class ItemsEntity {
     // 추가: 1:N OrderItem 연관관계
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
+    
+    public Long getCategoryId() {
+        return this.category != null ? this.category.getId() : null; 
+    }
 }

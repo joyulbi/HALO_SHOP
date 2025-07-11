@@ -3,6 +3,7 @@ package com.company.haloshop.donationhistory;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import com.company.haloshop.dto.member.AccountDto;
 import com.company.haloshop.dto.shop.PointLogDto;
 import com.company.haloshop.dto.shop.UserPointDto;
 import com.company.haloshop.member.mapper.AccountMapper;
+import com.company.haloshop.notificationEvent.PointLogCreatedEvent;
 import com.company.haloshop.pointlog.PointLog;
 import com.company.haloshop.pointlog.PointLogService;
 import com.company.haloshop.userpoint.UserPointService;
@@ -27,6 +29,7 @@ public class DonationHistoryService {
     private final AccountMapper accountMapper;
     private final UserPointService userPointService;
     private final PointLogService pointLogService;
+    private final ApplicationEventPublisher eventPublisher;
     
     @Transactional
     public void donate(Long accountId, Long campaignId, int amount) {
@@ -53,6 +56,8 @@ public class DonationHistoryService {
         pointLog.setAmount(amount);
         pointLog.setCreatedAt(LocalDateTime.now());
         pointLogService.insert(pointLog);  // insert 후 pointLog.id가 세팅되어야 함
+        eventPublisher.publishEvent(new PointLogCreatedEvent(this, pointLog));
+        
 
         if (pointLog.getId() == null) {
             throw new IllegalStateException("포인트 로그 저장 실패: ID가 생성되지 않음");

@@ -151,7 +151,6 @@ public class KakaoPayService {
 
         if (order.getAmount() != null && order.getAmount() > 0) {
             userPointService.usePoint(order.getAccountId(), order.getAmount());
-            pointLogService.saveLog(order.getAccountId(), "USE", order.getAmount());
             log.info("✅ 포인트 사용 완료: {}P, User ID={}", order.getAmount(), order.getAccountId());
         }
 

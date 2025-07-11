@@ -83,6 +83,14 @@
         WHERE id = #{auctionId} AND status != 'FINISHED'
     </update>
     
+    <!-- 단일 경매 시작 처리 (타이머용) -->
+	<update id="updateStatusToOngoing" parameterType="long">
+	    UPDATE auction
+	    SET status = 'ONGOING'
+	    WHERE id = #{auctionId}
+	      AND status = 'READY';
+	</update>
+    
     <!-- 경매 결과 존재 확인 -->
     <select id="selectFinishedAuctionsWithoutResult" resultType="long">
 	    SELECT a.id
