@@ -32,8 +32,8 @@ public class MembershipGradeScheduler {
     private final ApplicationEventPublisher eventPublisher;
     
     
-    @Scheduled(cron = "0 * * * * *")
-    //@Scheduled(cron = "0 0 0 1 * *") 
+    //@Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 0 1 * *") 
     public void updateMembershipGrades() {
         log.info("🔄 멤버십 등급 갱신 스케줄러 시작");
 
