@@ -12,7 +12,8 @@ import {
   Badge,
   message,
   Space,
-  Typography
+  Typography,
+  Modal
 } from 'antd';
 import moment from 'moment';
 import api from '../../../utils/axios';
@@ -29,7 +30,7 @@ export default function AdminDetailPage() {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState([]); // 역할 목록
-  const [isLocked, setIsLocked] = useState(false); // 잠금 여부
+  const [showRoleModal, setShowRoleModal] = useState(false); // 권한 승격 모달 상태 추가
 
   // 관리자의 세부 정보를 불러오는 useEffect
   useEffect(() => {
@@ -57,9 +58,11 @@ export default function AdminDetailPage() {
     api
       .get('/admin/roles')
       .then(res => {
+        console.log("DEBUG: Fetched Roles Data (AdminDetailPage):", res.data); // 디버깅 로그 추가
         setRoles(res.data);  // 백엔드에서 제공된 역할 목록 설정
       })
-      .catch(() => {
+      .catch((error) => { // error 객체를 받아와 로깅하도록 수정
+        console.error('DEBUG: 역할 목록 불러오기 실패 (AdminDetailPage):', error); // 디버깅 로그 추가
         message.error('역할 목록을 불러오는 데 실패했습니다.');
       });
   }, [id]);
@@ -89,6 +92,21 @@ export default function AdminDetailPage() {
       router.push('/admin/system');
     } catch {
       message.error('삭제 중 오류 발생');
+    }
+  };
+
+  // 권한 승격 처리
+  const handleRolePromote = async (roleId) => {
+    try {
+      await api.post('/admin/promote', {
+        targetAccountId: id,
+        roleId,
+        newPassword: 'temporaryPassword' // 실제 비밀번호는 마스터 관리자가 설정
+      });
+      message.success('권한 승격이 완료되었습니다.');
+      setShowRoleModal(false); // 모달 닫기
+    } catch (error) {
+      message.error(`권한 승격 실패: ${error.message}`);
     }
   };
 
@@ -128,20 +146,23 @@ export default function AdminDetailPage() {
             <Form.Item
               name="email"
               label="이메일"
-              rules={[{ required: true, message: '이메일을 입력하세요.' }]}>
+              rules={[{ required: true, message: '이메일을 입력하세요.' }]}
+            >
               <Input />
             </Form.Item>
             <Form.Item
               name="nickname"
               label="닉네임"
-              rules={[{ required: true, message: '닉네임을 입력하세요.' }]}>
+              rules={[{ required: true, message: '닉네임을 입력하세요.' }]}
+            >
               <Input />
             </Form.Item>
             <Form.Item
               name="role"
               label="역할"
-              rules={[{ required: true, message: '역할을 선택하세요.' }]}>
-              <Select defaultValue={admin?.role}>
+              rules={[{ required: true, message: '역할을 선택하세요.' }]}
+            >
+              <Select>
                 {roles.map(role => (
                   <Option key={role.roleId} value={role.roleId}>
                     {role.description}
@@ -160,8 +181,39 @@ export default function AdminDetailPage() {
               <Button danger onClick={handleDelete} style={{ marginRight: 8 }}>삭제</Button>
               <Button type="primary" onClick={handleSave}>저장</Button>
             </Form.Item>
+            {/* 권한 승격 버튼 */}
+            <Form.Item>
+              <Button
+                type="default"
+                style={{ width: '100%' }}
+                onClick={() => setShowRoleModal(true)}
+              >
+                권한 승격
+              </Button>
+            </Form.Item>
           </Form>
         </Card>
+
+        {/* 권한 승격 모달 */}
+        <Modal
+          title="권한 승격"
+          visible={showRoleModal}
+          onCancel={() => setShowRoleModal(false)}
+          footer={null}
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            {roles.map(role => (
+              <Button
+                key={role.roleId}
+                type="default"
+                block
+                onClick={() => handleRolePromote(role.roleId)} // 해당 역할로 승격
+              >
+                {role.description}
+              </Button>
+            ))}
+          </Space>
+        </Modal>
       </Wrapper>
     </>
   );
