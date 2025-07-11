@@ -23,6 +23,31 @@
         <result property="orderDate" column="order_date" />
     </resultMap>
 
+    <!-- ✅ 기본 배송지 등록 -->
+    <insert id="insertDefaultDeliveryAddress" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
+        INSERT INTO delivery (account_id, address, address_detail, zipcode)
+        VALUES (#{accountId}, #{address}, #{addressDetail}, #{zipcode})
+    </insert>
+
+    <!-- ✅ 기본 배송지 조회 (가장 최근 배송지를 기본 배송지로 설정) -->
+    <select id="findDefaultDeliveryByAccountId" resultType="com.company.haloshop.dto.shop.DeliveryDTO">
+        SELECT * FROM delivery WHERE account_id = #{accountId} ORDER BY id DESC LIMIT 1
+    </select>
+    
+    <!-- ✅ 기본 배송지 삭제 -->
+    <update id="removeExistingDefaultDelivery" parameterType="Long">
+    	UPDATE delivery
+    	SET address = NULL, address_detail = NULL, zipcode = NULL
+    	WHERE account_id = #{accountId} AND address IS NOT NULL
+    </update>
+    
+    <!-- ✅ 새로운 배송지 추가 (새로 추가된 배송지가 기본 배송지로 설정됨) -->
+    <insert id="insertNewDefaultDeliveryAddress" parameterType="com.company.haloshop.dto.shop.DeliveryDTO">
+    	INSERT INTO delivery (account_id, address, address_detail, zipcode)
+    	VALUES (#{accountId}, #{address}, #{addressDetail}, #{zipcode})
+    </insert>
+
+
     <!-- ✅ 사용자용: 특정 계정의 배송 조회 -->
     <select id="findByAccountId" resultMap="DeliveryResultMap">
         SELECT * FROM delivery WHERE account_id = #{accountId}

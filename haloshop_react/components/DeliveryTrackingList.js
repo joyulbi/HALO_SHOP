@@ -84,7 +84,7 @@ const DeliveryTrackingList = ({ accountId }) => {
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                       <li style={{ marginBottom: '8px' }}>
                         <div><strong>{new Date(item.updatedAt).toLocaleString()}</strong></div>
-                        <div>{item.status} | {item.carrier} | {item.location ?? '지역 정보 없음'}</div>
+                        <div>{item.status} | {item.carrier} | 송장번호: {item.trackingNumber ?? '없음'}</div>
                       </li>
                       <li style={{ fontSize: '12px', color: '#888' }}>
                         2025-07-03 10:58:22<br />배송 출발 | 서울 강남구
