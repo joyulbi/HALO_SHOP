@@ -25,6 +25,8 @@ const ItemDetail = () => {
   const [isFlying, setIsFlying] = useState(false);
   const [animationName, setAnimationName] = useState('');
 
+  const [sentiment, setSentiment] = useState('');  // 감정 분석 상태 추가
+
   const productImageRef = useRef(null);
   const { cartButtonRef } = useContext(CartButtonContext);
   const { fetchCartCount } = useCart();
@@ -42,6 +44,14 @@ useEffect(() => {
         console.error('상품 상세 불러오기 실패:', err);
       }
     });
+
+    // 감성 분석 비율 가져오기
+    const review = "이 제품은 정말 훌륭합니다!";  // 예시 리뷰 텍스트
+    api.post(`/api/items/${id}/sentiment`, { review })  // 감성 분석 API 호출
+      .then(res => setSentiment(`이 제품은 ${res.data.positivePercentage}% 긍정적인 반응을 얻었어요!`))
+      .catch(err => {
+        console.error('감성 분석 불러오기 실패:', err);
+      });
 }, [id]);
 
 const handleMouseMove = (e) => {
@@ -182,6 +192,13 @@ console.log('🔥 isSoldOut:', isSoldOut);
             </span>
             )}
       </h1>
+
+      {/* 감성 분석 결과 표시 */}
+      {sentiment && (
+        <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#c8102e', marginBottom: '20px', textAlign: 'center' }}>
+          {sentiment}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '80px', alignItems: 'flex-start', justifyContent: 'center' }}>
         {/* 🔥 버튼 + 이미지: 가로 정렬 */}
