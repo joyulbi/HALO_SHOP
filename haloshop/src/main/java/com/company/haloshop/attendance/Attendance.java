@@ -19,7 +19,6 @@ import com.company.haloshop.entity.member.Account;
 import lombok.Data;
 
 @Entity
-@EntityListeners(AttendanceListener.class)
 @Data
 @Table(name = "attendance",
        uniqueConstraints = @UniqueConstraint(columnNames = {"account_id", "attendance_date"}))

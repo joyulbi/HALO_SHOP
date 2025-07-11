@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext'; // 🔥 추가
 import NotificationIcon from "./NotificationIcon";
+import ChatBot from "./ChatBot";
 
 const QuickMenu = ({ cartRef }) => {
   const router = useRouter();
@@ -71,6 +72,7 @@ const QuickMenu = ({ cartRef }) => {
         👤
       </button>
       <NotificationIcon /> 
+      <ChatBot />
     </div>
   );
 };
