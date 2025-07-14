@@ -1,7 +1,9 @@
 package com.company.haloshop.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.FilterChain;
@@ -18,6 +20,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,8 +31,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -93,6 +95,11 @@ public class SecurityConfig {
         );
     }
 
+    @Bean
+    public CookieHttpOnlyEnforcer cookieHttpOnlyEnforcer() {
+        return new CookieHttpOnlyEnforcer();
+    }
+    
     /**
      * AuthenticationManager 빈 등록
      * - 관리자 인증용 Provider: Argon2PasswordEncoder
@@ -200,7 +207,8 @@ public class SecurityConfig {
                 .antMatchers("/user/**").authenticated()
                 .antMatchers("/admin/**").access("@adminCheck.hasAuthority(authentication)")
                 .antMatchers("/admin/user/**")
-                    .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).USER_ADMIN)")
+                .access("@adminCheck.hasAnyRoleEnum(authentication, T(com.company.haloshop.security.Role).MASTER_ADMIN, T(com.company.haloshop.security.Role).USER_ADMIN)")
+
                 .antMatchers("/admin/security/**")
                     .access("@adminCheck.hasRoleEnum(authentication, T(com.company.haloshop.security.Role).SECURITY_ADMIN)")
                 .antMatchers("/security/**")
@@ -249,6 +257,8 @@ public class SecurityConfig {
             .addFilterAfter(botDetectionFilter, JwtAuthenticationFilter.class)
             // 만료된 세션 감지 필터 등록
             .addFilterAfter(expiredSessionFilter, BotDetectionFilter.class)
+            .addFilterAfter(cookieHttpOnlyEnforcer(), ExpiredSessionFilter.class);
+
         ;
 
         return http.build();
@@ -316,4 +326,34 @@ public class SecurityConfig {
         src.registerCorsConfiguration("/**", config);
         return src;
     }
+    
+    @Component
+    public class CookieHttpOnlyEnforcer extends OncePerRequestFilter {
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain) throws ServletException, IOException {
+
+            filterChain.doFilter(request, response); // 먼저 체인 실행
+
+            Collection<String> headers = response.getHeaders("Set-Cookie");
+            if (headers == null || headers.isEmpty()) return;
+
+            List<String> updatedCookies = new ArrayList<>();
+            for (String header : headers) {
+                if (!header.toLowerCase().contains("httponly")) {
+                    header = header.replaceAll("(?i);?\\s*httponly", "") + "; HttpOnly";
+                }
+                updatedCookies.add(header);
+            }
+
+            response.setHeader("Set-Cookie", null); // 기존 쿠키 제거
+            for (String updated : updatedCookies) {
+                response.addHeader("Set-Cookie", updated); // HttpOnly 붙인 쿠키 재삽입
+            }
+        }
+    }
+
+
 }

@@ -117,12 +117,14 @@ const currentAdminId = user?.id || user?.accountId;
     if (!selectedAdmin) return;
     const id = selectedAdmin.account.id;
     try {
-      await api.patch(`/admin/user/users/${id}/status`, { id: selectedStatus });
+      await api.post(`/admin/user/status/${id}`, null, {
+        params: { statusId: selectedStatus }
+      });
       message.success('유저 상태가 변경되었습니다.');
       setModalVisible(false);
       fetchList(pageInfo);
-    } catch {
-      message.error('상태 변경 중 오류가 발생했습니다.');
+    } catch (err) {
+      message.error(err.response?.data || '상태 변경 중 오류가 발생했습니다.');
     }
   };
 
