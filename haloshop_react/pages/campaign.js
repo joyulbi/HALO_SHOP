@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import CampaignRank from "../components/CampaignRank";
 import DonationModal from "../components/DonationModal";
 import axios from 'axios';
+import MyDonationHistory from "../components/MyDonationHistory";
 
 import { Dropdown, Button, Space, Menu, message } from "antd";
 import { DownOutlined } from "@ant-design/icons";
@@ -33,6 +34,8 @@ const TextGroup = styled.div`
 `;
 
 const ButtonWrapper = styled.div`
+  display: flex;
+  gap: 1rem;
   @media (min-width: 768px) {
     position: static;
   }
@@ -125,7 +128,7 @@ const campaign = () => {
   const [campaignImage, setCampaignImage] = useState({});
   const [rankList, setRankList] = useState([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
-  
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
@@ -204,6 +207,13 @@ const campaign = () => {
         if (season) setSelectedSeason(season);
       }}
       items={[...seasons]
+        .filter(season => {
+          const today = new Date();
+          today.setHours(0,0,0,0);
+          const startDate = new Date(season.startDate);
+          startDate.setHours(0,0,0,0);
+          return startDate <= today;  // 오늘 이전 혹은 오늘 시작 시즌만 포함
+        })
         .sort((a, b) => b.id - a.id)
         .map(season => ({
           key: season.id,
@@ -211,7 +221,7 @@ const campaign = () => {
         }))}
     />
   );
-
+  
   const top3WithImage = rankList.slice(0, 3).map(item => ({
     ...item,
     image: getImageByTotal(item.total),
@@ -260,6 +270,14 @@ const campaign = () => {
               </Space>
             </Button>
           </Dropdown>
+
+          {/* 내 기부내역 버튼 추가 */}
+          <Button
+            type="primary"
+            onClick={() => setHistoryModalOpen(true)}
+          >
+            내 기부내역
+          </Button>
         </ButtonWrapper>
         <TextGroup>
           <CampaignTitle fontSize="24px" color="#222">
@@ -300,6 +318,13 @@ const campaign = () => {
           team={selectedTeam}
           campaignId={selectedCampaignId}
           onClose={closeModal}
+        />
+      )}
+      {historyModalOpen && (
+        <MyDonationHistory
+          visible={historyModalOpen}
+          onClose={() => setHistoryModalOpen(false)}
+          selectedSeason={selectedSeason}
         />
       )}
     </>

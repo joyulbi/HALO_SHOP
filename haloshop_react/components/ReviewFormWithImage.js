@@ -5,6 +5,7 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(5);
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const SERVER_URL = 'http://localhost:8080';
 
@@ -13,6 +14,9 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
   };
 
   const handleReviewSubmit = async () => {
+    if (loading) return;
+    setLoading(true);
+
     try {
       const formData = new FormData();
       const reviewDto = {
@@ -22,11 +26,12 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
         rating
       };
 
-      // ✅ JSON을 Blob 처리
       formData.append("reviewDto", new Blob([JSON.stringify(reviewDto)], { type: "application/json" }));
       images.forEach((file) => {
         formData.append("images", file);
       });
+
+      console.log("📦 업로드 데이터:", { reviewDto, images });
 
       await axios.post(`${SERVER_URL}/api/reviews`, formData);
 
@@ -34,8 +39,10 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
       setContent("");
       setImages([]);
     } catch (err) {
-      console.error("리뷰 등록 실패", err);
-      alert("리뷰 등록 실패: " + err.message);
+      console.error("❌ 리뷰 등록 실패", err);
+      alert("리뷰 등록 실패: " + (err.response?.data || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,10 +71,13 @@ export default function ReviewFormWithImage({ orderItemsId, accountId }) {
         <label>이미지 첨부:</label>
         <input type="file" accept="image/*" multiple onChange={handleFileChange} />
       </div>
-      <button onClick={handleReviewSubmit} style={{ marginTop: "8px" }}>
-        리뷰 등록
+      <button
+        onClick={handleReviewSubmit}
+        disabled={loading}
+        style={{ marginTop: "8px" }}
+      >
+        {loading ? "등록 중..." : "리뷰 등록"}
       </button>
     </div>
   );
 }
-

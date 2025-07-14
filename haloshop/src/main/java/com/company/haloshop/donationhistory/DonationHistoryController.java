@@ -54,6 +54,15 @@ public class DonationHistoryController {
         donationHistoryService.updateDonationHistory(donationHistory);
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/account/{accountId}/season/{seasonId}")
+    public ResponseEntity<List<DonationHistory>> getDonationHistoriesByAccountAndSeason(
+        @PathVariable Long accountId,
+        @PathVariable Long seasonId
+    ) {
+        List<DonationHistory> list = donationHistoryService.getDonationHistoryBySeason(seasonId, accountId);
+        return ResponseEntity.ok(list);
+    }
 
     // 기부내역 삭제
     @DeleteMapping("/{id}")

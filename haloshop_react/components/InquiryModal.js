@@ -218,12 +218,27 @@ const InquiryModal = ({
   if (!inquiry) return null;
 
   const [localStatus, setLocalStatus] = useState(inquiry.status);
+  const [localAnswer, setLocalAnswer] = useState("");
+  const ApiCallUrl = "http://localhost:8080";
+
   console.log("선택된 문의 : ", inquiry);
   useEffect(() => {
     setLocalStatus(inquiry.status);
+
+    // 답변완료 상태일 경우 answer API 호출
+    if (inquiry.status === "ANSWERED") {
+      fetch(`${ApiCallUrl}/api/inquiry-answers/${inquiry.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setLocalAnswer(data.answer || ""); // ✅ 답변 저장
+        })
+        .catch((err) => {
+          console.error("답변 불러오기 실패", err);
+          setLocalAnswer("답변을 불러오는 데 실패했습니다.");
+        });
+    }
   }, [inquiry]);
 
-  const ApiCallUrl = "http://localhost:8080";
 
   return (
     <Overlay onClick={onClose}>
@@ -284,7 +299,7 @@ const InquiryModal = ({
             </Label>
             {localStatus === "ANSWERED" ? (
               // 답변완료 시: 읽기 전용 textarea에 답변 표시
-              <ReadOnlyTextArea value={inquiry.answer || ""} readOnly />
+              <ReadOnlyTextArea value={localAnswer} readOnly />
             ) : (
               // 답변 작성 가능 시: 입력 textarea와 전송 버튼
               <>

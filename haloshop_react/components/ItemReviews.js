@@ -40,6 +40,7 @@ const ItemReviews = ({ itemId }) => {
   return (
     <div style={styles.container}>
       <h3 style={styles.title}>상품 후기</h3>
+      <p style={{fontSize: '12px', color: '#777'}}>리뷰 내용에 상품과 관련 없는 부적절한 표현이 포함될 경우, 별도의 안내 없이 삭제될 수 있음을 양해 부탁드립니다.</p>
 
       {reviews.length === 0 ? (
         <p style={styles.noReviews}>등록된 리뷰가 없습니다.</p>

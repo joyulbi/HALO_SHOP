@@ -50,7 +50,7 @@ public class NotificationEventListener {
     	Long statusCode;
     	switch (pointLogDto.getType()) {
     	
-    		case "SAVE" : case "REVIEW" : case "MEMBERSHIP_REWARD" :
+    		case "SAVE" : case "REVIEW" : case "MEMBERSHIP_REWARD" : case "ATTENDANCE" :
     			statusCode = 601L; break;
     			
     		case "DONATE" :
