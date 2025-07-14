@@ -106,6 +106,11 @@ public class DonationHistoryService {
 
         donationHistoryMapper.updateDonationHistory(donationHistory);
     }
+    
+    // 시즌별 본인 내역 조회용
+    public List<DonationHistory> getDonationHistoryBySeason(Long seasonId, Long accountId) {
+        return donationHistoryMapper.selectByAccountIdWithSeasonCampaign(seasonId, accountId);
+    }
 
     @Transactional
     public void deleteDonationHistoryById(Long id) {

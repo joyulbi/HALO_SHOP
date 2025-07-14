@@ -23,4 +23,9 @@ public interface DonationHistoryMapper {
     // 수정
     void updateDonationHistory(DonationHistory donationHistory);
     
+    // 조회용 시즌별로 조회
+    List<DonationHistory> selectByAccountIdWithSeasonCampaign(
+    	    @Param("seasonId") Long seasonId,
+    	    @Param("accountId") Long accountId
+    	);
 }
