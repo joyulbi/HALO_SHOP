@@ -51,6 +51,20 @@ public class AuthenticationService {
             throw new RuntimeException("가입되지 않은 이메일입니다.");
         }
 
+        // 유저 상태 체크: status ID 기준
+        switch (account.getUserStatusId()) {
+            case 2:
+                throw new RuntimeException("정지한 계정입니다.");
+            case 3:
+                throw new RuntimeException("휴면 계정입니다. 복구 후 이용해주세요.");
+            case 4:
+                throw new RuntimeException("탈퇴한 회원입니다.");
+            case 1:
+                break; // 정상
+            default:
+                throw new RuntimeException("알 수 없는 계정 상태입니다.");
+        }
+
         if (account.getIsAdmin()) {
             // 관리자 로그인 (세션 방식)
             if (!argon2Encoder.matches(rawPassword, account.getPassword())) {
