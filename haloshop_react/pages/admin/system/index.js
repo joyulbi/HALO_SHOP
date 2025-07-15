@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
+import { useAuth } from '../../../hooks/useAuth';
 import AdminLayout from '../AdminLayout';
 import {
   Table,
@@ -22,6 +23,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 const { Title } = Typography;
 const { Option } = Select;
 
+
 const STATUS_MAP = {
   1: { text: '정상', color: '#7db93b' },
   2: { text: '정지', color: '#d4380d' },
@@ -30,6 +32,8 @@ const STATUS_MAP = {
 };
 
 const SystemAdminPage = () => {
+  const { user } = useAuth();
+const currentAdminId = user?.id || user?.accountId;
   const [data, setData] = useState([]);
   const [activeIds, setActiveIds] = useState(new Set());
   const [loading, setLoading] = useState(false);
@@ -39,11 +43,12 @@ const SystemAdminPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [form] = Form.useForm();
+  const [roleForm] = Form.useForm();
   const [detailLoading, setDetailLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
 
-  const [roleModalVisible, setRoleModalVisible] = useState(false); // 권한 승격 모달 상태
-  const [roles, setRoles] = useState([ // 하드코딩된 역할 목록 상태
+  const [roleModalVisible, setRoleModalVisible] = useState(false);
+  const [roles, setRoles] = useState([
     { roleId: 0, description: '마스터 관리자' },
     { roleId: 200, description: '상품 관리자' },
     { roleId: 300, description: '멤버십 관리자' },
@@ -52,10 +57,6 @@ const SystemAdminPage = () => {
     { roleId: 1000, description: '일반 사용자' }
   ]);
 
-  const [password, setPassword] = useState(''); // 비밀번호 상태 관리
-  const [role, setRole] = useState(null); // 선택된 역할 상태
-
-  // 관리자 목록 조회
   const fetchList = async ({ current, size } = pageInfo) => {
     setLoading(true);
     try {
@@ -71,7 +72,6 @@ const SystemAdminPage = () => {
     }
   };
 
-  // 활성 세션 조회
   const fetchActive = async () => {
     setLoadingActive(true);
     try {
@@ -84,7 +84,6 @@ const SystemAdminPage = () => {
     }
   };
 
-  // 강제 로그아웃 처리
   const handleForceLogout = async accountId => {
     try {
       await api.post('/admin/session/force-logout', null, {
@@ -97,7 +96,6 @@ const SystemAdminPage = () => {
     }
   };
 
-  // 수정 버튼 클릭 시 상세정보 불러오기
   const openEditModal = async admin => {
     setDetailLoading(true);
     try {
@@ -115,52 +113,65 @@ const SystemAdminPage = () => {
     }
   };
 
-  // 상태 변경 처리 (소프트 딜리트 및 복구)
   const handleStatusChange = async () => {
     if (!selectedAdmin) return;
-
     const id = selectedAdmin.account.id;
     try {
-      await api.patch(`/admin/user/users/${id}/status`, { id: selectedStatus });
+      await api.post(`/admin/user/status/${id}`, null, {
+        params: { statusId: selectedStatus }
+      });
       message.success('유저 상태가 변경되었습니다.');
       setModalVisible(false);
-      fetchList(pageInfo); // 유저 목록 갱신
-    } catch {
-      message.error('상태 변경 중 오류가 발생했습니다.');
+      fetchList(pageInfo);
+    } catch (err) {
+      message.error(err.response?.data || '상태 변경 중 오류가 발생했습니다.');
     }
   };
 
-  // 권한 승격 처리
-  const handleRolePromote = async (roleId) => {
-    if (selectedAdmin) {
-      try {
-        // 권한 승격 API 호출
-        const response = await api.post('/admin/promote', {
-          targetAccountId: selectedAdmin.account.id,
-          roleId: roleId,
-          newPassword: password // 비밀번호 전달
-        });
-        
-        // 성공 메시지
-        message.success(response.data || '권한 승격 완료');
-        setRoleModalVisible(false);
-        fetchList(pageInfo); // 유저 목록 갱신
-      } catch (error) {
-        // 실패 메시지
-        message.error(error.response?.data || '권한 승격에 실패했습니다.');
-      }
-    }
-  };
+const handleRolePromote = async ({ password, role }) => {
+  if (!selectedAdmin?.account?.id || !selectedAdmin?.account?.email) {
+    message.error('유효하지 않은 대상 관리자입니다.');
+    return;
+  }
 
+  try {
+    const response = await api.post('/admin/promote', {
+      targetAccountId: selectedAdmin.account.id,
+      roleId: role,
+      newPassword: password,
+      email: selectedAdmin.account.email,
+      lastIp: '127.0.0.1',
+      assignedBy: currentAdminId,
+    });
+    message.success(response.data || '권한 승격 완료');
+    setRoleModalVisible(false);
+    fetchList(pageInfo);
+  } catch (error) {
+    console.error('승격 오류:', error);
+    message.error(error.response?.data || '권한 승격에 실패했습니다.');
+  }
+};
+
+
+
+const openRoleModal = async (admin) => {
+  try {
+    const res = await api.get(`/admin/user/admin/${admin.id}`);
+    setSelectedAdmin(res.data); // account 포함된 구조 전체 주입
+    setRoleModalVisible(true);
+    roleForm.resetFields();
+  } catch (error) {
+    message.error('권한 승격용 상세 정보 로딩 실패');
+  }
+};
+
+// v폴링 1초마다
   useEffect(() => {
     fetchList();
     fetchActive();
-
-    // 1초마다 활성 세션 목록 자동 갱신
     const iv = setInterval(() => {
       fetchActive();
-    }, 1000);
-
+    }, 2000);
     return () => clearInterval(iv);
   }, []);
 
@@ -194,7 +205,7 @@ const SystemAdminPage = () => {
     {
       title: '활동 상태',
       key: 'activityStatus',
-      width: 160, // 너비를 늘려줌
+      width: 160,
       render: (_, r) => {
         return loadingActive ? (
           <Spin size="small" />
@@ -214,7 +225,7 @@ const SystemAdminPage = () => {
           <Button size="small" onClick={() => openEditModal(r)}>
             수정
           </Button>
-          <Button size="small" onClick={() => setRoleModalVisible(true)}>
+          <Button size="small" onClick={() => openRoleModal(r)}>
             권한 승격
           </Button>
           {activeIds.has(r.id) && (
@@ -264,7 +275,6 @@ const SystemAdminPage = () => {
           )}
         </Card>
 
-        {/* 수정 모달 */}
         <Modal
           visible={modalVisible}
           title="관리자 정보 수정"
@@ -288,17 +298,19 @@ const SystemAdminPage = () => {
               <Form.Item
                 name="email"
                 label="이메일"
-                rules={[{ required: true, message: '이메일을 입력하세요.' }]}>
+                rules={[{ required: true, message: '이메일을 입력하세요.' }]}
+              >
                 <Input />
               </Form.Item>
               <Form.Item
                 name="nickname"
                 label="닉네임"
-                rules={[{ required: true, message: '닉네임을 입력하세요.' }]}>
+                rules={[{ required: true, message: '닉네임을 입력하세요.' }]}
+              >
                 <Input />
               </Form.Item>
-              <Form.Item name="status" label="회원 상태" rules={[{ required: true, message: '상태를 선택하세요.' }]}>
-                <Select onChange={value => setSelectedStatus(value)} defaultValue={selectedAdmin?.account.userStatusId}>
+              <Form.Item name="status" label="회원 상태" rules={[{ required: true, message: '상태를 선택하세요.' }]}> 
+                <Select onChange={value => setSelectedStatus(value)} defaultValue={selectedAdmin?.account?.userStatusId}>
                   <Option value={1}>정상</Option>
                   <Option value={2}>정지</Option>
                   <Option value={3}>휴면</Option>
@@ -309,40 +321,40 @@ const SystemAdminPage = () => {
           )}
         </Modal>
 
-        {/* 권한 승격 모달 */}
         <Modal
           title="권한 승격"
           visible={roleModalVisible}
           onCancel={() => setRoleModalVisible(false)}
           footer={null}
-          style={{ maxWidth: '500px', margin: 'auto' }} // Set modal width to center
+          style={{ maxWidth: '500px', margin: 'auto' }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
             <Form
-              name="passwordForm"
+              form={roleForm}
+              name="rolePromoteForm"
               onFinish={handleRolePromote}
               layout="vertical"
             >
               <Form.Item
                 name="password"
                 label="새 비밀번호"
-                rules={[{ required: true, message: '비밀번호를 입력하세요.' }]}>
-                <Input.Password
-                  placeholder="새 비밀번호 입력"
-                  onChange={(e) => setPassword(e.target.value)} // 비밀번호 상태 변경
-                />
-              </Form.Item>
-              <Select
-                style={{ width: '100%', marginBottom: '10px' }}
-                placeholder="관리자 역할을 선택하세요"
-                onChange={(value) => setRole(value)}
+                rules={[{ required: true, message: '비밀번호를 입력하세요.' }]}
               >
-                {roles.map(role => (
-                  <Option key={role.roleId} value={role.roleId}>
-                    {role.description}
-                  </Option>
-                ))}
-              </Select>
+                <Input.Password placeholder="새 비밀번호 입력" />
+              </Form.Item>
+              <Form.Item
+                name="role"
+                label="관리자 역할"
+                rules={[{ required: true, message: '역할을 선택하세요.' }]}
+              >
+                <Select placeholder="관리자 역할을 선택하세요">
+                  {roles.map(role => (
+                    <Option key={role.roleId} value={role.roleId}>
+                      {role.description}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
               <Form.Item>
                 <Button type="primary" block htmlType="submit" style={{ borderRadius: '8px' }}>
                   승격 처리

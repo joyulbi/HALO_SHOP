@@ -28,6 +28,10 @@ const QuickMenu = ({ cartRef }) => {
     router.push('/checkout');
   };
 
+  const goToAttendance = () => {
+    router.push('/attendance');
+  }
+
   // 알림창 온오프
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -71,7 +75,12 @@ const QuickMenu = ({ cartRef }) => {
       >
         👤
       </button>
-      <NotificationIcon /> 
+      <NotificationIcon />
+      <button
+        title="출석"
+        onClick={goToAttendance}
+        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '20px', cursor: 'pointer' }}
+        >📅</button>
       <ChatBot />
     </div>
   );

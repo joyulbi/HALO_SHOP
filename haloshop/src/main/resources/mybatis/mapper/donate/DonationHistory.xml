@@ -7,11 +7,21 @@
 
     <!-- ResultMap -->
 	<resultMap id="DonationHistoryResultMap" type="com.company.haloshop.donationhistory.DonationHistory">
-	    <id property="id" column="id" />
-	    <result property="amount" column="amount" />
-	    <result property="createdAt" column="created_at" />
-	    <association property="campaign" column="campaign_id" javaType="com.company.haloshop.donationcampaign.DonationCampaign" />
-	    <association property="pointLog" column="point_log_id" javaType="com.company.haloshop.pointlog.PointLog" />
+	    <id property="id" column="id"/>
+	    <result property="amount" column="amount"/>
+	    <result property="createdAt" column="created_at"/>
+	
+	    <association property="campaign" javaType="com.company.haloshop.donationcampaign.DonationCampaign">
+	        <id property="id" column="dc_id"/>
+	        <result property="total" column="dc_total"/>
+	        
+	        <association property="team" javaType="com.company.haloshop.team.Team">
+	            <id property="id" column="team_id"/>
+	            <result property="name" column="team_name"/>
+	        </association>
+	    </association>
+	
+	    <!-- pointLog는 null 허용 시 생략 가능 -->
 	</resultMap>
 
     <!-- Insert -->
@@ -30,6 +40,21 @@
     <select id="selectAllDonationHistories" resultMap="DonationHistoryResultMap">
         SELECT * FROM donation_history
     </select>
+    
+    <!-- Select by accountid with season.campaign_id -->
+	<select id="selectByAccountIdWithSeasonCampaign" resultMap="DonationHistoryResultMap">
+	  SELECT 
+	    dh.id, dh.amount, dh.created_at,
+	    dc.id AS dc_id, dc.total AS dc_total,
+	    t.id AS team_id, t.name AS team_name
+	  FROM donation_history dh
+	  JOIN donation_campaign dc ON dh.campaign_id = dc.id
+	  JOIN team t ON dc.team_id = t.id
+	  JOIN point_log pl ON dh.point_log_id = pl.id
+	  WHERE dc.season_id = #{seasonId}
+	    AND pl.account_id = #{accountId}
+	  ORDER BY dh.created_at DESC
+	</select>
 
     <!-- Delete -->
     <delete id="deleteDonationHistoryById" parameterType="long">
