@@ -14,7 +14,6 @@ const SingleOrderFormPage = () => {
 
   const [addresses, setAddresses] = useState([]);  // 등록된 배송지들
   const [selectedAddress, setSelectedAddress] = useState(null);  // 선택된 배송지
-  const [defaultAddress, setDefaultAddress] = useState(null);  // 기본 배송지 상태 추가
 
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
@@ -50,23 +49,10 @@ const SingleOrderFormPage = () => {
     }
   };
 
-  // 기본 배송지 로드
-  const fetchDefaultAddress = async () => {
-    try {
-      const res = await api.get(`/api/deliveries/${user.id}/default`);  // 기본 주소 API 호출
-      console.log("기본 배송지 로드: ", res.data);  // 여기서 기본 배송지 데이터 확인
-      setDefaultAddress(res.data);
-      setSelectedAddress(res.data);  // 기본 배송지를 선택된 배송지로 설정
-    } catch (err) {
-      console.error('기본 배송지 불러오기 실패: ', err);
-    }
-  };
-
   // ✅ 첫 렌더링 시 배송지 목록 로드
   useEffect(() => {
     if (user?.id) {
       fetchAddresses();
-      fetchDefaultAddress();  // 기본 배송지 불러오기
     }
   }, [user]);
 
@@ -225,7 +211,6 @@ const SingleOrderFormPage = () => {
           addresses={addresses}
           onSelect={setSelectedAddress}
           selectedAddressId={selectedAddress?.id}
-          defaultAddress={defaultAddress}  // 기본 배송지 전달
         />
       </div>
 
