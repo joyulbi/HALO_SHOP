@@ -42,24 +42,6 @@ const DeliveryList = ({ addresses, onSelect, selectedAddressId, defaultAddressId
     >
       <h4 style={{ marginBottom: '8px' }}>등록된 배송지</h4>
 
-      {/* 기본 배송지 표시 */}
-      <div
-        style={deliveryItemStyle(defaultAddressId === selectedAddressId)} // 기본 배송지 스타일
-      >
-        <div>
-          <strong>기본 배송지:</strong> {addresses.find(addr => addr.id === defaultAddressId)?.recipientName} | 
-          {addresses.find(addr => addr.id === defaultAddressId)?.address} 
-          {addresses.find(addr => addr.id === defaultAddressId)?.addressDetail} 
-          ({addresses.find(addr => addr.id === defaultAddressId)?.zipcode})
-        </div>
-        <button
-          onClick={() => onSelect(addresses.find(addr => addr.id === defaultAddressId))}
-          style={buttonStyle(defaultAddressId === selectedAddressId)}
-        >
-          {defaultAddressId === selectedAddressId ? '선택됨' : '선택'}
-        </button>
-      </div>
-
       {/* 다른 배송지들 표시 */}
       {addresses.map((addr) => (
         <div
