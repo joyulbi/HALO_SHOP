@@ -9,22 +9,21 @@ const RecommendedSidebar = () => {
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
-      setVisible(false); // 로그인 안 돼 있으면 숨김
+      setVisible(false);
       return;
     }
 
     const fetchRecommendations = async () => {
       try {
-        const res = await api.get('/api/recommend/gpt');
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setItems(res.data);
-          setVisible(true);
-        } else {
-          setVisible(false); // 추천 없음
-        }
+        const res = await api.get('/api/recommend/gpt', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        console.log('🔥 추천 응답:', res.data);
+        setItems(res.data);
+        setVisible(Array.isArray(res.data) && res.data.length > 0);
       } catch (error) {
-        console.error('추천 불러오기 실패: ', error);
-        setVisible(false); // 에러 시 숨김
+        console.error('추천 불러오기 실패:', error);
+        setVisible(false);
       }
     };
 
@@ -45,25 +44,58 @@ const RecommendedSidebar = () => {
       padding: '16px',
       zIndex: 1000,
     }}>
-      <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>추천 상품</h3>
-      {items.map(item => (
-        <Link key={item.id} href={`/items/${item.id}`} passHref>
-          <div style={{
-            borderBottom: '1px solid #eee',
-            paddingBottom: '10px',
-            marginBottom: '10px',
-            cursor: 'pointer'
-          }}>
-            <img
-              src={item.images?.[0]?.url ? `http://localhost:8080${item.images[0].url}` : '/images/no-image.png'}
-              alt={item.name}
-              style={{ width: '100%', borderRadius: '8px', marginBottom: '6px' }}
-            />
-            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.name}</div>
-            <div style={{ fontSize: '13px', color: '#c8102e' }}>{item.price.toLocaleString()}원</div>
-          </div>
-        </Link>
-      ))}
+      {/* 상단 제목 + 닫기 버튼 */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '12px',
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>추천 상품</h3>
+        <button
+          onClick={() => setVisible(false)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '16px',
+            cursor: 'pointer',
+            color: '#999',
+          }}
+          aria-label="닫기"
+        >
+          ❌
+        </button>
+      </div>
+
+      {items.map(item => {
+        const rawUrl = item.images && item.images.length > 0 ? item.images[0].url : null;
+        const imageUrl = rawUrl
+          ? (rawUrl.startsWith('/images')
+              ? `http://localhost:8080${rawUrl}`
+              : `http://localhost:8080/images/${rawUrl}`)
+          : null;
+
+        return (
+          <Link key={item.id} href={`/items/${item.id}`} passHref>
+            <div style={{
+              borderBottom: '1px solid #eee',
+              paddingBottom: '10px',
+              marginBottom: '10px',
+              cursor: 'pointer'
+            }}>
+              {imageUrl && (
+                <img
+                  src={imageUrl}
+                  alt={item.name}
+                  style={{ width: '100%', borderRadius: '8px', marginBottom: '6px' }}
+                />
+              )}
+              <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.name}</div>
+              <div style={{ fontSize: '13px', color: '#c8102e' }}>{item.price.toLocaleString()}원</div>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 };
