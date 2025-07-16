@@ -33,6 +33,7 @@ export default function AuctionRoomLayout() {
   useEffect(() => {
     if (!AUCTION_ID) return;
 
+    api.get(`/auction/${AUCTION_ID}/enter`).catch(() => {});
     // 경매 정보
     api.get(`/api/auctions/${AUCTION_ID}`).then(res => {
       const data = res.data;
@@ -206,7 +207,7 @@ return (
       gap: "24px",
       maxWidth: "1400px",
       margin: "0 auto",
-      height: "calc(100vh - 120px)"
+      minHeight: "calc(100vh - 120px)"
     }}>
       {/* 경매 정보 */}
       <div style={{
@@ -271,7 +272,7 @@ return (
         borderRadius: "12px",
         boxShadow: "0 4px 12px rgba(0,0,0,0.06)", // ✅ 그림자 톤 다운
         padding: "30px",
-        minHeight: "320px",
+        minHeight: "350px",
         gridColumn: "1 / span 2"
       }}>
         {isOngoing && (

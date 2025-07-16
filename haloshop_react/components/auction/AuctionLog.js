@@ -104,7 +104,7 @@ export default function AuctionLog({
           입찰하기
         </button>
         {isFinished && <div style={{ color: "#d00", marginTop: 10, fontWeight: "bold" }}>경매가 종료되었습니다.</div>}
-        {errorMsg && <div style={{ color: "#d00", marginTop: 10 }}>{errorMsg}</div>}
+        {!isFinished && errorMsg && <div style={{ color: "#d00", marginTop: 10 }}>{errorMsg}</div>}
         <div style={{ fontSize: "0.9rem", marginTop: 8, color: "#555", textAlign: "center" }}>
           최소 입찰 가능 금액: <b>{minBid ? minBid.toLocaleString() : "-"}</b>원<br />100원 단위만 가능
         </div>
