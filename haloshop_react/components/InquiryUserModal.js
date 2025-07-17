@@ -153,6 +153,26 @@ const Button = styled.button`
 // API 호출 주소
 const ApiCallUrl = "http://localhost:8080";
 
+// 모달 컴포넌트 내부, render 전 또는 컴포넌트 최상단에 위치
+const getCategoryName = (id) => {
+  if (id >= 100 && id < 200) {
+    return "문의";
+  } else if (id >= 200 && id < 300) {
+    return "경매";
+  } else if (id >= 300 && id < 400) {
+    return "시즌";
+  } else if (id >= 400 && id < 500) {
+    return "배송";
+  } else if (id >= 500 && id < 600) {
+    return "결제";
+  } else if (id >= 600 && id < 700) {
+    return "포인트";
+  } else {
+    return "기타";
+  }
+};
+
+
 const InquiryUserModal = ({
   inquiry,
   onClose,
@@ -202,6 +222,8 @@ const InquiryUserModal = ({
     fetchAnswer();
   }, [inquiry]);
 
+  console.log("iqry:", inquiry);
+
   return (
     <Overlay onClick={onClose}>
       <ModalContainer onClick={e => e.stopPropagation()}>
@@ -210,11 +232,11 @@ const InquiryUserModal = ({
           <Row>
             <InfoItem>
               <strong>카테고리</strong>
-              <InfoValue>{inquiry.categoryName}</InfoValue>
+              <InfoValue>{getCategoryName(inquiry.entity.id)}</InfoValue>
             </InfoItem>
             <InfoItem>
               <strong>작성자</strong>
-              <InfoValue>{inquiry.accountName || "익명"}</InfoValue>
+              <InfoValue>{inquiry.accountName || "나"}</InfoValue>
             </InfoItem>
             <InfoItem>
               <strong>상태</strong>
