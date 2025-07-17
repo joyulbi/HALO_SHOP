@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../utils/axios';
-import KakaoDraggableMap from './KakaoDraggableMap';
 import { useRouter } from 'next/router';
 
 const DeliveryTrackingList = ({ accountId }) => {
@@ -115,13 +114,6 @@ const DeliveryTrackingList = ({ accountId }) => {
                 </div>
               );
             })}
-
-            {/* 카카오 지도 */}
-            <div style={{ margin: '24px 0' }}>
-              <h4 style={{ marginBottom: '8px' }}>배송 위치 지도</h4>
-              <KakaoDraggableMap />
-            </div>
-
             <button onClick={() => setShowModal(false)} style={{ marginTop: '16px' }}>닫기</button>
           </div>
         </div>
