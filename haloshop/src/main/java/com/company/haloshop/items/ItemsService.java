@@ -77,8 +77,9 @@ public class ItemsService {
     // 🔥 상품 삭제 + 이미지 파일도 삭제
     public void delete(Long id) {
         List<ItemsImage> images = itemsImageMapper.findByItemsId(id);
-        itemsMapper.delete(id);
         itemsImageMapper.deleteByItemsId(id);
+        itemsMapper.delete(id);
+        
 
         for (ItemsImage image : images) {
             String fileName = image.getUrl().replace("/images/", "");
