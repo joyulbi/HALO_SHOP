@@ -51,56 +51,73 @@ HALO_SHOP은 굿즈 판매를 넘어서 팬과의 실시간 소통, 포인트/�
 
 ---
 
-## 기술 스택
-
-### 프론트엔드 (React + Next.js)
-
-| 기술 | 버전 | 설명 |
-|------|-------|------|
-| React | 18.3.1 | UI 구성 |
-| Next.js | 13.5.11 | CSR/SSR 지원 프레임워크 |
-| Redux / Redux-Saga | 8.1.3 / 1.3.0 | 상태관리 / 비동기 처리 |
-| Styled-components | 6.1.19 | CSS-in-JS |
-| Ant Design | 4.24.16 | UI 컴포넌트 |
-| Axios | 1.10.0 | API 통신 |
-| SockJS / StompJS | 1.6.1 / 7.1.1 | 실시간 입찰 및 알림 기능 |
-| Recharts / Framer Motion / Lottie | 다양한 | 애니메이션 및 데이터 시각화 |
-| React-slick | 0.30.3 | 이미지 슬라이더 |
-| Zoom / Immer 등 | - | 이미지 확대, 불변성 유지 |
+##  기술 스택 (HALO_SHOP 프로젝트 기준)
 
 ---
 
-### 백엔드 (Spring Boot)
+###  프론트엔드 (React + Next.js)
 
-| 기술 | 버전 | 설명 |
-|------|-------|------|
-| Spring Boot | 2.7.14 | 백엔드 프레임워크 |
-| Java | 11 | 언어 |
-| MyBatis + JPA | 2.3.0 | ORM + SQL Mapper |
-| Spring Security + OAuth2 | 최신 | 인증 / 인가 |
-| jjwt | 0.11.5 | JWT 발급 및 검증 |
-| Argon2 / Bcrypt | - | 관리자 / 사용자 비밀번호 암호화 |
-| WebSocket | - | 실시간 입찰 / 채팅 |
-| AWS S3 | 2.4.4 | 이미지 업로드 |
-| Log4JDBC | 1.16 | SQL 로그 추적 |
-| Thumbnailator | 0.4.14 | 이미지 리사이징 |
-| Gson, Lombok, Validation, Devtools | 다양한 | 유틸 및 개발 편의성 |
+| 기술                   | 버전      | 설명                            |
+|------------------------|-----------|---------------------------------|
+| React                 | 18.3.1    | UI 구성                         |
+| Next.js               | 13.5.11   | CSR/SSR 지원 프레임워크         |
+| Redux / Redux-Saga    | 4.2.1 / 1.3.0 | 상태관리 / 비동기 처리      |
+| next-redux-wrapper     | 8.1.0     | Redux 스토어 Next.js 연동       |
+| Styled-components     | 6.1.19    | CSS-in-JS                      |
+| Babel Plugin (SC)     | 2.1.4     | styled-components용 바벨 플러그인 |
+| Ant Design            | 4.24.16   | UI 컴포넌트                    |
+| Axios                 | 1.10.0    | API 통신                       |
+| SockJS / StompJS      | 1.6.1 / 7.1.1 | 실시간 입찰 및 알림 기능    |
+| Recharts              | 3.0.2     | 데이터 시각화                  |
+| Framer Motion         | 12.23.0   | 애니메이션 처리                |
+| Lottie-react          | 2.4.1     | JSON 애니메이션 적용           |
+| React-slick / slick-carousel | 0.30.3 / 1.8.1 | 이미지 슬라이더        |
+| Immer                 | 10.1.1    | 불변성 유지                    |
+| react-medium-image-zoom | 5.2.14  | 이미지 확대 기능               |
+
+---
+
+###  백엔드 (Spring Boot)
+
+| 기술                   | 버전        | 설명                            |
+|------------------------|-------------|---------------------------------|
+| Spring Boot           | 2.7.14      | 백엔드 프레임워크               |
+| Java                  | 11          | 언어                            |
+| MyBatis               | 2.3.0       | SQL Mapper                      |
+| JPA                   | 포함 (내장) | ORM 처리                        |
+| Spring Security       | 포함 (내장) | 인증 / 인가                     |
+| OAuth2 Client         | 포함 (내장) | 소셜 로그인 인증                |
+| JJWT (io.jsonwebtoken) | 0.11.5      | JWT 발급 및 검증                |
+| Argon2 / Bcrypt       | 1.70 / 내장 | 관리자 / 사용자 암호화         |
+| WebSocket             | 포함 (내장) | 실시간 입찰 및 채팅            |
+| AWS S3                | 2.4.4       | 이미지 업로드                   |
+| Log4JDBC              | 1.16        | SQL 로그 추적                   |
+| Thumbnailator         | 0.4.14      | 이미지 리사이징                |
+| Gson                  | 최신        | JSON 직렬화/역직렬화           |
+| Lombok                | 1.18.30     | 반복 코드 제거                  |
+| Validation (Hibernate Validator) | 6.2.3.Final | 입력값 유효성 검사     |
+| Servlet API           | 4.0.1       | JSP/서블릿 용                   |
+| JSTL / JSP            | JSTL 1.2 / 내장 | JSP 기반 관리자 뷰 페이지 구성 |
+| Thymeleaf + Security  | 3.0.15.RELEASE / 3.0.4.RELEASE | Spring 뷰 엔진         |
 
 ---
 
-### 데이터베이스
-| 기술 | 버전 | 설명 |
-|------|------| --- |
-| MySQL | 8.0.41 | 사용자, 상품, 포인트, 주문, 캠페인 등 관계형 저장소 |
+###  데이터베이스
+
+| 기술   | 버전     | 설명                             |
+|--------|----------|----------------------------------|
+| MySQL | 8.0.41   | 사용자, 상품, 주문, 포인트 등 저장소 |
 
 ---
-### API
-| 항목       | 내용 |
+
+### 외부 API 연동
+
+| 항목       | 설명 |
 |------------|------|
-| KakaoPay   | 카카오페이 결제 API를 연동하여 상품 결제, 결제 승인, 결제 취소 기능 구현 |
-| KakaoMap   | 카카오 지도 API를 활용해 배송지 입력 시 주소 자동완성 기능 제공 |
-| ChatGPT    | OpenAI API 연동으로 상품 추천 및 챗봇 대화 기능 구현 |
-| AWS S3     | 이미지 업로드 시 AWS S3 버킷에 저장하고, 업로드 경로를 DB와 연동 |
+| **KakaoPay**   | 카카오페이 결제 API 연동 (결제/승인/취소) |
+| **KakaoMap**   | 배송지 자동완성 주소 검색 기능 제공 |
+| **ChatGPT**    | 상품 추천 / 챗봇 서비스용 OpenAI 연동 |
+| **AWS S3**     | 이미지 업로드 및 저장, DB 연동 |
 
 ---
 
