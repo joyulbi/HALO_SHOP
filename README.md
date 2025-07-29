@@ -209,7 +209,7 @@ HALO_SHOP은 굿즈 판매를 넘어서 팬과의 실시간 소통, 포인트/�
 
 ## 연락처
 
-| 이름 | 이메일 | |
+| 이름 | 이메일 | GitHub |
 |------|--------|-- |
 | 조율비 | urby0725@naver.com | https://github.com/joyulbi |
 | 박인 | cooladam_@naver.com | https://github.com/IN-P |
