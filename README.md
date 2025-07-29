@@ -17,7 +17,7 @@ HALO_SHOP은 굿즈 판매를 넘어서 팬과의 실시간 소통, 포인트/�
 ---
 
 ## 관련 문서
-- AWS : [HALO_SHOP 바로가기](http://43.202.189.108/) - 안윤기
+- AWS : [HALO_SHOP 바로가기](http://43.202.189.108/) - 안윤기 배포
   - 관리자더미ID : admin1@gmail.com ~ admin6@gmail.com pw : 1234
   - 유저더미ID   : user1@gmail.com ~ user50@gmail.com pw : 1234
   - 관리자 페이지 : http://43.202.189.108/admin (관리자 로그인 한 상태로 들어가주세요)
