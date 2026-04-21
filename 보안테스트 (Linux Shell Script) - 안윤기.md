@@ -1,4 +1,4 @@
-# Brute Force 공격 실험 보고서 (Linux Shell Script 기반) - 안윤기
+# Brute Force 공격 실험 보고서 (Linux Shell Script 기반) 
 > - 3차 팀 프로젝트 : HALO SHOP
 > - 결론 : 
 >   1. "무작위 대입 공격" 막는 로직 없음
