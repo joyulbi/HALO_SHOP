@@ -1,4 +1,4 @@
-# Brute Force 공격 실험 보고서 (Hydra & ffuf 기반) - 안윤기
+# Brute Force 공격 실험 보고서 (Hydra & ffuf 기반) 
 > - 3차 팀 프로젝트 : HALO SHOP
 > - 결론 : 
 >   1. 관리자 세션 인증 방식은 Hydra를 통해 무차별 대입 공격 성공 가능성 존재
